@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "es2016",
+    "module": "commonjs",
+    "types": ["node"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "declaration": false,
+    "typeRoots": [
+      "types"
+    ],
+  },
+  "include": [
+    "src/index.ts",
+    "src/cli.ts",
+    "types/*.d.ts",
+  ]
+}
