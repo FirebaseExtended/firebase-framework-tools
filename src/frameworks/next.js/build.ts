@@ -15,11 +15,13 @@
 import { promises as fsPromises } from 'fs';
 import ora from 'ora';
 import { dirname, join } from 'path';
-import { DeployConfig, exec, PathFactory } from '../../utils';
+import { defaultFirebaseToolsOptions, DeployConfig, exec, PathFactory } from '../../utils';
+import firebaseTools from 'firebase-tools';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc, Manifest } from './templates';
+import { shortSiteName } from '../../prompts';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
@@ -89,16 +91,31 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         });
     }
 
-    const { project, site} = config;
+    let firebaseProjectConfig = null;
+    const { project, site } = config;
     if (project && site) {
         conditionalSteps.push(writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site)));
+        const { sites } = await firebaseTools.hosting.sites.list({
+            project,
+            ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
+        });
+        const selectedSite = sites.find(it => shortSiteName(it) === site);
+        if (selectedSite) {
+            const { appId } = selectedSite;
+            if (appId) {
+                const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(getProjectPath('.deploy')));
+                firebaseProjectConfig = result.sdkConfig;
+            } else {
+                console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context.`);
+            }
+        }
     }
 
     await Promise.all([
         ...conditionalSteps,
         copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')),
         writeFile(deployPath('functions', 'package.json'), newPackageJson(packageJson, dev)),
-        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev)),
+        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig)),
         writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),
     ]);
 

@@ -70,7 +70,9 @@ declare module 'firebase-tools' {
   export interface FirebaseSDKConfig {
     fileName: string;
     fileContents: string;
-    sdkConfig: { [key: string]: string };
+    sdkConfig: {
+      [key: string]: string
+    };
   }
 
 

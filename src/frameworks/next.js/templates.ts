@@ -16,6 +16,7 @@ import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes
 import { DeployConfig, getProjectPathFactory } from '../../utils';
 import { promises as fsPromises } from 'fs';
 const { readFile } = fsPromises;
+import type { FirebaseOptions } from 'firebase/app';
 
 export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
         targets: {
@@ -94,7 +95,7 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
     }
 }
 
-export const newServerJs = (config: DeployConfig, dev: boolean) => {
+export const newServerJs = (config: DeployConfig, dev: boolean, options: FirebaseOptions|null) => {
     const conditionalImports = config.function.gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
@@ -120,8 +121,7 @@ const dir = dev ? join(__dirname, '..', '..') : __dirname;
 const nextApp = next({ dev, dir });
 const nextAppPrepare = nextApp.prepare();
 
-// TODO get the client app config
-const firebaseConfig = ${JSON.stringify({})};
+const firebaseConfig = ${JSON.stringify(options)};
 
 // TODO performance tune this
 const firebaseAppsLRU = new LRU({
@@ -137,15 +137,16 @@ const firebaseAppsLRU = new LRU({
 exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) => {
     // TODO figure out why middleware isn't doing this for us
     const cookies = cookie.parse(req.headers.cookie || '');
-    let _decodedIdToken;
-    const decodedIdToken = () => _decodedIdToken ||= cookies.__session ? await adminAuth.verifySessionCookie(cookies.__session, true).catch(() => null) : null;
+    let _decodeIdToken;
+    const decodeIdToken = () => _decodeIdToken ||= cookies.__session ? adminAuth.verifySessionCookie(cookies.__session, true).catch(() => null) : Promise.resolve(null);
     if (req.url === '/__next/cookie') {
         if (req.body.user) {
             const idToken = req.body.user.idToken;
             const decodedIdTokenFromBody = await adminAuth.verifyIdToken(idToken, true);
             // TODO freshen the session cookie if needed
             //      check for idToken having been freshly minted
-            if (decodedIdTokenFromBody.uid === decodedIdToken().uid) {
+            const decodedIdToken = await decodeIdToken();
+            if (decodedIdTokenFromBody.uid === decodedIdToken?.uid) {
                 res.status(304).end();
             } else {
                 // TODO allow this to be configurable
@@ -165,8 +166,9 @@ exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) 
         return;
     }
     // TODO only go down this path for routes that need it
-    if (decodedIdToken()) {
-        const { uid } = decodedIdToken();
+    const decodedIdToken = await decodeIdToken();
+    if (firebaseConfig && decodedIdToken) {
+        const { uid } = decodedIdToken;
         let app = firebaseAppsLRU.get(uid);
         if (!app) {
             const random = Math.random().toString(36).split('.')[1];
