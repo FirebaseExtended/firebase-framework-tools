@@ -25,15 +25,17 @@ import { shortSiteName } from '../../prompts';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
+    const packageJsonBuffer = await readFile(getProjectPath('package.json'));
+    const packageJson = JSON.parse(packageJsonBuffer.toString());
+
     if (!dev) {
+        console.log(`\n> build\n> ${packageJson.scripts.build}\n`);
         const nextSpinner = ora('Building Next.js application').start();
         await exec(`npm --prefix ${getProjectPath()} run build`);
         nextSpinner.succeed();
     }
 
     const functionsSpinner = ora('Building Firebase project').start();
-    const packageJsonBuffer = await readFile(getProjectPath('package.json'));
-    const packageJson = JSON.parse(packageJsonBuffer.toString());
 
     const nextConfig: Manifest = await import(getProjectPath('next.config.js')).catch(() => undefined);
     if (!nextConfig) throw 'No next.config.js found.';
@@ -109,7 +111,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
                     const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(getProjectPath('.deploy')));
                     firebaseProjectConfig = result.sdkConfig;
                 } else {
-                    console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context.`);
+                    // TODO allow them to choose
+                    ora(`No Firebase app associated with site ${site}, unable to provide authenticated server context`).start().warn();
                 }
             }
         }
