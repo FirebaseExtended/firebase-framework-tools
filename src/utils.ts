@@ -51,17 +51,17 @@ export async function getDeployConfig(key: string): Promise<DeployConfig>;
 export async function getDeployConfig(key: string, required: false): Promise<DeployConfig>;
 export async function getDeployConfig(key: string, required=false): Promise<DeployConfig | Required<DeployConfig>> {
     const deployJsonBuffer = await readFile('deploy.json').catch(() => undefined);
-    if (required && !deployJsonBuffer) throw new Error('deploy.json not found, run `firebase-next init`');
+    if (required && !deployJsonBuffer) throw new Error('deploy.json not found, run `firebase-frameworks init`');
     const deployJson = deployJsonBuffer && JSON.parse(deployJsonBuffer.toString()) || {};
     const projectConfig: DeployConfig | undefined = deployJson[key];
-    if (required && !projectConfig) throw(`Property ${key} not found in deploy.json, run \`firebase-next init\``);
+    if (required && !projectConfig) throw(`Property ${key} not found in deploy.json, run \`firebase-frameworks init\``);
     let { prefix='.', project, site, function: { name=undefined, region=undefined, gen=undefined }={}} = projectConfig || {};
     if (required) {
-        if (!project) throw `Property ${key}.project not found in deploy.json, run \`firebase-next init\`.`;
-        if (!site) throw `Property ${key}.site not found in deploy.json, run \`firebase-next init\`.`;
-        if (!name) throw `Property ${key}.function.name not found in deploy.json, run \`firebase-next init\`.`;
-        if (!region) throw `Property ${key}.function.region not found in deploy.json, run \`firebase-next init\`.`;
-        if (!gen) throw `Property ${key}.function.gen not found in deploy.json, run \`firebase-next init\`.`;
+        if (!project) throw `Property ${key}.project not found in deploy.json, run \`firebase-frameworks init\`.`;
+        if (!site) throw `Property ${key}.site not found in deploy.json, run \`firebase-frameworks init\`.`;
+        if (!name) throw `Property ${key}.function.name not found in deploy.json, run \`firebase-frameworks init\`.`;
+        if (!region) throw `Property ${key}.function.region not found in deploy.json, run \`firebase-frameworks init\`.`;
+        if (!gen) throw `Property ${key}.function.gen not found in deploy.json, run \`firebase-frameworks init\`.`;
     } else {
         name ||= DEFAULT_SERVICE_NAME;
         region ||= DEFAULT_REGION;

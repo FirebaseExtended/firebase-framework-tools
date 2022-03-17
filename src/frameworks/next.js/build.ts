@@ -36,8 +36,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     }
 
     const functionsSpinner = ora('Building Firebase project').start();
-
-    const nextConfig: Manifest = await import(getProjectPath('next.config.js')).catch(() => undefined);
+    const nextConfig: Manifest = await import(getProjectPath('next.config.js'));
     if (!nextConfig) throw 'No next.config.js found.';
     const { distDir='.next', basePath='.' } = nextConfig;
 
@@ -63,8 +62,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
         exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
         exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
-        copyFile(getProjectPath(distDir, 'server', 'pages', '404.html'), getHostingPath('404.html')),
-        copyFile(getProjectPath(distDir, 'server', 'pages', '500.html'), getHostingPath('500.html')),
+        copyFile(getProjectPath(distDir, 'server', 'pages', '404.html'), getHostingPath('404.html')).catch(() => {}),
+        copyFile(getProjectPath(distDir, 'server', 'pages', '500.html'), getHostingPath('500.html')).catch(() => {}),
     ];
 
     if (!dev) {
