@@ -95,18 +95,22 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     const { project, site } = config;
     if (project && site) {
         conditionalSteps.push(writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site)));
-        const { sites } = await firebaseTools.hosting.sites.list({
-            project,
-            ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
-        });
-        const selectedSite = sites.find(it => shortSiteName(it) === site);
-        if (selectedSite) {
-            const { appId } = selectedSite;
-            if (appId) {
-                const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(getProjectPath('.deploy')));
-                firebaseProjectConfig = result.sdkConfig;
-            } else {
-                console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context.`);
+        // TODO check if firebase/auth is used
+        const hasFirebaseDependency = !!packageJson.dependencies.firebase;
+        if (hasFirebaseDependency) {
+            const { sites } = await firebaseTools.hosting.sites.list({
+                project,
+                ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
+            });
+            const selectedSite = sites.find(it => shortSiteName(it) === site);
+            if (selectedSite) {
+                const { appId } = selectedSite;
+                if (appId) {
+                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(getProjectPath('.deploy')));
+                    firebaseProjectConfig = result.sdkConfig;
+                } else {
+                    console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context.`);
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An experimental framework-aware Firebase CLI",
   "main": "dist/index.js",
   "repository": "github:FirebaseExtended/firebase-framework-tools",

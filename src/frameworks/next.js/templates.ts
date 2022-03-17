@@ -105,7 +105,7 @@ export const newServerJs = (config: DeployConfig, dev: boolean, options: Firebas
     return `${conditionalImports}
 const { parse } = require('url');
 const next = require('next');
-const { join } = require('path');
+const { join } = require('path');${options ? `
 const { initializeApp: initializeAdminApp } = require('firebase-admin/app');
 const { getAuth: getAdminAuth } = require('firebase-admin/auth');
 const { initializeApp, deleteApp } = require('firebase/app');
@@ -115,12 +115,6 @@ const LRU = require('lru-cache');
 
 const adminApp = initializeAdminApp();
 const adminAuth = getAdminAuth(adminApp);
-
-const dev = ${dev};
-const dir = dev ? join(__dirname, '..', '..') : __dirname;
-const nextApp = next({ dev, dir });
-const nextAppPrepare = nextApp.prepare();
-
 const firebaseConfig = ${JSON.stringify(options)};
 
 // TODO performance tune this
@@ -133,9 +127,15 @@ const firebaseAppsLRU = new LRU({
         deleteApp(value);
     }
 });
+` : ''}
 
-exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) => {
-    // TODO figure out why middleware isn't doing this for us
+const dev = ${dev};
+const dir = dev ? join(__dirname, '..', '..') : __dirname;
+const nextApp = next({ dev, dir });
+const nextAppPrepare = nextApp.prepare();
+
+exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) => {${options ? `
+// TODO figure out why middleware isn't doing this for us
     const cookies = cookie.parse(req.headers.cookie || '');
     let _decodeIdToken;
     const decodeIdToken = () => _decodeIdToken ||= cookies.__session ? adminAuth.verifySessionCookie(cookies.__session, true).catch(() => null) : Promise.resolve(null);
@@ -189,6 +189,7 @@ exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) 
         // I'd normally reach for a global here, but we need to think about concurrency now with CF3v2
         req['__FIREBASE_APP_NAME'] = app.name;
     }
+` : ''}
     const parsedUrl = parse(req.url, true);
     await nextAppPrepare;
     nextApp.getRequestHandler()(req, res, parsedUrl);
