@@ -20,9 +20,9 @@ $ firebase-frameworks deploy
         <tr><td></td><th><small>v11</small></th><th><small>v12</small></th><th><small>v2</small></th><th>v3</th><td></td></tr>
     </thead>
         <tr><th>SSR</th><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>&hellip;</td><td></td></tr>
-        <tr><th>SPA</th><td>✅</td><td>✅</td><td>&hellip;</td><td>&hellip;</td><td>✅</td><td></td></tr>
-        <tr><th>SSG</th><td>✅</td><td>✅</td><td>&hellip;</td><td>&hellip;</td><td>✅</td><td></td></tr>
-        <tr><th>SWR/SWE</th><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>Not available in Firebase Hosting</td></tr>
+        <tr><th>SPA</th><td>✅</td><td>✅</td><td>&hellip;</td><td>✖️</td><td>✅</td><td>WIP&hellip; Waiting on Nuxt3 Hybrid RFC</td></tr>
+        <tr><th>SSG</th><td>✅</td><td>✅</td><td>&hellip;</td><td>✖️</td><td>✅</td><td>WIP&hellip; Waiting on Nuxt3 Hybrid RFC</td></tr>
+        <tr><th>SWR/SWE</th><td>✖️</td><td>✖️</td><td>✖️</td><td>✖️</td><td>✖️</td><td>Not available in Firebase Hosting</td></tr>
         <tr><th>On-demand regen</th><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>Investigating&hellip;</td></tr>
         <tr><th>Dev mode</th><td>🤒</td><td>🤒</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>WIP&hellip; Next.js is a bit unstable.</td></tr>
         <tr><th>Support</th><td colspan="2">experimental</td><td colspan="2">experimental</td><td>experimental</td><td></td></tr>
