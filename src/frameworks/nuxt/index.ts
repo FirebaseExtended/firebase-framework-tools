@@ -27,15 +27,14 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
 
     const nuxt = await (async () => {
         try {
-            return require(`${getProjectPath('node_modules')}/nuxt`);
+            return require(getProjectPath('node_modules', 'nuxt'));
         } catch(e) {
-            // TODO clean this up, it's a mess
-            const { loadNuxt, build } = await import(`${getProjectPath('node_modules')}/nuxt3/dist/index.mjs`);
-            const { loadNuxtConfig } = await import(`${getProjectPath('node_modules')}/@nuxt/kit/dist/index.mjs`);
-            return { loadNuxt, build, loadNuxtConfig, v3: true };
+            const { loadNuxt, build }: typeof import('nuxt3/dist') = await import(getProjectPath('node_modules', 'nuxt3', 'dist', 'index.mjs'));
+            const { loadNuxtConfig }: typeof import('@nuxt/kit') = await import(getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs'));
+            return { loadNuxt, build, loadNuxtConfig, isNuxt3: true };
         }
     })();
-    const isNuxt3 = !!nuxt.v3;
+    const isNuxt3 = !!nuxt.isNuxt3;
 
     const { loadNuxt, build: buildNuxt } = nuxt;
     const { loadNuxtConfig } = nuxt;
@@ -70,12 +69,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     await mkdir(deployPath('functions'), { recursive: true });
     await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
 
-    await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
-
     if (isNuxt3) {
+        await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
         await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
     } else {
-        await copyFile(getProjectPath('nuxt.config.js'), deployPath('functions', 'nuxt.config.js'));
+        await exec(`cp -r ${getProjectPath(distDir, '..')} ${deployPath('functions')}`);
         await exec(`cp -r ${getProjectPath(distDir, 'client', '*')} ${deployPath('hosting', buildAssetsDir)}`);
         await exec(`cp -r ${getProjectPath('static', '*')} ${deployPath('hosting')}`);
     }
@@ -114,7 +112,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         ...conditionalSteps,
         copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')),
         newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-        writeFile(deployPath('functions', 'functions.js'), newServerJs(config, dev, firebaseProjectConfig, isNuxt3)),
+        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig, isNuxt3)),
         writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),
     ]);
 

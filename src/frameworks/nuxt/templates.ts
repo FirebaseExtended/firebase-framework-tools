@@ -75,11 +75,8 @@ export const newServerJs = (config: DeployConfig, dev: boolean, options: Firebas
         'functions.https.onRequest(' :
         `onRequest({ region: '${config.function.region}' }, `;
     return `${conditionalImports}
-${isNuxt3 ? "const nuxt = import('./index.mjs');" : `const { Nuxt } = require('nuxt');
-const nuxt = new Nuxt({
-    for: 'start',
-});
-const nuxtReady = nuxt.ready();` }${options ? `
+${isNuxt3 ? "const nuxt = import('./index.mjs');" : `const { loadNuxt } = require('nuxt');
+const nuxt = loadNuxt('start');` }${options ? `
 const { initializeApp: initializeAdminApp } = require('firebase-admin/app');
 const { getAuth: getAdminAuth } = require('firebase-admin/auth');
 const { initializeApp, deleteApp } = require('firebase/app');
@@ -159,9 +156,8 @@ exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) 
         req['__FIREBASE_APP_NAME'] = app.name;
     }
 ` : ''}
-    ${isNuxt3 ? `const { handle } = await nuxt;
-    handle(req, res);` : `await nuxtReady;
-    nuxt.server.app(req, res);`}
+    const { ${isNuxt3 ? '' : 'render: '}handle } = await nuxt;
+    handle(req, res);
 });
 `;
 }
@@ -196,7 +192,7 @@ export const newPackageJson = async (packageJson: any, dev: boolean, getProjectP
                 'lru-cache': LRU_CACHE_VERSION,
             },
             devDependencies: {},
-            main: 'functions.js',
+            main: 'server.js',
             engines: {
                 node: packageJson.engines?.node ?? NODE_VERSION
             },
@@ -204,7 +200,7 @@ export const newPackageJson = async (packageJson: any, dev: boolean, getProjectP
         return JSON.stringify(newPackageJSON, null, 2);
     } else {
         const newPackageJSON = { ...packageJson };
-        newPackageJSON.main = 'functions.js';
+        newPackageJSON.main = 'server.js';
         newPackageJSON.dependencies ||= {};
         newPackageJSON.dependencies = {
             ...newPackageJSON.dependencies,

@@ -14,7 +14,7 @@ $ firebase-frameworks deploy
 Frameworks supported:
 
 * Next.js
-* Nuxt3
+* Nuxt
 
 # Contributors
 

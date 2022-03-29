@@ -19,60 +19,32 @@ import firebaseTools from 'firebase-tools';
 
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
-import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, spawn, exec } from '../../utils';
+import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '../../utils';
+import type { NextConfig } from 'next/dist/server/config-shared';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
-    const { getProjectDir } = require(`${getProjectPath('node_modules')}/next/dist/lib/get-project-dir`);
-    const { default: loadConfig } = require(`${getProjectPath('node_modules')}/next/dist/server/config`);
-    const { PHASE_PRODUCTION_BUILD } = require(`${getProjectPath('node_modules')}/next/constants`);
-
-    const cwd = getProjectDir(getProjectPath());
-    const nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, cwd, null);
+    const { default: nextBuild }: typeof import('next/dist/build') = require(getProjectPath('node_modules', 'next', 'dist', 'build'));
 
     if (!dev) {
-        // Having trouble running next build in a different directory, looks like tsConfig isn't coming through, etc.
-        // await nextBuild(cwd, null, false, false, true);
-        // anyway, this will let me do some logging and such
-        const title = 'Building Next.js application'
-        const nextSpinner = ora(title).start();
-        const allEntries: Array<string> = [];
-        const errEntries: Array<string> = [];
-        const paddedEntry = (entry: string) => entry.trim().split("\n").map(it => `  ${it}`).join("\n");
-        let lastPaddedEntry = '';
-        const log = (out: any) => {
-            const entry: string = out.toString();
-            allEntries.push(entry);
-            lastPaddedEntry = paddedEntry(entry);
-            nextSpinner.text = `${title}\n${lastPaddedEntry}`;
-        };
-        const logErr = (out:any) => {
-            errEntries.push(paddedEntry(out.toString()));
-            log(out);
-        }
-        await spawn('npx', ['next', 'build'], { cwd }, log, logErr).then(
-            () => {
-                if (errEntries.length) {
-                    nextSpinner.text = `${title}\n\n${errEntries.join("\n")}\n\n${lastPaddedEntry}\n`;
-                    nextSpinner.warn();
-                } else {
-                    nextSpinner.text = `${title}\n\n${lastPaddedEntry}\n`;
-                    nextSpinner.succeed();
-                }
-            },
-            e => {
-                nextSpinner.text = title;
-                nextSpinner.fail();
-                console.log(allEntries.join("\n"));
-                throw e;
-            }
-        );
+        await nextBuild(getProjectPath(), null, false, false, true);
+        // TODO be a bit smarter about this
+        await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`).catch(() => {});
     }
 
     const functionsSpinner = ora('Building Firebase project').start();
-    const { distDir, basePath } = nextConfig;
+
+    let nextConfig: NextConfig;
+    try {
+        const { default: loadConfig }: typeof import('next/dist/server/config') = require(getProjectPath('node_modules', 'next', 'dist', 'server', 'config'));
+        const { PHASE_PRODUCTION_BUILD }: typeof import('next/constants') = require(getProjectPath('node_modules', 'next', 'constants'));
+        nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, getProjectPath(), null);
+    } catch(e) {
+        nextConfig = await import(getProjectPath('next.config.js'));
+    }
+    const { distDir='.next', basePath='' } = nextConfig;
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
 
@@ -89,18 +61,24 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     }
 
     const conditionalSteps = dev ? [] : [
-        //exec(`npx next export -o ${deployPath('hosting', ...basePath.split('/'))} -s ${getProjectPath()}`),
         copyFile(getProjectPath('next.config.js'), deployPath('functions', 'next.config.js')),
         // TODO don't shell out, needs to work in windows
         exec(`cp -r ${getProjectPath('public')} ${deployPath('functions', 'public')}`),
-        exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
         exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
-        exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
-        copyFile(getProjectPath(distDir, 'server', 'pages', '404.html'), getHostingPath('404.html')).catch(() => {}),
-        copyFile(getProjectPath(distDir, 'server', 'pages', '500.html'), getHostingPath('500.html')).catch(() => {}),
     ];
 
     if (!dev) {
+        const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
+        if (exportDetailJson.success) {
+            conditionalSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
+        } else {
+            conditionalSteps.push(
+                exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
+                copyFile(getProjectPath(distDir, 'server', 'pages', '404.html'), getHostingPath('404.html')).catch(() => {}),
+                copyFile(getProjectPath(distDir, 'server', 'pages', '500.html'), getHostingPath('500.html')).catch(() => {}),
+                exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
+            );
+        }
         const prerenderManifestBuffer = await readFile(getProjectPath(distDir, 'prerender-manifest.json'));
         const prerenderManifest = JSON.parse(prerenderManifestBuffer.toString());
         Object.keys(prerenderManifest.routes).forEach(route => {
