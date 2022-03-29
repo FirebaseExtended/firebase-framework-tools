@@ -15,17 +15,17 @@ $ firebase-frameworks deploy
 
 <table>
     <thead>
-        <tr><td></td><th colspan="4"><small>Build-in frameworks</small></th><th></th></tr>
+        <tr><td></td><th colspan="4"><sub><sup>Build-in frameworks</sub></sup></th><th></th></tr>
         <tr><th></th><th colspan="2">Next.js</th><th colspan="2">Nuxt</th><th>Custom</th></tr>
-        <tr><td></td><th><small>v11</small></th><th><small>v12</small></th><th><small>v2</small></th><th>v3</th><th></th></tr>
+        <tr><td></td><th><sub><sup>v11</sub></sup></th><th><sub><sup>v12</sub></sup></th><th><sub><sup>v2</sub></sup></th><th><sub><sup>v3</sub></sup></th><th></th></tr>
     </thead>
     <tbody>
         <tr><th>SSR</th><td colspan="2">✅</td><td colspan="2">✅<td>✅</td></tr>
-        <tr><th>SPA</th><td colspan="2">✅</td><td><small>✅</small></td><td><small>✖️</small></td><td>✅</td></tr>
-        <tr><th>SSG</th><td colspan="2">✅</td><td><small>✅</small></td><td><small>✖️</small></td><td>✅</td></tr>
+        <tr><th>SPA</th><td colspan="2">✅</td><td><sub><sup>✅</sub></sup></td><td><sub><sup>✖️</sub></sup></td><td>✅</td></tr>
+        <tr><th>SSG</th><td colspan="2">✅</td><td><sub><sup>✅</sub></sup></td><td><sub><sup>✖️</sub></sup></td><td>✅</td></tr>
         <tr><th>SWR/E</th><td colspan="2">✖️</td><td colspan="2">✖️</td><td>✖️</td></tr>
         <tr><th>Auth+SSR</th><td colspan="2"><small>Built into <code>reactfire</code>'s hooks.</small></td><td colspan="2">DIY</td><td>DIY</td></tr>
-        <tr><th>Local emulator<br><small>(dev mode)</small></th><td colspan="2">🤒</td><td colspan="2">✅</td><td>✅</td></tr>
+        <tr><th>Local emulator<br><sub><sup>dev mode</sub></sup></th><td colspan="2">🤒</td><td colspan="2">✅</td><td>✅</td></tr>
         <tr><th>Support</th><td colspan="2">experimental</td><td colspan="2">experimental</td><td>experimental</td></tr>
     </tbody>
 </table>
