@@ -15,30 +15,64 @@
 import { promises as fsPromises } from 'fs';
 import ora from 'ora';
 import { dirname, join } from 'path';
-import { defaultFirebaseToolsOptions, DeployConfig, exec, PathFactory } from '../../utils';
 import firebaseTools from 'firebase-tools';
+import { getProjectDir } from 'next/dist/lib/get-project-dir';
+import loadConfig from 'next/dist/server/config';
+import { PHASE_PRODUCTION_BUILD } from 'next/constants';
+// import nextBuild from 'next/dist/build';
+
+import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
+import { shortSiteName } from '../../prompts';
+import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, spawn, exec } from '../../utils';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
-import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc, Manifest } from './templates';
-import { shortSiteName } from '../../prompts';
-
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
-    const packageJsonBuffer = await readFile(getProjectPath('package.json'));
-    const packageJson = JSON.parse(packageJsonBuffer.toString());
+    const cwd = getProjectDir(getProjectPath());
+    const nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, cwd, null);
 
     if (!dev) {
-        console.log(`\n> build\n> ${packageJson.scripts.build}\n`);
-        const nextSpinner = ora('Building Next.js application').start();
-        await exec(`npm --prefix ${getProjectPath()} run build`);
-        nextSpinner.succeed();
+        // Having trouble running next build in a different directory, looks like tsConfig isn't coming through, etc.
+        // await nextBuild(cwd, null, false, false, true);
+        // anyway, this will let me do some logging and such
+        const title = 'Building Next.js application'
+        const nextSpinner = ora(title).start();
+        const allEntries: Array<string> = [];
+        const errEntries: Array<string> = [];
+        const paddedEntry = (entry: string) => entry.trim().split("\n").map(it => `  ${it}`).join("\n");
+        let lastPaddedEntry = '';
+        const log = (out: any) => {
+            const entry: string = out.toString();
+            allEntries.push(entry);
+            lastPaddedEntry = paddedEntry(entry);
+            nextSpinner.text = `${title}\n${lastPaddedEntry}`;
+        };
+        const logErr = (out:any) => {
+            errEntries.push(paddedEntry(out.toString()));
+            log(out);
+        }
+        await spawn('npx', ['next', 'build'], { cwd }, log, logErr).then(
+            () => {
+                if (errEntries.length) {
+                    nextSpinner.text = `${title}\n\n${errEntries.join("\n")}\n\n${lastPaddedEntry}\n`;
+                    nextSpinner.warn();
+                } else {
+                    nextSpinner.text = `${title}\n\n${lastPaddedEntry}\n`;
+                    nextSpinner.succeed();
+                }
+            },
+            e => {
+                nextSpinner.text = title;
+                nextSpinner.fail();
+                console.log(allEntries.join("\n"));
+                throw e;
+            }
+        );
     }
 
     const functionsSpinner = ora('Building Firebase project').start();
-    const nextConfig: Manifest = await import(getProjectPath('next.config.js'));
-    if (!nextConfig) throw 'No next.config.js found.';
-    const { distDir='.next', basePath='.' } = nextConfig;
+    const { distDir, basePath } = nextConfig;
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
 
@@ -91,6 +125,9 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
             conditionalSteps.push(moveData);
         });
     }
+
+    const packageJsonBuffer = await readFile(getProjectPath('package.json'));
+    const packageJson = JSON.parse(packageJsonBuffer.toString());
 
     let firebaseProjectConfig = null;
     const { project, site } = config;

@@ -8,6 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "declaration": false,
+    "skipLibCheck": true,
     "typeRoots": [
       "types"
     ],

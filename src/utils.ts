@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { exec as execCallback } from 'child_process';
+import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio } from 'child_process';
 import { promises as fsPromises } from 'fs';
 import { join } from 'path';
 import winston from "winston";
@@ -25,8 +25,8 @@ export const DEFAULT_GCF_GEN = 2;
 
 const { readFile } = fsPromises;
 
-export const exec = (command: string) => new Promise((resolve, reject) =>
-    execCallback(command, (error, stdout) => {
+export const exec = (command: string, options: ExecOptions={}) => new Promise((resolve, reject) =>
+    execCallback(command, {}, (error, stdout) => {
         if (error) {
             reject(error);
             return;
@@ -34,6 +34,27 @@ export const exec = (command: string) => new Promise((resolve, reject) =>
         resolve(stdout.trim());
     })
 );
+
+export const spawn = (
+    command: string,
+    args: readonly string[] | undefined=undefined,
+    options?: SpawnOptionsWithoutStdio | undefined,
+    stdoutCallback?: (chunk: any) => void,
+    stderrCallback?: (chunk: any) => void,
+) => new Promise<void>((resolve, reject) => {
+    const child = spawnCallback(command, args, {
+        ...options,
+        stdio: 'pipe',
+    }).on('close', (code) => {
+        if (code === 0) {
+            resolve();
+        } else {
+            reject();
+        }
+    });
+    if (stdoutCallback) child.stdout.on('data', stdoutCallback);
+    if (stderrCallback) child.stderr.on('data', stderrCallback);
+});
 
 export type DeployConfig = {
     prefix?: string,

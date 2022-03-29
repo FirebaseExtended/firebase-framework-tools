@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { build } from "../frameworks/next.js/build";
+import { build } from "../frameworks";
 import { defaultFirebaseToolsOptions, getDeployConfig, getProjectPathFactory } from "../utils";
 import firebaseTools from 'firebase-tools';
 import winston from "winston";
@@ -42,9 +42,6 @@ export const serve = async (key: string='default') => {
     /*const runtimeConfig = await (firebaseTools as any).functions.config.get({
         ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
     });*/
-
-    let resolveNextJsAppCompiled: () => void;
-    const nextJsAppCompiled = new Promise<void>(resolve => resolveNextJsAppCompiled = resolve);
 
     const logger = new winston.transports.Console({
         level: 'info',

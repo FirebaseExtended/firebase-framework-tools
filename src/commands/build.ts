@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { build as buildNextJsApp } from '../frameworks/next.js/build';
+import { build as buildFramework } from '../frameworks';
 import { getDeployConfig, getProjectPathFactory } from '../utils';
 
 export const build = async (key: string='default') => {
     const config = await getDeployConfig(key);
     const getProjectPath = getProjectPathFactory(config);
-    await buildNextJsApp(config, false, getProjectPath);
+    await buildFramework(config, false, getProjectPath);
 };

@@ -4,3 +4,4 @@ node_modules
 /firebase-frameworks-*.tgz
 *.log
 .DS_Store
+/examples/
