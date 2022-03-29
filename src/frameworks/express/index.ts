@@ -19,74 +19,77 @@ import firebaseTools from 'firebase-tools';
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
 import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '../../utils';
-import { join } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
-    const nuxt = await (async () => {
-        try {
-            return require(getProjectPath('node_modules', 'nuxt'));
-        } catch(e) {
-            const { loadNuxt, build }: typeof import('nuxt3/dist') = await import(getProjectPath('node_modules', 'nuxt3', 'dist', 'index.mjs'));
-            const { loadNuxtConfig }: typeof import('@nuxt/kit') = await import(getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs'));
-            return { loadNuxt, build, loadNuxtConfig, isNuxt3: true };
-        }
-    })();
-    const isNuxt3 = !!nuxt.isNuxt3;
-
-    const { loadNuxt, build: buildNuxt } = nuxt;
-    const { loadNuxtConfig } = nuxt;
-
-    const nuxtApp = await loadNuxt({
-        for: 'build',
-        cwd: getProjectPath(),
-        rootDir: getProjectPath(),
-        overrides: { nitro: { preset: 'node' } },
-    });
-
-    const nuxtConfig = await loadNuxtConfig({
-        cwd: getProjectPath(),
-        rootDir: getProjectPath(),
-    });
-
-    await buildNuxt(nuxtApp);
-
     const functionsSpinner = ora('Building Firebase project').start();
 
-    const baseURL = isNuxt3 ? nuxtConfig.app.baseURL : '';
-    const buildAssetsDir = isNuxt3 ? nuxtConfig.app.buildAssetsDir : '_nuxt';
-    const distDir = isNuxt3 ? '.output' : join('.nuxt', 'dist');
+
+    const packageJsonBuffer = await readFile(getProjectPath('package.json'));
+    const packageJson = JSON.parse(packageJsonBuffer.toString());
+
+    if (packageJson.scripts?.build) {
+        // TODO spawn so we can log
+        await exec(`npm --prefix ${getProjectPath()} run build`);
+    }
+
+    // TODO turn this into an import
+    const findRenderFunction = async (method: string[]=[], entry?: any): Promise<string[]|undefined> => {
+        const allowRecursion = !entry;
+        entry ||= await (async () => {
+            try {
+                const requiredProject = require(getProjectPath());
+                if (requiredProject) method = ['require', `./${packageJson.main || 'index.js'}`];
+                return requiredProject;
+            } catch(e) {
+                const importedProject = await import(getProjectPath()).catch(() => undefined);
+                if (importedProject) method = ['import', `./${packageJson.main || 'index.js'}`];
+                return importedProject;
+            }
+        })();
+        if (!entry) return undefined;
+        const { default: defaultExport, render, app, handle } = entry;
+        if (typeof render === 'function') return [...method, 'render'];
+        if (typeof handle === 'function') return [...method, 'handle'];
+        if (typeof app === 'function') {
+            try {
+                const express = app();
+                if (typeof express.render === 'function') return [...method, 'app'];
+            } catch(e) { }
+        }
+        if (!allowRecursion) return undefined;
+        if (typeof defaultExport === 'object') {
+            if (typeof defaultExport.then === 'function') {
+                const awaitedDefaultExport = await defaultExport;
+                return findRenderFunction([...method, 'await default'], awaitedDefaultExport);
+            } else {
+                return findRenderFunction([...method, 'default'], defaultExport);
+            }
+        }
+        return undefined;
+    };
+    const render = await findRenderFunction();
+    console.log('express app', render);
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
-
-    const getHostingPath = (...args: string[]) => deployPath('hosting', ...baseURL.split('/'), ...args);
+    const getHostingPath = (...args: string[]) => deployPath('hosting', ...args);
 
     await rm(getHostingPath(), { recursive: true, force: true });
     await rm(deployPath('functions'), { recursive: true, force: true });
 
     await mkdir(deployPath('functions'), { recursive: true });
-    await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
+    await mkdir(getHostingPath(), { recursive: true });
 
-    if (isNuxt3) {
-        await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
-        await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
-    } else {
-        await exec(`cp -r ${getProjectPath(distDir, '..')} ${deployPath('functions')}`);
-        await exec(`cp -r ${getProjectPath(distDir, 'client', '*')} ${deployPath('hosting', buildAssetsDir)}`);
-        await exec(`cp -r ${getProjectPath('static', '*')} ${deployPath('hosting')}`);
+    if (packageJson.directories?.serve) {
+        await exec(`cp -r ${getProjectPath(packageJson.directories.serve, '*')} ${deployPath('hosting')}`);
     }
-
-    const packageJsonBuffer = await readFile(getProjectPath('package.json'));
-    const packageJson = JSON.parse(packageJsonBuffer.toString());
-
-    const conditionalSteps = [];
 
     let firebaseProjectConfig = null;
     const { project, site } = config;
     if (project && site) {
-        conditionalSteps.push(writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site)));
+        await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
         // TODO check if firebase/auth is used
         const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
         if (hasFirebaseDependency) {
@@ -109,12 +112,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     }
 
     await Promise.all([
-        ...conditionalSteps,
         copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
         copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
         newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig, isNuxt3)),
-        writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),
+        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig, '')),
+        writeFile(deployPath('firebase.json'), await newFirebaseJson(config, dev)),
     ]);
 
     functionsSpinner.succeed();

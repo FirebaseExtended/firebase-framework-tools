@@ -142,7 +142,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
 
     await Promise.all([
         ...conditionalSteps,
-        copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')),
+        copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
+        copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
         writeFile(deployPath('functions', 'package.json'), newPackageJson(packageJson, dev)),
         writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig)),
         writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),

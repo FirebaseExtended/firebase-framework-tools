@@ -6,8 +6,7 @@ const dynamicImport = (getProjectPath: PathFactory) => {
     if (exists('next.config.js')) return import('./next.js/index.js');
     if (exists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
     // if (exists('angular.json')) return import('./angular/index.js');
-    // return import('./express/index.js');
-    throw "I'm sorry I can't do that.";
+    return import('./express/index.js');
 };
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
