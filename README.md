@@ -25,10 +25,15 @@ $ firebase-frameworks deploy
         <tr><th>SSG</th><td colspan="2">✅</td><td><sub><sup>✅</sub></sup></td><td><sub><sup>✖️</sub></sup></td><td>✅</td></tr>
         <tr><th>SWR/E</th><td colspan="2">✖️</td><td colspan="2">✖️</td><td>✖️</td></tr>
         <tr><th>Auth+SSR</th><td colspan="2"><small>Built into <code>reactfire</code>'s hooks.</small></td><td colspan="2">DIY</td><td>DIY</td></tr>
-        <tr><th>Local emulator<br><sub><sup>dev mode</sub></sup></th><td colspan="2">🤒</td><td colspan="2">✅</td><td>✅</td></tr>
+        <tr><th>Dev Mode<br><sub><sup>Firebase Emulators</sub></sup></th><td colspan="2">🤒</td><td colspan="2">✅</td><td>✖️</td></tr>
         <tr><th>Support</th><td colspan="2">experimental</td><td colspan="2">experimental</td><td>experimental</td></tr>
     </tbody>
 </table>
+
+[^nuxthybrid]: Waiting on [Nuxt3's hybrid rendering support, see RFC](https://github.com/nuxt/framework/discussions/560).
+[^reactfire]: The ReactFire integration adding automatic auth-state awareness to SSR is under development.
+[^authssr]: You can access the authenticated `FirebaseApp` and `currentUser` on the `Request` object.
+[^swr]: Stale-While-Revalidate is not supported by Firebase Hosting at this time.
 
 # Contributors
 
