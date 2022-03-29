@@ -6,6 +6,7 @@
 $ npm i -g firebase-frameworks
 $ cd <MY-APP>
 $ firebase-frameworks init
+$ firebase-frameworks build
 $ firebase-frameworks serve
 $ firebase-frameworks deploy
 ```
@@ -13,6 +14,7 @@ $ firebase-frameworks deploy
 Frameworks supported:
 
 * Next.js
+* Nuxt3
 
 # Contributors
 
