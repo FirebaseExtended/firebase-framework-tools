@@ -14,7 +14,7 @@
 
 import { promises as fsPromises } from 'fs';
 import ora from 'ora';
-import { dirname, join } from 'path';
+import { dirname, join, relative } from 'path';
 import firebaseTools from 'firebase-tools';
 
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
@@ -74,9 +74,17 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         } else {
             conditionalSteps.push(
                 exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
-                copyFile(getProjectPath(distDir, 'server', 'pages', '404.html'), getHostingPath('404.html')).catch(() => {}),
-                copyFile(getProjectPath(distDir, 'server', 'pages', '500.html'), getHostingPath('500.html')).catch(() => {}),
                 exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
+            );
+            // TODO clean this up, probably conflicts with the code blow
+            const serverPagesDir = getProjectPath(distDir, 'server', 'pages');
+            const htmlFiles = (await exec(`find ${serverPagesDir} -name '*.html'`) as string).split("\n").map(it => it.trim());
+            await Promise.all(
+                htmlFiles.map(async path => {
+                    const newPath = getHostingPath(relative(serverPagesDir, path));
+                    await mkdir(dirname(newPath), { recursive: true });
+                    await copyFile(path, newPath);
+                })
             );
         }
         const prerenderManifestBuffer = await readFile(getProjectPath(distDir, 'prerender-manifest.json'));
