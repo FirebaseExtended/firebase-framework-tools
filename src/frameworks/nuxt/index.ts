@@ -19,30 +19,46 @@ import firebaseTools from 'firebase-tools';
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
 import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '../../utils';
+import { join } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
-    const { build: buildNuxt, loadNuxt } = await import('nuxt3');
-    const { loadNuxtConfig } = await import('@nuxt/kit');
+    const nuxt = await (async () => {
+        try {
+            return require(`${getProjectPath('node_modules')}/nuxt`);
+        } catch(e) {
+            // TODO clean this up, it's a mess
+            const { loadNuxt, build } = await import(`${getProjectPath('node_modules')}/nuxt3/dist/index.mjs`);
+            const { loadNuxtConfig } = await import(`${getProjectPath('node_modules')}/@nuxt/kit/dist/index.mjs`);
+            return { loadNuxt, build, loadNuxtConfig, v3: true };
+        }
+    })();
+    const isNuxt3 = !!nuxt.v3;
 
-    const nuxt = await loadNuxt({
+    const { loadNuxt, build: buildNuxt } = nuxt;
+    const { loadNuxtConfig } = nuxt;
+
+    const nuxtApp = await loadNuxt({
+        for: 'build',
         cwd: getProjectPath(),
+        rootDir: getProjectPath(),
         overrides: { nitro: { preset: 'node' } },
     });
 
-    await buildNuxt(nuxt);
-
     const nuxtConfig = await loadNuxtConfig({
         cwd: getProjectPath(),
+        rootDir: getProjectPath(),
     });
 
-    const functionsSpinner = ora('Building Firebase project').start();
-    const { app: { baseURL, buildAssetsDir } } = nuxtConfig;
+    await buildNuxt(nuxtApp);
 
-    // TODO should this be hardcoded? I can't find reference to it
-    const buildDir = '.output';
+    const functionsSpinner = ora('Building Firebase project').start();
+
+    const baseURL = isNuxt3 ? nuxtConfig.app.baseURL : '';
+    const buildAssetsDir = isNuxt3 ? nuxtConfig.app.buildAssetsDir : '_nuxt';
+    const distDir = isNuxt3 ? '.output' : join('.nuxt', 'dist');
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
 
@@ -54,8 +70,15 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     await mkdir(deployPath('functions'), { recursive: true });
     await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
 
-    await exec(`cp -r ${getProjectPath(buildDir, 'server', '*')} ${deployPath('functions')}`);
-    await exec(`cp -r ${getProjectPath(buildDir, 'public', '*')} ${deployPath('hosting')}`);
+    await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
+
+    if (isNuxt3) {
+        await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
+    } else {
+        await copyFile(getProjectPath('nuxt.config.js'), deployPath('functions', 'nuxt.config.js'));
+        await exec(`cp -r ${getProjectPath(distDir, 'client', '*')} ${deployPath('hosting', buildAssetsDir)}`);
+        await exec(`cp -r ${getProjectPath('static', '*')} ${deployPath('hosting')}`);
+    }
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
@@ -91,8 +114,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         ...conditionalSteps,
         copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')),
         newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig)),
-        writeFile(deployPath('firebase.json'), await newFirebaseJson(config, buildDir, dev)),
+        writeFile(deployPath('functions', 'functions.js'), newServerJs(config, dev, firebaseProjectConfig, isNuxt3)),
+        writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),
     ]);
 
     functionsSpinner.succeed();

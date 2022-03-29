@@ -16,10 +16,6 @@ import { promises as fsPromises } from 'fs';
 import ora from 'ora';
 import { dirname, join } from 'path';
 import firebaseTools from 'firebase-tools';
-import { getProjectDir } from 'next/dist/lib/get-project-dir';
-import loadConfig from 'next/dist/server/config';
-import { PHASE_PRODUCTION_BUILD } from 'next/constants';
-// import nextBuild from 'next/dist/build';
 
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
@@ -28,6 +24,10 @@ import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, spawn, exec } f
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
+
+    const { getProjectDir } = require(`${getProjectPath('node_modules')}/next/dist/lib/get-project-dir`);
+    const { default: loadConfig } = require(`${getProjectPath('node_modules')}/next/dist/server/config`);
+    const { PHASE_PRODUCTION_BUILD } = require(`${getProjectPath('node_modules')}/next/constants`);
 
     const cwd = getProjectDir(getProjectPath());
     const nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, cwd, null);

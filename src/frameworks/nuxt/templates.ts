@@ -14,7 +14,7 @@
 
 import { DeployConfig, PathFactory } from '../../utils';
 import type { FirebaseOptions } from 'firebase/app';
-import { promises as fsPromises } from 'fs';
+import { promises as fsPromises, existsSync } from 'fs';
 import { join } from 'path';
 
 const { readdir, readFile } = fsPromises;
@@ -67,7 +67,7 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
     }
 }
 
-export const newServerJs = (config: DeployConfig, dev: boolean, options: FirebaseOptions|null) => {
+export const newServerJs = (config: DeployConfig, dev: boolean, options: FirebaseOptions|null, isNuxt3: boolean) => {
     const conditionalImports = config.function.gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
@@ -75,7 +75,11 @@ export const newServerJs = (config: DeployConfig, dev: boolean, options: Firebas
         'functions.https.onRequest(' :
         `onRequest({ region: '${config.function.region}' }, `;
     return `${conditionalImports}
-const nuxt = import('./index.mjs');${options ? `
+${isNuxt3 ? "const nuxt = import('./index.mjs');" : `const { Nuxt } = require('nuxt');
+const nuxt = new Nuxt({
+    for: 'start',
+});
+const nuxtReady = nuxt.ready();` }${options ? `
 const { initializeApp: initializeAdminApp } = require('firebase-admin/app');
 const { getAuth: getAdminAuth } = require('firebase-admin/auth');
 const { initializeApp, deleteApp } = require('firebase/app');
@@ -155,8 +159,9 @@ exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) 
         req['__FIREBASE_APP_NAME'] = app.name;
     }
 ` : ''}
-    const { handle } = await nuxt;
-    handle(req, res);
+    ${isNuxt3 ? `const { handle } = await nuxt;
+    handle(req, res);` : `await nuxtReady;
+    nuxt.server.app(req, res);`}
 });
 `;
 }
@@ -170,7 +175,7 @@ const LRU_CACHE_VERSION = '^7.3.1';
 export const newPackageJson = async (packageJson: any, dev: boolean, getProjectPath: PathFactory) => {
     // Unclear if this is needed at this point
     const nodeModulesPath = getProjectPath('.output', 'server', 'node_modules');
-    const directories = await readdir(nodeModulesPath)
+    const directories = existsSync(nodeModulesPath) ? await readdir(nodeModulesPath) : [];
     const staticDepsArray = await Promise.all(directories.map(async directory => {
         const packageJsonBuffer = await readFile(join(nodeModulesPath, directory, 'package.json'));
         const packageJson = JSON.parse(packageJsonBuffer.toString());
@@ -191,7 +196,7 @@ export const newPackageJson = async (packageJson: any, dev: boolean, getProjectP
                 'lru-cache': LRU_CACHE_VERSION,
             },
             devDependencies: {},
-            main: 'server.js',
+            main: 'functions.js',
             engines: {
                 node: packageJson.engines?.node ?? NODE_VERSION
             },
@@ -199,7 +204,7 @@ export const newPackageJson = async (packageJson: any, dev: boolean, getProjectP
         return JSON.stringify(newPackageJSON, null, 2);
     } else {
         const newPackageJSON = { ...packageJson };
-        newPackageJSON.main = 'server.js';
+        newPackageJSON.main = 'functions.js';
         newPackageJSON.dependencies ||= {};
         newPackageJSON.dependencies = {
             ...newPackageJSON.dependencies,

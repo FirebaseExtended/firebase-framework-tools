@@ -23,11 +23,10 @@ just a few small guidelines you need to follow. [See CONTRIBUTING](./CONTRIBUTIN
 
 ## Building
 
-Link and build this library
+Build and globally install this library
 
 ```bash
 $ cd <YOUR-GIT-CHECKOUT>
-$ npm link
 $ npm i
-$ npm run build
+$ npm run dev
 ```
