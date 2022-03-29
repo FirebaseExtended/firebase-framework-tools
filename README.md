@@ -21,19 +21,21 @@ $ firebase-frameworks deploy
     </thead>
     <tbody>
         <tr><th>SSR</th><td colspan="2">✅</td><td colspan="2">✅<td>✅</td></tr>
-        <tr><th>SPA</th><td colspan="2">✅</td><td><sub><sup>✅</sub></sup></td><td><sub><sup>✖️</sub></sup></td><td>✅</td></tr>
-        <tr><th>SSG</th><td colspan="2">✅</td><td><sub><sup>✅</sub></sup></td><td><sub><sup>✖️</sub></sup></td><td>✅</td></tr>
+        <tr><th>SPA</th><td colspan="2">✅</td><td>✅</td><td>✖️ <sup>1</sup></td><td>✅</td></tr>
+        <tr><th>SSG</th><td colspan="2">✅</td><td>✅</td><td>✖️ <sup>1</sup></td><td>✅</td></tr>
         <tr><th>SWR/E</th><td colspan="2">✖️</td><td colspan="2">✖️</td><td>✖️</td></tr>
-        <tr><th>Auth+SSR</th><td colspan="2"><small>Built into <code>reactfire</code>'s hooks.</small></td><td colspan="2">DIY</td><td>DIY</td></tr>
-        <tr><th>Dev Mode<br><sub><sup>Firebase Emulators</sub></sup></th><td colspan="2">🤒</td><td colspan="2">✅</td><td>✖️</td></tr>
+        <tr><th>Auth+SSR</th><td colspan="2">Built into <code>reactfire</code>'s hooks. <sup>2 3</sup></td><td colspan="2">DIY <sup>3</sup></td><td>DIY <sup>3</sup></td></tr>
+        <tr><th>Dev Mode<br><sub><sup>Firebase Emulators</sub></sup></th><td colspan="2">🤒 <sup>4</sup></td><td colspan="2">✅</td><td>✖️</td></tr>
         <tr><th>Support</th><td colspan="2">experimental</td><td colspan="2">experimental</td><td>experimental</td></tr>
     </tbody>
 </table>
 
-[^nuxthybrid]: Waiting on [Nuxt3's hybrid rendering support, see RFC](https://github.com/nuxt/framework/discussions/560).
-[^reactfire]: The ReactFire integration adding automatic auth-state awareness to SSR is under development.
-[^authssr]: You can access the authenticated `FirebaseApp` and `currentUser` on the `Request` object.
-[^swr]: Stale-While-Revalidate is not supported by Firebase Hosting at this time.
+#### Notes
+
+1. Waiting on [Nuxt3's hybrid rendering support, see RFC](https://github.com/nuxt/framework/discussions/560).
+1. The ReactFire integration adding automatic auth-state awareness to SSR is under development.
+1. You can access the authenticated `FirebaseApp` and `currentUser` on the `Request` object.
+1. Dev mode with `firebase-frameworks serve` is misbehaving, [see issue for more details](https://github.com/FirebaseExtended/firebase-framework-tools/issues/2).
 
 # Contributors
 
