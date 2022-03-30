@@ -24,7 +24,6 @@ $ firebase-frameworks deploy
         <tr><th>SSG</th><td>✅</td><td>✅</td><td>👍</td></tr>
         <tr><th>SWR/E</th><td>❌</a></td><td>❌</a></td><td>❌</a></td></tr>
         <tr><th>Auth+SSR</th><td>✅<td>👍</td><td>👍</td></tr>
-        <tr><th>Dev Mode<br><sub><sup>Firebase Emulators</sub></sup></th><td>🤒</td><td>✖️</td><td>✖️</td></tr>
         <tr><th>Status</th><td>🔬</td><td>🔬</td><td>🔬</td></tr>
     </tbody>
 </table>
