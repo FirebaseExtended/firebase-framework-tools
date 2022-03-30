@@ -212,7 +212,7 @@ const FIREBASE_ADMIN_VERSION = '^10.0.0';
 const FIREBASE_FUNCTIONS_VERSION = '^3.16.0';
 const COOKIE_VERSION = '^0.4.2';
 const LRU_CACHE_VERSION = '^7.3.1';
-const EXPRESS_HTTP_PROXY_VERSION = '^2.0.4';
+const HTTP_PROXY_MIDDLEWARE_VERSION = '^2.0.4';
 
 export const newPackageJson = (packageJson: any, dev: boolean) => {
     if (dev) {
@@ -222,7 +222,7 @@ export const newPackageJson = (packageJson: any, dev: boolean) => {
             scripts: {},
             dependencies: {
                 [packageJson.name]: process.cwd(),
-                'http-proxy-middleware': EXPRESS_HTTP_PROXY_VERSION,
+                'http-proxy-middleware': HTTP_PROXY_MIDDLEWARE_VERSION,
                 'firebase-admin': FIREBASE_ADMIN_VERSION,
                 'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
                 'cookie': COOKIE_VERSION,

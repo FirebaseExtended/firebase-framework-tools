@@ -22,49 +22,85 @@ import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '..
 import { join } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
+const DEFAULT_DEV_PORT = 7812;
+
+let _nuxt;
+const getNuxt = async (getProjectPath: PathFactory): Promise<typeof import('@nuxt/kit')> => _nuxt ||= await (async () => {
+    try {
+        const nuxt = require(getProjectPath('node_modules', 'nuxt'));
+        return {
+            ...nuxt,
+            buildNuxt: nuxt.build,
+            isNuxt3: () => false,
+            getNuxtVersion: () => nuxt.Nuxt.version.split('v')[1],
+        }
+    } catch(e) {
+        return {
+            ...(await import(getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs'))),
+            // Nuxt3 bug
+            // Cannot determine nuxt version! Is currect instance passed?
+            isNuxt3: () => true,
+        }
+    }
+})();
 
 export const serve = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
-    const buildResults = await build(config, undefined, getProjectPath);
-    return { ...buildResults, stop: () => Promise.resolve() };
+
+    const { loadNuxt, buildNuxt, isNuxt3 } = await getNuxt(getProjectPath);
+
+    // as any to load in Nuxt2 options
+    const nuxtApp = await loadNuxt({
+        for: 'dev',
+        dev: true,
+        ready: true,
+        cwd: getProjectPath(),
+        rootDir: getProjectPath(),
+        overrides: { app: { baseURL: `http://localhost:${DEFAULT_DEV_PORT}/` } },
+    } as any);
+
+    await buildNuxt(nuxtApp);
+
+    await nuxtApp.ready();
+    const { url } = await nuxtApp.server.listen({
+        port: DEFAULT_DEV_PORT,
+    });
+    const { port } = new URL(url);
+
+    const stop = () => nuxtApp.close().catch(() => undefined);
+
+    const buildResults = await build(config, parseInt(port, 10), getProjectPath);
+    return { ...buildResults, stop };
 }
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, devServerPort: number|undefined, getProjectPath: PathFactory) => {
 
     const dev = !!devServerPort;
 
-    const nuxt = await (async () => {
-        try {
-            return require(getProjectPath('node_modules', 'nuxt'));
-        } catch(e) {
-            const { loadNuxt, build }: typeof import('nuxt3/dist') = await import(getProjectPath('node_modules', 'nuxt3', 'dist', 'index.mjs'));
-            const { loadNuxtConfig }: typeof import('@nuxt/kit') = await import(getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs'));
-            return { loadNuxt, build, loadNuxtConfig, isNuxt3: true };
-        }
-    })();
-    const isNuxt3 = !!nuxt.isNuxt3;
+    const { loadNuxt, isNuxt3, buildNuxt, loadNuxtConfig } = await getNuxt(getProjectPath);
 
-    const { loadNuxt, build: buildNuxt } = nuxt;
-    const { loadNuxtConfig } = nuxt;
+    if (!dev) {
 
-    const nuxtApp = await loadNuxt({
-        for: 'build',
-        cwd: getProjectPath(),
-        rootDir: getProjectPath(),
-        overrides: { nitro: { preset: 'node' } },
-    });
+        const nuxtApp = await loadNuxt({
+            for: 'build',
+            cwd: getProjectPath(),
+            rootDir: getProjectPath(),
+            overrides: { nitro: { preset: 'node' } },
+        } as any);
+
+        await buildNuxt(nuxtApp);
+
+    }
 
     const nuxtConfig = await loadNuxtConfig({
         cwd: getProjectPath(),
         rootDir: getProjectPath(),
-    });
-
-    await buildNuxt(nuxtApp);
+    } as any);
 
     const functionsSpinner = ora('Building Firebase project').start();
 
-    const baseURL = isNuxt3 ? nuxtConfig.app.baseURL : '';
-    const buildAssetsDir = isNuxt3 ? nuxtConfig.app.buildAssetsDir : '_nuxt';
-    const distDir = isNuxt3 ? '.output' : join('.nuxt', 'dist');
+    const baseURL = isNuxt3() ? nuxtConfig.app.baseURL : '';
+    const buildAssetsDir = isNuxt3() ? nuxtConfig.app.buildAssetsDir : '_nuxt';
+    const distDir = isNuxt3() ? '.output' : join('.nuxt', 'dist');
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
 
@@ -75,13 +111,15 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
     await mkdir(deployPath('functions'), { recursive: true });
     await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
 
-    if (isNuxt3) {
-        await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
-        await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
-    } else {
-        await exec(`cp -r ${getProjectPath(distDir, '..')} ${deployPath('functions')}`);
-        await exec(`cp -r ${getProjectPath(distDir, 'client', '*')} ${deployPath('hosting', buildAssetsDir)}`);
-        await exec(`cp -r ${getProjectPath('static', '*')} ${deployPath('hosting')}`);
+    if (!dev) {
+        if (isNuxt3()) {
+            await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
+            await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
+        } else {
+            await exec(`cp -r ${getProjectPath(distDir, '..')} ${deployPath('functions')}`);
+            await exec(`cp -r ${getProjectPath(distDir, 'client', '*')} ${deployPath('hosting', buildAssetsDir)}`);
+            await exec(`cp -r ${getProjectPath('static', '*')} ${deployPath('hosting')}`);
+        }
     }
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
@@ -119,7 +157,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
         copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
         copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
         newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig, isNuxt3)),
+        writeFile(deployPath('functions', 'server.js'), newServerJs(config, devServerPort, firebaseProjectConfig, isNuxt3())),
         writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),
     ]);
 

@@ -33,50 +33,35 @@ export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
     }, null, 2);
 
 export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev: boolean) => {
-    if (dev) {
-        return JSON.stringify({
-            hosting: {
-                target: 'site',
-                public: 'hosting',
-                rewrites: [{
-                    source: '**',
-                    function: config.function.name
-                }],
-                cleanUrls: true,
-            }
-        });
-    } else {
-        const basePath = '';
-        const functionRewrite = config.function.gen === 1 ?
-            { function: config.function.name } :
-            { run: {
-                serviceId: config.function.name,
-                region: config.function.region,
-            } };
-        return JSON.stringify({
-            hosting: {
-                target: 'site',
-                public: 'hosting',
-                rewrites: [{
-                    source: `${basePath ? `${basePath}/` : ''}**`,
-                    ...functionRewrite,
-                }],
-                cleanUrls: true,
-            },
-        }, null, 2);
-    }
+    const basePath = '';
+    const functionRewrite = dev || config.function.gen === 1 ?
+        { function: config.function.name } :
+        { run: {
+            serviceId: config.function.name,
+            region: config.function.region,
+        } };
+    return JSON.stringify({
+        hosting: {
+            target: 'site',
+            public: dev ? '../static' : 'hosting',
+            rewrites: [{
+                source: `${basePath ? `${basePath}/` : ''}**`,
+                ...functionRewrite,
+            }],
+            cleanUrls: true,
+        },
+    }, null, 2);
 }
 
-export const newServerJs = (config: DeployConfig, dev: boolean, options: FirebaseOptions|null, isNuxt3: boolean) => {
+export const newServerJs = (config: DeployConfig, devServerPort: number|undefined, options: FirebaseOptions|null, isNuxt3: boolean) => {
+    const dev = !!devServerPort;
     const conditionalImports = config.function.gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
     const onRequest = config.function.gen === 1 ?
         'functions.https.onRequest(' :
         `onRequest({ region: '${config.function.region}' }, `;
-    return `${conditionalImports}
-${isNuxt3 ? "const nuxt = import('./index.mjs');" : `const { loadNuxt } = require('nuxt');
-const nuxt = loadNuxt('start');` }${options ? `
+    return `${conditionalImports}${options ? `
 const { initializeApp: initializeAdminApp } = require('firebase-admin/app');
 const { getAuth: getAdminAuth } = require('firebase-admin/auth');
 const { initializeApp, deleteApp } = require('firebase/app');
@@ -99,6 +84,17 @@ const firebaseAppsLRU = new LRU({
     }
 });
 ` : ''}
+
+${dev ? `const { createProxyMiddleware } = require('http-proxy-middleware');
+const expressApp = require('express')();
+expressApp.use('/', createProxyMiddleware({
+    target: 'http://localhost:${devServerPort}',
+    changeOrigin: true,
+    logLevel: 'silent',
+}));` :
+(isNuxt3 ? "const nuxt = import('./index.mjs');" :
+`const { loadNuxt } = require('nuxt');
+const nuxt = loadNuxt('start');`) }
 
 exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) => {${options ? `
 // TODO figure out why middleware isn't doing this for us
@@ -156,8 +152,9 @@ exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) 
         req['__FIREBASE_APP_NAME'] = app.name;
     }
 ` : ''}
-    const { ${isNuxt3 ? '' : 'render: '}handle } = await nuxt;
-    handle(req, res);
+    ${dev ? `expressApp(req, res);` :
+`    const { ${isNuxt3 ? '' : 'render: '}handle } = await nuxt;
+    handle(req, res);`}
 });
 `;
 }
@@ -167,6 +164,7 @@ const FIREBASE_ADMIN_VERSION = '^10.0.0';
 const FIREBASE_FUNCTIONS_VERSION = '^3.16.0';
 const COOKIE_VERSION = '^0.4.2';
 const LRU_CACHE_VERSION = '^7.3.1';
+const HTTP_PROXY_MIDDLEWARE_VERSION = '^2.0.4';
 
 export const newPackageJson = async (packageJson: any, dev: boolean, getProjectPath: PathFactory) => {
     // Unclear if this is needed at this point
@@ -186,6 +184,7 @@ export const newPackageJson = async (packageJson: any, dev: boolean, getProjectP
             dependencies: {
                 [packageJson.name]: process.cwd(),
                 ...staticDeps,
+                'http-proxy-middleware': HTTP_PROXY_MIDDLEWARE_VERSION,
                 'firebase-admin': FIREBASE_ADMIN_VERSION,
                 'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
                 'cookie': COOKIE_VERSION,

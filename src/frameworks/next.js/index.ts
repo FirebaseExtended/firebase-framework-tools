@@ -37,7 +37,7 @@ export const serve = async (config: DeployConfig | Required<DeployConfig>, getPr
         port: DEFAULT_DEV_PORT,
         // Override assetPrefix to allow HMR's websockets to bypass the Cloud Function proxy
         // another upside is this will reduce the log noise for firebase serve.
-        conf: { assetPrefix: `http://0.0.0.0:${DEFAULT_DEV_PORT}` }
+        conf: { assetPrefix: `http://localhost:${DEFAULT_DEV_PORT}` }
     });
 
     const prepareApp = app.prepare();
