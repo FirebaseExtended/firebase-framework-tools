@@ -39,7 +39,7 @@ export type Manifest = {
     rewrites?: (Rewrite & { regex: string})[],
 };
 
-export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev: boolean) => {
+export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev: boolean, ssr: boolean) => {
     if (dev) {
         return JSON.stringify({
             hosting: {
@@ -71,12 +71,15 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
             if (has) throw 'Only simple rewrites are allowed';
             return { source, destination };
         });
-        const functionRewrite = config.function.gen === 1 ?
-            { function: config.function.name } :
-            { run: {
-                serviceId: config.function.name,
-                region: config.function.region,
-            } };
+        const functionRewrite = ssr ?
+            config.function.gen === 1 &&
+                { function: config.function.name } ||
+                { run: {
+                    serviceId: config.function.name,
+                    region: config.function.region,
+                } } :
+            // TODO don't hardcode
+            { destination: '/index.html' }
         // TODO types
         rewrites.push({
             source: `${basePath ? `${basePath}/` : ''}**`,

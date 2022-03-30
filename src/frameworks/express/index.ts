@@ -19,39 +19,39 @@ import firebaseTools from 'firebase-tools';
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
 import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '../../utils';
+import { dirname } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
-    const functionsSpinner = ora('Building Firebase project').start();
-
-
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
 
     if (packageJson.scripts?.build) {
+        const appSpinner = ora('Building web application').start();
         // TODO spawn so we can log
         await exec(`npm --prefix ${getProjectPath()} run build`);
+        appSpinner.stop();
     }
 
-    // TODO turn this into an import
-    const findRenderFunction = async (method: string[]=[], entry?: any): Promise<string[]|undefined> => {
+    const functionsSpinner = ora('Building Firebase project').start();
+
+    const findServerRenderMethod = async (method: string[]=[], entry?: any): Promise<string[]|undefined> => {
         const allowRecursion = !entry;
         entry ||= await (async () => {
             try {
                 const requiredProject = require(getProjectPath());
-                if (requiredProject) method = ['require', `./${packageJson.main || 'index.js'}`];
+                if (requiredProject) method = ['require'];
                 return requiredProject;
             } catch(e) {
                 const importedProject = await import(getProjectPath()).catch(() => undefined);
-                if (importedProject) method = ['import', `./${packageJson.main || 'index.js'}`];
+                if (importedProject) method = ['import'];
                 return importedProject;
             }
         })();
         if (!entry) return undefined;
-        const { default: defaultExport, render, app, handle } = entry;
-        if (typeof render === 'function') return [...method, 'render'];
+        const { default: defaultExport, app, handle } = entry;
         if (typeof handle === 'function') return [...method, 'handle'];
         if (typeof app === 'function') {
             try {
@@ -63,23 +63,46 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         if (typeof defaultExport === 'object') {
             if (typeof defaultExport.then === 'function') {
                 const awaitedDefaultExport = await defaultExport;
-                return findRenderFunction([...method, 'await default'], awaitedDefaultExport);
+                return findServerRenderMethod([...method, 'default'], awaitedDefaultExport);
             } else {
-                return findRenderFunction([...method, 'default'], defaultExport);
+                return findServerRenderMethod([...method, 'default'], defaultExport);
             }
         }
         return undefined;
     };
-    const render = await findRenderFunction();
-    console.log('express app', render);
+    const serverRenderMethod = await findServerRenderMethod();
+
+    let bootstrapScript = '';
+    if (serverRenderMethod) {
+        let stack = serverRenderMethod.slice();
+        const entry = `./${packageJson.main || 'index.js'}`;
+        if (stack.shift() === 'require') {
+            bootstrapScript += `const bootstrap = Promise.resolve(require('${entry}'))`;
+        } else {
+            bootstrapScript += `const bootstrap = import('${entry}')`;
+        }
+        if (stack[0] === 'default') {
+            stack.shift();
+            bootstrapScript += '.then(({ default }) => default)';
+        }
+        if (stack[0] === 'app') {
+            stack.shift();
+            bootstrapScript += '.then(({ app }) => app())';
+        }
+        bootstrapScript += ';\n';
+        const method = stack.shift();
+        bootstrapScript += `const handle = async (req, res) => (await bootstrap)${method ? `.${method}` : ''}(req, res);`;
+    }
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...args);
 
-    await rm(getHostingPath(), { recursive: true, force: true });
-    await rm(deployPath('functions'), { recursive: true, force: true });
+    await rm(deployPath(), { recursive: true, force: true });
 
-    await mkdir(deployPath('functions'), { recursive: true });
+    if (serverRenderMethod) {
+        await mkdir(deployPath('functions'), { recursive: true });
+    }
+
     await mkdir(getHostingPath(), { recursive: true });
 
     if (packageJson.directories?.serve) {
@@ -92,7 +115,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
         // TODO check if firebase/auth is used
         const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
-        if (hasFirebaseDependency) {
+        if (serverRenderMethod && hasFirebaseDependency) {
             const { sites } = await firebaseTools.hosting.sites.list({
                 project,
                 ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
@@ -111,17 +134,37 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         }
     }
 
-    await Promise.all([
-        copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
-        copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
-        newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig, '')),
-        writeFile(deployPath('firebase.json'), await newFirebaseJson(config, dev)),
-    ]);
+    await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, dev));
+
+    if (serverRenderMethod) {
+        const npmPackResults = JSON.parse(await exec(`npm pack ${getProjectPath()} --dry-run --json`) as string);
+        await Promise.all(
+            // TODO types
+            npmPackResults.
+                find(({ name }: any) => name === packageJson.name ).
+                files.
+                map(({ path }: any) =>
+                    mkdir(dirname(deployPath('functions', path)), { recursive: true }).then(() =>
+                        copyFile(getProjectPath(path), deployPath('functions', path))
+                    )
+                )
+        );
+        await Promise.all([
+            copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
+            copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
+            newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
+            writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig, bootstrapScript)),
+        ]);
+    }
 
     functionsSpinner.succeed();
 
-    const npmSpinner = ora('Installing NPM dependencies').start();
-    await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
-    npmSpinner.succeed();
+    if (serverRenderMethod) {
+        const npmSpinner = ora('Installing NPM dependencies').start();
+        // TODO spawn to watch status
+        await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
+        npmSpinner.succeed();
+    }
+
+    return { cloudFunctions: !!serverRenderMethod };
 }

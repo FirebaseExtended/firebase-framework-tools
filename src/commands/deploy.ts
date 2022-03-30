@@ -35,7 +35,7 @@ export const deploy = async (key: string='default', options: { debug?: true }) =
 
     if (options.debug) firebaseTools.logger.logger.add(debugLogger);
 
-    await buildFramework(config, false, getProjectPath);
+    const { cloudFunctions } = await buildFramework(config, false, getProjectPath);
 
     let header = 'Deploying application to Firebase';
     let spinner = ora(`${header}\n`).start();
@@ -45,7 +45,7 @@ export const deploy = async (key: string='default', options: { debug?: true }) =
     // deploy on it's own.
     let v2deployWorkaroundNeeded = false;
 
-    if (config.function.gen === 2) {
+    if (cloudFunctions && config.function.gen === 2) {
         const functions = await firebaseTools.functions.list({
             ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
         }).catch(() => []);
@@ -73,7 +73,7 @@ export const deploy = async (key: string='default', options: { debug?: true }) =
 
     firebaseTools.logger.logger.add(logger);
 
-    if (v2deployWorkaroundNeeded) {
+    if (cloudFunctions && v2deployWorkaroundNeeded) {
 
         header = 'Deploying application to Cloud Functions';
         spinner.text = header;
@@ -96,7 +96,7 @@ export const deploy = async (key: string='default', options: { debug?: true }) =
 
         await firebaseTools.deploy({
             ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
-            only: `hosting:site,functions:${config.function.name}`,
+            only: `hosting:site${cloudFunctions ? `,functions:${config.function.name}`: ''}`,
         });
         spinner.succeed();
 

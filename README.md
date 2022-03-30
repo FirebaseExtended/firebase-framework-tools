@@ -16,17 +16,16 @@ $ firebase-frameworks deploy
 <table>
     <thead>
         <tr><td></td><th colspan="4"><sub><sup>Build-in frameworks</sub></sup></th><th></th></tr>
-        <tr><th></th><th colspan="2">Next.js</th><th colspan="2">Nuxt</th><th>Custom</th></tr>
-        <tr><td></td><th><sub><sup>v11</sub></sup></th><th><sub><sup>v12</sub></sup></th><th><sub><sup>v2</sub></sup></th><th><sub><sup>v3</sub></sup></th><th></th></tr>
+        <tr><th></th><th>Next.js</th><th>Nuxt</th><th>Custom</th></tr>
     </thead>
     <tbody>
-        <tr><th>SSR</th><td colspan="2"><abbr title="yes">✅</abbr></td><td colspan="2"><abbr title="yes">✅</abbr><td><abbr title="supported, but configuration is required">👍</abbr></td></tr>
-        <tr><th>SPA</th><td colspan="2"><abbr title="yes">✅</abbr></td><td><abbr title="yes">✅</abbr></td><td><abbr title="not yet">✖️</abbr></td><td><abbr title="supported, but configuration is required">👍</abbr></td></tr>
-        <tr><th>SSG</th><td colspan="2"><abbr title="yes">✅</abbr></td><td><abbr title="yes">✅</abbr></td><td><abbr title="not yet">✖️</abbr></td><td><abbr title="supported, but manual work required">👍</abbr></td></tr>
-        <tr><th>SWR/E</th><td colspan="2"><abbr title="no">❌</a></td><td colspan="2"><abbr title="no">❌</a></td><td><abbr title="no">❌</a></td></tr>
-        <tr><th>Auth+SSR</th><td colspan="2"><abbr title="yes">✅</abbr><td colspan="2"><abbr title="supported, but manual work required">👍</abbr></td><td><abbr title="supported, but manual work required">👍</abbr></td></tr>
-        <tr><th>Dev Mode<br><sub><sup>Firebase Emulators</sub></sup></th><td colspan="2"><abbr title="yes, but known problems">🤒</abbr></td><td colspan="2"><abbr title="not yet">✖️</abbr></td><td><abbr title="no, not applicable">✖️</td></tr>
-        <tr><th>Support</th><td colspan="2"><abbr title="expirimental">🔬</abbr></td><td colspan="2"><abbr title="expirimental">🔬</abbr></td><td><abbr title="expirimental">🔬</abbr></td></tr>
+        <tr><th>SSR</th><td>✅</td><td>✅<td>👍</td></tr>
+        <tr><th>SPA</th><td>✅</td><td>✅</td><td>👍</td></tr>
+        <tr><th>SSG</th><td>✅</td><td>✅</td><td>👍</td></tr>
+        <tr><th>SWR/E</th><td>❌</a></td><td>❌</a></td><td>❌</a></td></tr>
+        <tr><th>Auth+SSR</th><td>✅<td>👍</td><td>👍</td></tr>
+        <tr><th>Dev Mode<br><sub><sup>Firebase Emulators</sub></sup></th><td>🤒</td><td>✖️</td><td>✖️</td></tr>
+        <tr><th>Support</th><td>🔬</td><td>🔬</td><td>🔬</td></tr>
     </tbody>
 </table>
 

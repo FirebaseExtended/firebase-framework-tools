@@ -63,11 +63,10 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
 
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...baseURL.split('/'), ...args);
 
-    await rm(getHostingPath(), { recursive: true, force: true });
+    await rm(deployPath('hosting'), { recursive: true, force: true });
     await rm(deployPath('functions'), { recursive: true, force: true });
 
-    await mkdir(deployPath('functions'), { recursive: true });
-    await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
+    await rm(deployPath(), { recursive: true, force: true });
 
     if (isNuxt3) {
         await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
@@ -122,4 +121,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     const npmSpinner = ora('Installing NPM dependencies').start();
     await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
     npmSpinner.succeed();
+
+    return { cloudFunctions: true };
 }

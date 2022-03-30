@@ -47,34 +47,35 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     const { distDir='.next', basePath='' } = nextConfig;
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
-
-    await rm(deployPath('functions', 'public'), { recursive: true, force: true });
-    await rm(deployPath('functions', distDir), { recursive: true, force: true });
-    await mkdir(deployPath('functions'), { recursive: true });
-
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...basePath.split('/'), ...args);
 
-    await rm(getHostingPath(), { recursive: true, force: true });
+    await rm(deployPath(), { recursive: true, force: true });
 
     if (!dev) {
         await mkdir(getHostingPath('_next', 'static'), { recursive: true });
     }
 
-    const conditionalSteps = dev ? [] : [
-        copyFile(getProjectPath('next.config.js'), deployPath('functions', 'next.config.js')),
-        // TODO don't shell out, needs to work in windows
-        exec(`cp -r ${getProjectPath('public')} ${deployPath('functions', 'public')}`),
-        exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
-    ];
+    let needsCloudFunction = true;
+    const asyncSteps: Array<Promise<any>> = [];
 
-    if (!dev) {
-        const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
-        if (exportDetailJson.success) {
-            conditionalSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
-        } else {
-            conditionalSteps.push(
-                exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
-                exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
+    const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
+    if (exportDetailJson.success) {
+        needsCloudFunction = false;
+        if (!dev) asyncSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
+    } else if (!dev) {
+        asyncSteps.push(
+            exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
+            exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
+        )
+    }
+
+    if (needsCloudFunction) {
+        await mkdir(deployPath('functions'), { recursive: true });
+        if (!dev) {
+            asyncSteps.push(
+                copyFile(getProjectPath('next.config.js'), deployPath('functions', 'next.config.js')),
+                exec(`cp -r ${getProjectPath('public')} ${deployPath('functions', 'public')}`),
+                exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
             );
             // TODO clean this up, probably conflicts with the code blow
             const serverPagesDir = getProjectPath(distDir, 'server', 'pages');
@@ -86,31 +87,34 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
                     await copyFile(path, newPath);
                 })
             );
+
+            const prerenderManifestBuffer = await readFile(getProjectPath(distDir, 'prerender-manifest.json'));
+            const prerenderManifest = JSON.parse(prerenderManifestBuffer.toString());
+            Object.keys(prerenderManifest.routes).forEach(route => {
+                // / => index.json => index.html => index.html
+                // /foo => foo.json => foo.html
+                const parts = route.split('/').slice(1).filter(it => !!it);
+                const partsOrIndex = parts.length > 0 ? parts : ['index'];
+                const dataPath = `${join(...partsOrIndex)}.json`;
+                const htmlPath = `${join(...partsOrIndex)}.html`;
+                const moveHTML = mkdir(getHostingPath(dirname(htmlPath)), { recursive: true }).then(() => {
+                    return copyFile(
+                        getProjectPath(distDir, 'server', 'pages', htmlPath),
+                        getHostingPath(htmlPath)
+                    );
+                });
+                const dataRoute = prerenderManifest.routes[route].dataRoute;
+                const moveData = mkdir(getHostingPath(dirname(dataRoute)), { recursive: true }).then(() => {
+                    return copyFile(getProjectPath(distDir, 'server', 'pages', dataPath), getHostingPath(dataRoute));
+                });
+                // TODO initialRevalidateSeconds should be used in Cloud Fuctions as a c-max-age
+                asyncSteps.push(moveHTML);
+                asyncSteps.push(moveData);
+            });
         }
-        const prerenderManifestBuffer = await readFile(getProjectPath(distDir, 'prerender-manifest.json'));
-        const prerenderManifest = JSON.parse(prerenderManifestBuffer.toString());
-        Object.keys(prerenderManifest.routes).forEach(route => {
-            // / => index.json => index.html => index.html
-            // /foo => foo.json => foo.html
-            const parts = route.split('/').slice(1).filter(it => !!it);
-            const partsOrIndex = parts.length > 0 ? parts : ['index'];
-            const dataPath = `${join(...partsOrIndex)}.json`;
-            const htmlPath = `${join(...partsOrIndex)}.html`;
-            const moveHTML = mkdir(getHostingPath(dirname(htmlPath)), { recursive: true }).then(() => {
-                return copyFile(
-                    getProjectPath(distDir, 'server', 'pages', htmlPath),
-                    getHostingPath(htmlPath)
-                );
-            });
-            const dataRoute = prerenderManifest.routes[route].dataRoute;
-            const moveData = mkdir(getHostingPath(dirname(dataRoute)), { recursive: true }).then(() => {
-                return copyFile(getProjectPath(distDir, 'server', 'pages', dataPath), getHostingPath(dataRoute));
-            });
-            // TODO initialRevalidateSeconds should be used in Cloud Fuctions as a c-max-age
-            conditionalSteps.push(moveHTML);
-            conditionalSteps.push(moveData);
-        });
     }
+
+    asyncSteps.push(writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev, needsCloudFunction)));
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
@@ -118,10 +122,10 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     let firebaseProjectConfig = null;
     const { project, site } = config;
     if (project && site) {
-        conditionalSteps.push(writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site)));
+        asyncSteps.push(writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site)));
         // TODO check if firebase/auth is used
         const hasFirebaseDependency = !!packageJson.dependencies.firebase;
-        if (hasFirebaseDependency) {
+        if (needsCloudFunction && hasFirebaseDependency) {
             const { sites } = await firebaseTools.hosting.sites.list({
                 project,
                 ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
@@ -140,18 +144,24 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         }
     }
 
-    await Promise.all([
-        ...conditionalSteps,
-        copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
-        copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
-        writeFile(deployPath('functions', 'package.json'), newPackageJson(packageJson, dev)),
-        writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig)),
-        writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),
-    ]);
+    if (needsCloudFunction) {
+        asyncSteps.push(
+            copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
+            copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
+            writeFile(deployPath('functions', 'package.json'), newPackageJson(packageJson, dev)),
+            writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig)),
+        );
+    }
+
+    await Promise.all(asyncSteps);
 
     functionsSpinner.succeed();
 
-    const npmSpinner = ora('Installing NPM dependencies').start();
-    await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
-    npmSpinner.succeed();
+    if (needsCloudFunction) {
+        const npmSpinner = ora('Installing NPM dependencies').start();
+        await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
+        npmSpinner.succeed();
+    }
+
+    return { cloudFunctions: needsCloudFunction };
 }
