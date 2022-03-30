@@ -26,9 +26,8 @@ const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
 
-    const { default: nextBuild }: typeof import('next/dist/build') = require(getProjectPath('node_modules', 'next', 'dist', 'build'));
-
     if (!dev) {
+        const { default: nextBuild }: typeof import('next/dist/build') = require(getProjectPath('node_modules', 'next', 'dist', 'build'));
         await nextBuild(getProjectPath(), null, false, false, true);
         // TODO be a bit smarter about this
         await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`).catch(() => {});
@@ -42,8 +41,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         const { PHASE_PRODUCTION_BUILD }: typeof import('next/constants') = require(getProjectPath('node_modules', 'next', 'constants'));
         nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, getProjectPath(), null);
     } catch(e) {
+        // Must be Next 11, just import it
         nextConfig = await import(getProjectPath('next.config.js'));
     }
+
+    // SEMVER these defaults are only needed for Next 11
     const { distDir='.next', basePath='' } = nextConfig;
 
     const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
@@ -58,15 +60,17 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     let needsCloudFunction = true;
     const asyncSteps: Array<Promise<any>> = [];
 
-    const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
-    if (exportDetailJson.success) {
-        needsCloudFunction = false;
-        if (!dev) asyncSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
-    } else if (!dev) {
-        asyncSteps.push(
-            exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
-            exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
-        )
+    if (!dev) {
+        const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
+        if (exportDetailJson.success) {
+            needsCloudFunction = false;
+            asyncSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
+        } else {
+            asyncSteps.push(
+                exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
+                exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
+            )
+        }
     }
 
     if (needsCloudFunction) {

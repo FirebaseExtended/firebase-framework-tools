@@ -63,10 +63,10 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
 
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...baseURL.split('/'), ...args);
 
-    await rm(deployPath('hosting'), { recursive: true, force: true });
-    await rm(deployPath('functions'), { recursive: true, force: true });
-
     await rm(deployPath(), { recursive: true, force: true });
+
+    await mkdir(deployPath('functions'), { recursive: true });
+    await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
 
     if (isNuxt3) {
         await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
