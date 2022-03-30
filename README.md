@@ -15,7 +15,7 @@ $ firebase-frameworks deploy
 
 <table>
     <thead>
-        <tr><td></td><th colspan="4"><sub><sup>Build-in frameworks</sub></sup></th><th></th></tr>
+        <tr><td></td><th colspan="2"><sub><sup>Build-in frameworks</sub></sup></th><td></td></tr>
         <tr><th></th><th>Next.js</th><th>Nuxt</th><th>Custom</th></tr>
     </thead>
     <tbody>
