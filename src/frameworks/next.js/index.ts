@@ -81,6 +81,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
                 exec(`cp -r ${getProjectPath('public')} ${deployPath('functions', 'public')}`),
                 exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
             );
+
             // TODO clean this up, probably conflicts with the code blow
             const serverPagesDir = getProjectPath(distDir, 'server', 'pages');
             const htmlFiles = (await exec(`find ${serverPagesDir} -name '*.html'`) as string).split("\n").map(it => it.trim());
