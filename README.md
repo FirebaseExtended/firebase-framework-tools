@@ -25,9 +25,15 @@ $ firebase-frameworks deploy
         <tr><th>SWR/E</th><td>❌</a></td><td>❌</a></td><td>❌</a></td></tr>
         <tr><th>Auth+SSR</th><td>✅<td>👍</td><td>👍</td></tr>
         <tr><th>Dev Mode<br><sub><sup>Firebase Emulators</sub></sup></th><td>🤒</td><td>✖️</td><td>✖️</td></tr>
-        <tr><th>Support</th><td>🔬</td><td>🔬</td><td>🔬</td></tr>
+        <tr><th>Status</th><td>🔬</td><td>🔬</td><td>🔬</td></tr>
     </tbody>
 </table>
+
+## Status
+
+![Status: Experimental](https://img.shields.io/badge/Status-Experimental-blue)
+
+This repository is maintained by Googlers but is not a supported Firebase product. Issues here are answered by maintainers and other community members on GitHub on a best-effort basis.
 
 # Contributors
 
