@@ -23,7 +23,14 @@ import { join } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
-export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
+export const serve = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
+    const buildResults = await build(config, undefined, getProjectPath);
+    return { ...buildResults, stop: () => Promise.resolve() };
+}
+
+export const build = async (config: DeployConfig | Required<DeployConfig>, devServerPort: number|undefined, getProjectPath: PathFactory) => {
+
+    const dev = !!devServerPort;
 
     const nuxt = await (async () => {
         try {
@@ -122,5 +129,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
     await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
     npmSpinner.succeed();
 
-    return { cloudFunctions: true };
+    return { usingCloudFunctions: true };
 }

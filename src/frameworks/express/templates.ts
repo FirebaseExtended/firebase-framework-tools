@@ -33,41 +33,27 @@ export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
     }, null, 2);
 
 export const newFirebaseJson = async (config: DeployConfig, dev: boolean) => {
-    if (dev) {
-        return JSON.stringify({
-            hosting: {
-                target: 'site',
-                public: 'hosting',
-                rewrites: [{
-                    source: '**',
-                    function: config.function.name
-                }],
-                cleanUrls: true,
-            }
-        });
-    } else {
-        const basePath = '';
-        const functionRewrite = config.function.gen === 1 ?
-            { function: config.function.name } :
-            { run: {
-                serviceId: config.function.name,
-                region: config.function.region,
-            } };
-        return JSON.stringify({
-            hosting: {
-                target: 'site',
-                public: 'hosting',
-                rewrites: [{
-                    source: `${basePath ? `${basePath}/` : ''}**`,
-                    ...functionRewrite,
-                }],
-                cleanUrls: true,
-            },
-        }, null, 2);
-    }
+    const basePath = '';
+    const functionRewrite = dev || config.function.gen === 1 ?
+        { function: config.function.name } :
+        { run: {
+            serviceId: config.function.name,
+            region: config.function.region,
+        } };
+    return JSON.stringify({
+        hosting: {
+            target: 'site',
+            public: 'hosting',
+            rewrites: [{
+                source: `${basePath ? `${basePath}/` : ''}**`,
+                ...functionRewrite,
+            }],
+            cleanUrls: true,
+        },
+    }, null, 2);
 }
 
-export const newServerJs = (config: DeployConfig, dev: boolean, options: FirebaseOptions|null, importSnippet: string) => {
+export const newServerJs = (config: DeployConfig, options: FirebaseOptions|null, importSnippet: string) => {
     const conditionalImports = config.function.gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
@@ -167,7 +153,7 @@ const FIREBASE_FUNCTIONS_VERSION = '^3.16.0';
 const COOKIE_VERSION = '^0.4.2';
 const LRU_CACHE_VERSION = '^7.3.1';
 
-export const newPackageJson = async (packageJson: any, dev: boolean, getProjectPath: PathFactory) => {
+export const newPackageJson = async (packageJson: any, getProjectPath: PathFactory) => {
     // Unclear if this is needed at this point
     const nodeModulesPath = getProjectPath('.output', 'server', 'node_modules');
     const directories = existsSync(nodeModulesPath) ? await readdir(nodeModulesPath) : [];
@@ -177,40 +163,18 @@ export const newPackageJson = async (packageJson: any, dev: boolean, getProjectP
         return [packageJson.name, packageJson.version];
     }));
     const staticDeps = Object.fromEntries(staticDepsArray);
-    if (dev) {
-        const newPackageJSON = {
-            name: 'firebase-functions',
-            private: true,
-            scripts: {},
-            dependencies: {
-                [packageJson.name]: process.cwd(),
-                ...staticDeps,
-                'firebase-admin': FIREBASE_ADMIN_VERSION,
-                'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
-                'cookie': COOKIE_VERSION,
-                'lru-cache': LRU_CACHE_VERSION,
-            },
-            devDependencies: {},
-            main: 'server.js',
-            engines: {
-                node: packageJson.engines?.node ?? NODE_VERSION
-            },
-        };
-        return JSON.stringify(newPackageJSON, null, 2);
-    } else {
-        const newPackageJSON = { ...packageJson };
-        newPackageJSON.main = 'server.js';
-        newPackageJSON.dependencies ||= {};
-        newPackageJSON.dependencies = {
-            ...newPackageJSON.dependencies,
-            ...staticDeps,
-            'firebase-admin': FIREBASE_ADMIN_VERSION,
-            'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
-            'cookie': COOKIE_VERSION,
-            'lru-cache': LRU_CACHE_VERSION,
-        };
-        newPackageJSON.engines ||= {};
-        newPackageJSON.engines.node ||= NODE_VERSION;
-        return JSON.stringify(newPackageJSON, null, 2);
-    }
+    const newPackageJSON = { ...packageJson };
+    newPackageJSON.main = 'server.js';
+    newPackageJSON.dependencies ||= {};
+    newPackageJSON.dependencies = {
+        ...newPackageJSON.dependencies,
+        ...staticDeps,
+        'firebase-admin': FIREBASE_ADMIN_VERSION,
+        'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
+        'cookie': COOKIE_VERSION,
+        'lru-cache': LRU_CACHE_VERSION,
+    };
+    newPackageJSON.engines ||= {};
+    newPackageJSON.engines.node ||= NODE_VERSION;
+    return JSON.stringify(newPackageJSON, null, 2);
 };

@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { build } from "../frameworks";
-import { defaultFirebaseToolsOptions, getDeployConfig, getProjectPathFactory } from "../utils";
 import firebaseTools from 'firebase-tools';
 import winston from "winston";
 import tripleBeam from 'triple-beam';
 import ora from "ora";
+
+import { defaultFirebaseToolsOptions, getDeployConfig, getProjectPathFactory } from "../utils";
+import { serve as serveFramework } from '../frameworks';
 
 // TODO allow override
 const DEFAULT_EMULATOR_PORT = 3000;
@@ -35,29 +36,11 @@ export const serve = async (key: string='default') => {
         ora(`Logged into Firebase as ${email}`).succeed();
     }
 
-    await build(config, true, getProjectPath);
-
-    // TODO get this working
-    // HTTP Error: 400, Request contains an invalid argument.
-    /*const runtimeConfig = await (firebaseTools as any).functions.config.get({
-        ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
-    });*/
+    const { stop } = await serveFramework(config, getProjectPath);
 
     const logger = new winston.transports.Console({
         level: 'info',
         format: winston.format.combine(
-            winston.format(info => {
-                // Reduce the verbosity of logging from serving Next.js over functions
-                const text: string|undefined = info[tripleBeam.SPLAT as any]?.[0];
-                if (text === `Beginning execution of "${config.function.region}-${config.function.name}"`) return false;
-                if (typeof text === 'string' && text.startsWith(`Finished "${config.function.region}-${config.function.name}" in `)) return false;
-                if (typeof text === 'string' && text.includes('GET /_next/')) return false;
-                if (typeof text === 'string' && text.includes('GET /__nextjs_original-stack-frame?')) return false;
-                if (typeof info.message === 'string' && info.message.startsWith('[hosting] Rewriting /_next/')) return false;
-                if (typeof info.message === 'string' && info.message.startsWith('[hosting] Rewriting /__nextjs_original-stack-frame?')) return false;
-                if (typeof text === 'string' && text.includes('https://telemetry.nextjs.org/api/v1/record')) return false;
-                return info;
-            })(),
             winston.format.printf(info =>
                 [info.message, ...(info[tripleBeam.SPLAT as any] || [])]
                     .filter((chunk) => typeof chunk === 'string')
@@ -73,4 +56,7 @@ export const serve = async (key: string='default') => {
         port: DEFAULT_EMULATOR_PORT,
         host: DEFAULT_EMULATOR_HOST,
     });
+
+    await stop();
+
 };

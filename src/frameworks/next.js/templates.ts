@@ -98,7 +98,8 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
     }
 }
 
-export const newServerJs = (config: DeployConfig, dev: boolean, options: FirebaseOptions|null) => {
+export const newServerJs = (config: DeployConfig, devServerPort: number|undefined, options: FirebaseOptions|null) => {
+    const dev = !!devServerPort;
     const conditionalImports = config.function.gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
@@ -132,10 +133,15 @@ const firebaseAppsLRU = new LRU({
 });
 ` : ''}
 
-const dev = ${dev};
-const dir = dev ? join(__dirname, '..', '..') : __dirname;
-const nextApp = next({ dev, dir });
-const nextAppPrepare = nextApp.prepare();
+${dev ? `const { createProxyMiddleware } = require('http-proxy-middleware');
+const expressApp = require('express')();
+expressApp.use('/', createProxyMiddleware({
+    target: 'http://localhost:${devServerPort}',
+    changeOrigin: true,
+    logLevel: 'silent',
+}));` :
+`const nextApp = next({ dev: false, dir: __dirname });
+const nextAppPrepare = nextApp.prepare();`}
 
 exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) => {${options ? `
 // TODO figure out why middleware isn't doing this for us
@@ -193,9 +199,10 @@ exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) 
         req['__FIREBASE_APP_NAME'] = app.name;
     }
 ` : ''}
-    const parsedUrl = parse(req.url, true);
+    ${dev ? `expressApp(req, res);` :
+    `const parsedUrl = parse(req.url, true);
     await nextAppPrepare;
-    nextApp.getRequestHandler()(req, res, parsedUrl);
+    nextApp.getRequestHandler()(req, res, parsedUrl);`}
 });
 `;
 }
@@ -205,6 +212,7 @@ const FIREBASE_ADMIN_VERSION = '^10.0.0';
 const FIREBASE_FUNCTIONS_VERSION = '^3.16.0';
 const COOKIE_VERSION = '^0.4.2';
 const LRU_CACHE_VERSION = '^7.3.1';
+const EXPRESS_HTTP_PROXY_VERSION = '^2.0.4';
 
 export const newPackageJson = (packageJson: any, dev: boolean) => {
     if (dev) {
@@ -214,6 +222,7 @@ export const newPackageJson = (packageJson: any, dev: boolean) => {
             scripts: {},
             dependencies: {
                 [packageJson.name]: process.cwd(),
+                'http-proxy-middleware': EXPRESS_HTTP_PROXY_VERSION,
                 'firebase-admin': FIREBASE_ADMIN_VERSION,
                 'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
                 'cookie': COOKIE_VERSION,

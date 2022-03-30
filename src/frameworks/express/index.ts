@@ -23,7 +23,12 @@ import { dirname } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
-export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
+export const serve = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
+    const buildResults = await build(config, undefined, getProjectPath);
+    return { ...buildResults, stop: () => Promise.resolve() };
+}
+
+export const build = async (config: DeployConfig | Required<DeployConfig>, devServerPort: number|undefined, getProjectPath: PathFactory) => {
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
@@ -134,7 +139,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         }
     }
 
-    await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, dev));
+    await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, !!devServerPort));
 
     if (serverRenderMethod) {
         const npmPackResults = JSON.parse(await exec(`npm pack ${getProjectPath()} --dry-run --json`) as string);
@@ -152,8 +157,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         await Promise.all([
             copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
             copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
-            newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-            writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig, bootstrapScript)),
+            newPackageJson(packageJson, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
+            writeFile(deployPath('functions', 'server.js'), newServerJs(config, firebaseProjectConfig, bootstrapScript)),
         ]);
     }
 
@@ -166,5 +171,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         npmSpinner.succeed();
     }
 
-    return { cloudFunctions: !!serverRenderMethod };
+    return { usingCloudFunctions: !!serverRenderMethod };
 }

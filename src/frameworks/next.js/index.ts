@@ -23,8 +23,36 @@ import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '..
 import type { NextConfig } from 'next/dist/server/config-shared';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
+const DEFAULT_DEV_PORT = 7811;
 
-export const build = async (config: DeployConfig | Required<DeployConfig>, dev: boolean, getProjectPath: PathFactory) => {
+export const serve = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
+
+    const { startServer }: typeof import('next/dist/server/lib/start-server') = require(getProjectPath('node_modules/next/dist/server/lib/start-server'));
+
+    const app = await startServer({
+        allowRetry: false,
+        dev: true,
+        dir: getProjectPath(),
+        hostname: '0.0.0.0',
+        port: DEFAULT_DEV_PORT,
+        // Override assetPrefix to allow HMR's websockets to bypass the Cloud Function proxy
+        // another upside is this will reduce the log noise for firebase serve.
+        conf: { assetPrefix: `http://0.0.0.0:${DEFAULT_DEV_PORT}` }
+    });
+
+    const prepareApp = app.prepare();
+    const buildResults = await build(config, app.port, getProjectPath);
+    await prepareApp;
+
+    const stop = () => app.close().catch(() => undefined);
+
+    return { ...buildResults, stop };
+
+}
+
+export const build = async (config: DeployConfig | Required<DeployConfig>, devServerPort: number|undefined, getProjectPath: PathFactory) => {
+
+    const dev = !!devServerPort;
 
     if (!dev) {
         const { default: nextBuild }: typeof import('next/dist/build') = require(getProjectPath('node_modules', 'next', 'dist', 'build'));
@@ -154,7 +182,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
             copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
             copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
             writeFile(deployPath('functions', 'package.json'), newPackageJson(packageJson, dev)),
-            writeFile(deployPath('functions', 'server.js'), newServerJs(config, dev, firebaseProjectConfig)),
+            writeFile(deployPath('functions', 'server.js'), newServerJs(config, devServerPort, firebaseProjectConfig)),
         );
     }
 
@@ -168,5 +196,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, dev: 
         npmSpinner.succeed();
     }
 
-    return { cloudFunctions: needsCloudFunction };
+    return { usingCloudFunctions: needsCloudFunction };
 }
