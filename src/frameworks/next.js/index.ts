@@ -29,6 +29,11 @@ export const serve = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     const { startServer }: typeof import('next/dist/server/lib/start-server') = require(getProjectPath('node_modules/next/dist/server/lib/start-server'));
 
+    // Spin up a server that listens, we'll proxy to this from Cloud Functions
+    // This is needed because A) I've found Next dev server spin up in Cloud Functions to be
+    // extremely unreliable, it keeps rebuilding and has a memory leak of some kind (though
+    // maybe I'm doing things wrong) but B) most importantly Cloud Functions doesn't respond
+    // to websockets & Next.js has moved their HMR implementation to that.
     const app = await startServer({
         allowRetry: false,
         dev: true,
@@ -37,6 +42,8 @@ export const serve = async (config: DeployConfig | Required<DeployConfig>, getPr
         port: DEFAULT_DEV_PORT,
         // Override assetPrefix to allow HMR's websockets to bypass the Cloud Function proxy
         // another upside is this will reduce the log noise for firebase serve.
+        // This won't be required once we're integrated with Firebase tools as we can proxy
+        // all traffic including the websockets to the host.
         conf: { assetPrefix: `http://localhost:${DEFAULT_DEV_PORT}` }
     });
 

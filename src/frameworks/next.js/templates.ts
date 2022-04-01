@@ -98,6 +98,12 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
     }
 }
 
+// TODO currently having trouble with this in dev-mode, with the serve command
+// I suspect there's something off as I've not been testing this flow, the errors
+// are hard to follow though. Auth complains of an invalid API key or something behind
+// undefined (config perhaps). This could be a rehydration issue or just something off
+// in my codebase. Works well in a prod build though...
+// TODO dry this out, lots of duplication between the frameworks.
 export const newServerJs = (config: DeployConfig, devServerPort: number|undefined, options: FirebaseOptions|null) => {
     const dev = !!devServerPort;
     const conditionalImports = config.function.gen === 1 ?

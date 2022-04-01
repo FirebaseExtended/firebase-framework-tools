@@ -37,8 +37,8 @@ const getNuxt = async (getProjectPath: PathFactory): Promise<typeof import('@nux
     } catch(e) {
         return {
             ...(await import(getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs'))),
-            // Nuxt3 bug
-            // Cannot determine nuxt version! Is currect instance passed?
+            // Simplify until we can pass the app to serve, isNuxt3 requires an app be passed
+            // though unsure if we even need to do this Next.js style, perhaps we can serve directly
             isNuxt3: () => true,
         }
     }
@@ -46,21 +46,27 @@ const getNuxt = async (getProjectPath: PathFactory): Promise<typeof import('@nux
 
 export const serve = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    const { loadNuxt, buildNuxt, isNuxt3 } = await getNuxt(getProjectPath);
+    const { loadNuxt, buildNuxt } = await getNuxt(getProjectPath);
 
     // as any to load in Nuxt2 options
+    // Spin up a dev server and listen, this might not be strictly nessisary as it is in Next.js
+    // This command seems unreliable on Nuxt3... perhaps we should pull in Nuxi or just fork?
     const nuxtApp = await loadNuxt({
         for: 'dev',
         dev: true,
         ready: true,
         cwd: getProjectPath(),
         rootDir: getProjectPath(),
+        // Overrides is respected in Nuxt3
+        // Bypass the Cloud Functions proxy, AFAIK Nuxt3 still usings SSE for it's HMR but
+        // if they switch to websockets this will just work.
         overrides: { app: { baseURL: `http://localhost:${DEFAULT_DEV_PORT}/` } },
     } as any);
 
     await buildNuxt(nuxtApp);
 
     await nuxtApp.ready();
+    // port is only respected in Nuxt3
     const { url } = await nuxtApp.server.listen({
         port: DEFAULT_DEV_PORT,
     });
