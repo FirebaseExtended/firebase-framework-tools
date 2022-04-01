@@ -34,10 +34,11 @@ export const init = async (key: string='default') => {
     config[key] ||= {} as any;
     config[key].project = project.projectId;
     config[key].site = shortSiteName(site)!;
-    config[key].function ||= { } as any;
-    config[key].function.name ||= DEFAULT_SERVICE_NAME;
-    config[key].function.region ||= DEFAULT_REGION;
-    config[key].function.gen ||= DEFAULT_GCF_GEN;
+    if (config[key].function) {
+        config[key].function!.name ||= DEFAULT_SERVICE_NAME;
+        config[key].function!.region ||= DEFAULT_REGION;
+        config[key].function!.gen ||= DEFAULT_GCF_GEN;
+    }
     await writeFile('deploy.json', JSON.stringify(config, null, 2));
     await mkdir(projectRoot).catch(() => undefined);
     await writeFile(join(projectRoot, 'firebase.json'), '{}');

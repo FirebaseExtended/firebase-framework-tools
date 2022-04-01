@@ -114,15 +114,21 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
 
     await rm(deployPath(), { recursive: true, force: true });
 
+    // TODO also check Nuxt's settings
+    const needsCloudFunction = !!config.function;
     await mkdir(deployPath('functions'), { recursive: true });
     await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
 
     if (!dev) {
         if (isNuxt3()) {
-            await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
+            if (needsCloudFunction) {
+                await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
+            }
             await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
         } else {
-            await exec(`cp -r ${getProjectPath(distDir, '..')} ${deployPath('functions')}`);
+            if (needsCloudFunction) {
+                await exec(`cp -r ${getProjectPath(distDir, '..')} ${deployPath('functions')}`);
+            }
             await exec(`cp -r ${getProjectPath(distDir, 'client', '*')} ${deployPath('hosting', buildAssetsDir)}`);
             await exec(`cp -r ${getProjectPath('static', '*')} ${deployPath('hosting')}`);
         }
@@ -131,15 +137,13 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
 
-    const conditionalSteps = [];
-
     let firebaseProjectConfig = null;
     const { project, site } = config;
     if (project && site) {
-        conditionalSteps.push(writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site)));
+        await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
         // TODO check if firebase/auth is used
         const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
-        if (hasFirebaseDependency) {
+        if (needsCloudFunction && hasFirebaseDependency) {
             const { sites } = await firebaseTools.hosting.sites.list({
                 project,
                 ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
@@ -158,20 +162,24 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
         }
     }
 
-    await Promise.all([
-        ...conditionalSteps,
-        copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
-        copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
-        newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-        writeFile(deployPath('functions', 'server.js'), newServerJs(config, devServerPort, firebaseProjectConfig, isNuxt3())),
-        writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev)),
-    ]);
+    await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev));
+
+    if (needsCloudFunction) {
+        await Promise.all([
+            copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
+            copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
+            newPackageJson(packageJson, dev, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
+            writeFile(deployPath('functions', 'server.js'), newServerJs(config, devServerPort, firebaseProjectConfig, isNuxt3())),
+        ]);
+    }
 
     functionsSpinner.succeed();
 
-    const npmSpinner = ora('Installing NPM dependencies').start();
-    await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
-    npmSpinner.succeed();
+    if (needsCloudFunction) {
+        const npmSpinner = ora('Installing NPM dependencies').start();
+        await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
+        npmSpinner.succeed();
+    }
 
-    return { usingCloudFunctions: true };
+    return { usingCloudFunctions: needsCloudFunction };
 }

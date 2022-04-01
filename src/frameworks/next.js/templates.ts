@@ -44,10 +44,10 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
         return JSON.stringify({
             hosting: {
                 public: '../public',
-                rewrites: [{
+                rewrites: config.function ? [{
                     source: '**',
                     function: config.function.name
-                }]
+                }] : []
             }
         });
     } else {
@@ -72,11 +72,11 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
             return { source, destination };
         });
         const functionRewrite = ssr ?
-            config.function.gen === 1 &&
-                { function: config.function.name } ||
+            config.function!.gen === 1 &&
+                { function: config.function!.name } ||
                 { run: {
-                    serviceId: config.function.name,
-                    region: config.function.region,
+                    serviceId: config.function!.name,
+                    region: config.function!.region,
                 } } :
             // TODO don't hardcode
             { destination: '/index.html' }
@@ -105,13 +105,14 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
 // in my codebase. Works well in a prod build though...
 // TODO dry this out, lots of duplication between the frameworks.
 export const newServerJs = (config: DeployConfig, devServerPort: number|undefined, options: FirebaseOptions|null) => {
+    const { gen, name, region } = config.function!;
     const dev = !!devServerPort;
-    const conditionalImports = config.function.gen === 1 ?
+    const conditionalImports = gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
-    const onRequest = config.function.gen === 1 ?
+    const onRequest = gen === 1 ?
         'functions.https.onRequest(' :
-        `onRequest({ region: '${config.function.region}' }, `;
+        `onRequest({ region: '${region}' }, `;
     return `${conditionalImports}
 const { parse } = require('url');
 const next = require('next');
@@ -149,7 +150,7 @@ expressApp.use('/', createProxyMiddleware({
 `const nextApp = next({ dev: false, dir: __dirname });
 const nextAppPrepare = nextApp.prepare();`}
 
-exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) => {${options ? `
+exports[${JSON.stringify(name)}] = ${onRequest}async (req, res) => {${options ? `
 // TODO figure out why middleware isn't doing this for us
     const cookies = cookie.parse(req.headers.cookie || '');
     let _decodeIdToken;

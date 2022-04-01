@@ -60,11 +60,11 @@ export type DeployConfig = {
     prefix?: string,
     project?: string ,
     site?: string,
-    function: {
+    function?: {
         name: string,
         region: string,
         gen: 1 | 2,
-    }
+    };
 };
 
 export async function getDeployConfig(key: string, required: true): Promise<Required<DeployConfig>>;

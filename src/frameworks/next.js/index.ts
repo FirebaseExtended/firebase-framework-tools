@@ -92,7 +92,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
         await mkdir(getHostingPath('_next', 'static'), { recursive: true });
     }
 
-    let needsCloudFunction = true;
+    let needsCloudFunction = !!config.function;
     const asyncSteps: Array<Promise<any>> = [];
 
     if (!dev) {
@@ -101,21 +101,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
             needsCloudFunction = false;
             asyncSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
         } else {
-            asyncSteps.push(
-                exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`),
-                exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`),
-            )
-        }
-    }
-
-    if (needsCloudFunction) {
-        await mkdir(deployPath('functions'), { recursive: true });
-        if (!dev) {
-            asyncSteps.push(
-                copyFile(getProjectPath('next.config.js'), deployPath('functions', 'next.config.js')),
-                exec(`cp -r ${getProjectPath('public')} ${deployPath('functions', 'public')}`),
-                exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
-            );
+            await exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`);
+            await exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`);
 
             // TODO clean this up, probably conflicts with the code blow
             const serverPagesDir = getProjectPath(distDir, 'server', 'pages');
@@ -151,6 +138,17 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
                 asyncSteps.push(moveHTML);
                 asyncSteps.push(moveData);
             });
+        }
+    }
+
+    if (needsCloudFunction) {
+        await mkdir(deployPath('functions'), { recursive: true });
+        if (!dev) {
+            asyncSteps.push(
+                copyFile(getProjectPath('next.config.js'), deployPath('functions', 'next.config.js')),
+                exec(`cp -r ${getProjectPath('public')} ${deployPath('functions', 'public')}`),
+                exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
+            );
         }
     }
 

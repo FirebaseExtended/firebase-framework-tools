@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc && ts-node ./build.ts && chmod +x dist/cli.js",
-    "dev": "npm run build && npm uninstall -g firebase-frameworks && npm i -g $(npm pack .)",
+    "dev": "npm run build && npm link .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports": {

@@ -34,32 +34,33 @@ export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
 
 export const newFirebaseJson = async (config: DeployConfig, dev: boolean) => {
     const basePath = '';
-    const functionRewrite = dev || config.function.gen === 1 ?
+    const functionRewrite = config.function ? (dev || config.function.gen === 1 ?
         { function: config.function.name } :
         { run: {
             serviceId: config.function.name,
             region: config.function.region,
-        } };
+        } }) : undefined;
     return JSON.stringify({
         hosting: {
             target: 'site',
             public: 'hosting',
-            rewrites: [{
+            rewrites: functionRewrite ? [{
                 source: `${basePath ? `${basePath}/` : ''}**`,
                 ...functionRewrite,
-            }],
+            }] : [],
             cleanUrls: true,
         },
     }, null, 2);
 }
 
 export const newServerJs = (config: DeployConfig, options: FirebaseOptions|null, importSnippet: string) => {
-    const conditionalImports = config.function.gen === 1 ?
+    const { gen, region, name } = config.function!;
+    const conditionalImports = gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
-    const onRequest = config.function.gen === 1 ?
+    const onRequest = gen === 1 ?
         'functions.https.onRequest(' :
-        `onRequest({ region: '${config.function.region}' }, `;
+        `onRequest({ region: '${region}' }, `;
     return `${conditionalImports}
 ${importSnippet}
 ${options ? `
@@ -86,7 +87,7 @@ const firebaseAppsLRU = new LRU({
 });
 ` : ''}
 
-exports[${JSON.stringify(config.function.name)}] = ${onRequest}async (req, res) => {${options ? `
+exports[${JSON.stringify(name)}] = ${onRequest}async (req, res) => {${options ? `
 // TODO figure out why middleware isn't doing this for us
     const cookies = cookie.parse(req.headers.cookie || '');
     let _decodeIdToken;

@@ -43,6 +43,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
     const functionsSpinner = ora('Building Firebase project').start();
 
     const findServerRenderMethod = async (method: string[]=[], entry?: any): Promise<string[]|undefined> => {
+        if (!config.function) return undefined;
         const allowRecursion = !entry;
         entry ||= await (async () => {
             try {

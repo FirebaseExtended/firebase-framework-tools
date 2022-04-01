@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "declaration": false,
+    "declaration": true,
     "skipLibCheck": true,
     "typeRoots": [
       "types"
