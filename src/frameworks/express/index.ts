@@ -13,13 +13,11 @@
 // limitations under the License.
 
 import { promises as fsPromises } from 'fs';
-import ora from 'ora';
-import firebaseTools from 'firebase-tools';
 
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
-import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '../../utils';
-import { dirname } from 'path';
+import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn } from '../../utils';
+import { dirname, join } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
@@ -34,13 +32,13 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
     const packageJson = JSON.parse(packageJsonBuffer.toString());
 
     if (packageJson.scripts?.build) {
-        const appSpinner = ora('Building web application').start();
-        // TODO spawn so we can log
-        await exec(`npm --prefix ${getProjectPath()} run build`);
-        appSpinner.stop();
+        // TODO add to the firebaseTools logs
+        await spawn('npm', ['--prefix', getProjectPath(), 'run', 'build'], {}, stdoutChunk => {
+            console.log(stdoutChunk.toString());
+        }, errChunk => {
+            console.error(errChunk.toString());
+        });
     }
-
-    const functionsSpinner = ora('Building Firebase project').start();
 
     const findServerRenderMethod = async (method: string[]=[], entry?: any): Promise<string[]|undefined> => {
         if (!config.function) return undefined;
@@ -100,7 +98,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
         bootstrapScript += `const handle = async (req, res) => (await bootstrap)${method ? `.${method}` : ''}(req, res);`;
     }
 
-    const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
+    const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...args);
 
     await rm(deployPath(), { recursive: true, force: true });
@@ -118,32 +116,38 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
     let firebaseProjectConfig = null;
     const { project, site } = config;
     if (project && site) {
-        await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
+        if (!config.dist) {
+            await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
+        }
         // TODO check if firebase/auth is used
         const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
         if (serverRenderMethod && hasFirebaseDependency) {
+            const { default: firebaseTools }: typeof import('firebase-tools') = require('firebase-tools');
             const { sites } = await firebaseTools.hosting.sites.list({
                 project,
-                ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
+                ...defaultFirebaseToolsOptions(deployPath()),
             });
             const selectedSite = sites.find(it => shortSiteName(it) === site);
             if (selectedSite) {
                 const { appId } = selectedSite;
                 if (appId) {
-                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(getProjectPath('.deploy')));
+                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(deployPath()));
                     firebaseProjectConfig = result.sdkConfig;
                 } else {
                     // TODO allow them to choose
-                    ora(`No Firebase app associated with site ${site}, unable to provide authenticated server context`).start().warn();
+                    console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context`);
                 }
             }
         }
     }
 
-    await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, !!devServerPort));
+    if (!config.dist) {
+        await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, !!devServerPort));
+    }
 
     if (serverRenderMethod) {
         const npmPackResults = JSON.parse(await exec(`npm pack ${getProjectPath()} --dry-run --json`) as string);
+
         await Promise.all(
             // TODO types
             npmPackResults.
@@ -161,15 +165,13 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
             newPackageJson(packageJson, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
             writeFile(deployPath('functions', 'server.js'), newServerJs(config, firebaseProjectConfig, bootstrapScript)),
         ]);
-    }
 
-    functionsSpinner.succeed();
-
-    if (serverRenderMethod) {
-        const npmSpinner = ora('Installing NPM dependencies').start();
-        // TODO spawn to watch status
-        await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
-        npmSpinner.succeed();
+        // TODO add to the firebaseTools log
+        await spawn('npm', ['i', '--prefix', deployPath('functions'), '--only', 'production'], {}, stdoutChunk => {
+            console.log(stdoutChunk.toString());
+        }, errChunk => {
+            console.error(errChunk.toString());
+        });
     }
 
     return { usingCloudFunctions: !!serverRenderMethod };

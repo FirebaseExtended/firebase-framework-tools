@@ -33,7 +33,7 @@ export const deploy = async (key: string='default', options: { debug?: true }) =
         ora(`Logged into Firebase as ${email}`).succeed();
     }
 
-    if (options.debug) firebaseTools.logger.logger.add(debugLogger);
+    if (options.debug) firebaseTools.logger.logger.add(debugLogger());
 
     const { usingCloudFunctions } = await buildFramework(config, getProjectPath);
 

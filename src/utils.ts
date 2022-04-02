@@ -15,9 +15,6 @@
 import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio } from 'child_process';
 import { promises as fsPromises } from 'fs';
 import { join } from 'path';
-import winston from "winston";
-import tripleBeam from 'triple-beam';
-import ansiStrip from "cli-color/strip";
 
 export const DEFAULT_SERVICE_NAME = 'ssr';
 export const DEFAULT_REGION = 'us-central1';
@@ -57,6 +54,7 @@ export const spawn = (
 });
 
 export type DeployConfig = {
+    dist?: string,
     prefix?: string,
     project?: string ,
     site?: string,
@@ -76,7 +74,7 @@ export async function getDeployConfig(key: string, required=false): Promise<Depl
     const deployJson = deployJsonBuffer && JSON.parse(deployJsonBuffer.toString()) || {};
     const projectConfig: DeployConfig | undefined = deployJson[key];
     if (required && !projectConfig) throw(`Property ${key} not found in deploy.json, run \`firebase-frameworks init\``);
-    let { prefix='.', project, site, function: { name=undefined, region=undefined, gen=undefined }={}} = projectConfig || {};
+    let { dist, prefix='.', project, site, function: { name=undefined, region=undefined, gen=undefined }={}} = projectConfig || {};
     if (required) {
         if (!project) throw `Property ${key}.project not found in deploy.json, run \`firebase-frameworks init\`.`;
         if (!site) throw `Property ${key}.site not found in deploy.json, run \`firebase-frameworks init\`.`;
@@ -91,7 +89,7 @@ export async function getDeployConfig(key: string, required=false): Promise<Depl
     if (gen === 1 && region !== DEFAULT_REGION) {
         throw `Cloud Functions v1 requires the region be ${DEFAULT_REGION}`;
     }
-    return { prefix, project, site, function: { name, region, gen } };
+    return { dist, prefix, project, site, function: { name, region, gen } };
 }
 
 export const defaultFirebaseToolsOptions = (projectRoot: string) => ({
@@ -114,11 +112,16 @@ const tryStringify = (value: any) => {
     }
 };
 
-export const debugLogger = new winston.transports.File({
-    level: "debug",
-    filename: join(process.cwd(), 'firebase-debug.log'),
-    format: winston.format.printf((info) => {
-        const segments = [info.message, ...(info[tripleBeam.SPLAT as any] || [])].map(tryStringify);
-        return `[${info.level}] ${ansiStrip(segments.join(" "))}`;
-    }),
-});
+export const debugLogger = () => {
+    const winston: typeof import('winston') = require('winston');
+    const tripleBeam: typeof import('triple-beam') = require('triple-beam');
+    const ansiStrip: typeof import('cli-color/strip') = require('cli-color/strip');
+    return new winston.transports.File({
+        level: "debug",
+        filename: join(process.cwd(), 'firebase-debug.log'),
+        format: winston.format.printf((info) => {
+            const segments = [info.message, ...(info[tripleBeam.SPLAT as any] || [])].map(tryStringify);
+            return `[${info.level}] ${ansiStrip(segments.join(" "))}`;
+        }),
+    })
+}

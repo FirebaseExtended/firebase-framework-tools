@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { promises as fsPromises } from 'fs';
-import ora from 'ora';
-import firebaseTools from 'firebase-tools';
+import { promises as fsPromises } from 'fs'
 
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
-import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec } from '../../utils';
+import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn } from '../../utils';
 import { join } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
@@ -102,13 +100,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
         rootDir: getProjectPath(),
     } as any);
 
-    const functionsSpinner = ora('Building Firebase project').start();
-
     const baseURL = isNuxt3() ? nuxtConfig.app.baseURL : '';
     const buildAssetsDir = isNuxt3() ? nuxtConfig.app.buildAssetsDir : '_nuxt';
     const distDir = isNuxt3() ? '.output' : join('.nuxt', 'dist');
 
-    const deployPath = (...args: string[]) => getProjectPath('.deploy', ...args);
+    const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
 
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...baseURL.split('/'), ...args);
 
@@ -140,29 +136,34 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
     let firebaseProjectConfig = null;
     const { project, site } = config;
     if (project && site) {
-        await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
+        if (!config.dist) {
+            await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
+        }
         // TODO check if firebase/auth is used
         const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
         if (needsCloudFunction && hasFirebaseDependency) {
+            const { default: firebaseTools }: typeof import('firebase-tools') = require('firebase-tools');
             const { sites } = await firebaseTools.hosting.sites.list({
                 project,
-                ...defaultFirebaseToolsOptions(getProjectPath('.deploy')),
+                ...defaultFirebaseToolsOptions(deployPath()),
             });
             const selectedSite = sites.find(it => shortSiteName(it) === site);
             if (selectedSite) {
                 const { appId } = selectedSite;
                 if (appId) {
-                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(getProjectPath('.deploy')));
+                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(deployPath()));
                     firebaseProjectConfig = result.sdkConfig;
                 } else {
-                    // TODO allow them to choose
-                    ora(`No Firebase app associated with site ${site}, unable to provide authenticated server context`).start().warn();
+                    // TODO add color yellow, maybe prompt?
+                    console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context`);
                 }
             }
         }
     }
 
-    await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev));
+    if (!config.dist) {
+        await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, distDir, dev));
+    }
 
     if (needsCloudFunction) {
         await Promise.all([
@@ -173,12 +174,13 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
         ]);
     }
 
-    functionsSpinner.succeed();
-
     if (needsCloudFunction) {
-        const npmSpinner = ora('Installing NPM dependencies').start();
-        await exec(`npm i --prefix ${deployPath('functions')} --only=production`);
-        npmSpinner.succeed();
+        // TODO add to the firebaseTools log
+        await spawn('npm', ['i', '--prefix', deployPath('functions'), '--only', 'production'], {}, stdoutChunk => {
+            console.log(stdoutChunk.toString());
+        }, errChunk => {
+            console.error(errChunk.toString());
+        });
     }
 
     return { usingCloudFunctions: needsCloudFunction };

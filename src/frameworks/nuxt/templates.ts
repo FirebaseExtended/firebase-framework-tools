@@ -40,7 +40,9 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
             serviceId: config.function.name,
             region: config.function.region,
         } }) : undefined;
+    const functions = config.function ? { functions: { source: 'functions' } } : {};
     return JSON.stringify({
+        ...functions,
         hosting: {
             target: 'site',
             public: dev ? '../static' : 'hosting',

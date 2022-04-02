@@ -1,6 +1,6 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "An experimental framework-aware Firebase CLI",
   "main": "dist/index.js",
   "repository": "github:FirebaseExtended/firebase-framework-tools",
@@ -15,13 +15,13 @@
     "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
   },
   "keywords": [
-    "firebase",
+  "firebase",
     "firebase-tools",
     "next.js"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc && ts-node ./build.ts && chmod +x dist/cli.js",
-    "dev": "npm run build && npm link .",
+    "dev": "npm run build && npm uninstall -g firebase-frameworks && npm i -g $(npm pack .)",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports": {

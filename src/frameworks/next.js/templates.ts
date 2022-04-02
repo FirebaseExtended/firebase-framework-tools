@@ -85,7 +85,9 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev
             source: `${basePath ? `${basePath}/` : ''}**`,
             ...functionRewrite,
         } as any);
+        const functions = config.function ? { functions: { source: 'functions' } } : {};
         return JSON.stringify({
+            ...functions,
             hosting: {
                 target: 'site',
                 public: 'hosting',
