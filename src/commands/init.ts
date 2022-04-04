@@ -14,28 +14,31 @@
 
 import { promises as fsPromises } from 'fs';
 import { join } from 'path';
-import firebaseTools from 'firebase-tools';
+
+import { getFirebaseTools } from '../firebase';
 import { projectPrompt, shortSiteName, sitePrompt, userPrompt } from '../prompts';
-import { DEFAULT_REGION, DEFAULT_SERVICE_NAME, DEFAULT_GCF_GEN, DeployConfig } from '../utils';
+import { DEFAULT_REGION, DEFAULT_GCF_GEN, DeployConfig } from '../utils';
 
 const { writeFile, mkdir, readFile } = fsPromises;
 
-export const init = async (key: string='default') => {
+export const init = async (options: any[]) => {
     // TODO pull defaults from existing deploy.json
     //      add .gitignore
     //      add deploy scripts
+    const firebaseTools = await getFirebaseTools();
     const projectRoot = join(process.cwd(), '.deploy');
     const { email: account } = await userPrompt({ projectRoot });
     const project = await projectPrompt(undefined, { projectRoot, account });
     const site = await sitePrompt(project, { projectRoot, account });
     const deployJsonBuffer = await readFile('deploy.json').catch(() => undefined);
     const config: Record<string, DeployConfig> = deployJsonBuffer && JSON.parse(deployJsonBuffer.toString()) || {};
+    const key = 'default';
     if (typeof config !== 'object' || config[key] && typeof config[key] !== 'object') throw 'deploy.json malformed';
     config[key] ||= {} as any;
     config[key].project = project.projectId;
     config[key].site = shortSiteName(site)!;
     if (config[key].function) {
-        config[key].function!.name ||= DEFAULT_SERVICE_NAME;
+        config[key].function!.name ||= `ssr${config[key].site?.replace(/-/g, '')}`;
         config[key].function!.region ||= DEFAULT_REGION;
         config[key].function!.gen ||= DEFAULT_GCF_GEN;
     }

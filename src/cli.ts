@@ -14,22 +14,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Command } from 'commander';
 import { exit } from 'process';
 
+const options = process.argv.slice(3);
+const command = process.argv[2];
+
 import { build } from './commands/build';
-import { deploy } from './commands/deploy';
 import { init } from './commands/init';
 import { serve } from './commands/serve';
+import { deploy } from './commands/deploy';
 
-const program = new Command();
+const commands = { build, init, serve, deploy };
 
-program.command('build [key]').action(build);
-program.command('deploy [key]').option('--debug', 'Log all the things').action(deploy);
-program.command('init [key]').action(init);
-program.command('serve [key]').action(serve);
-
-program.parseAsync(process.argv).catch(e => {
+// @ts-ignore
+commands[command](...options).then(() => exit(0)).catch((e: any) => {
     console.error(e.message ?? e);
     exit(1);
 });

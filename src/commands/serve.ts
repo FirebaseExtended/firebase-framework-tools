@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import firebaseTools from 'firebase-tools';
-import winston from "winston";
-import tripleBeam from 'triple-beam';
-import ora from "ora";
-
+import { getFirebaseTools, getOra, getTripleBeam, getWinston } from '../firebase';
 import { defaultFirebaseToolsOptions, getDeployConfig, getProjectPathFactory } from "../utils";
 import { serve as serveFramework } from '../frameworks';
 
@@ -24,9 +20,13 @@ import { serve as serveFramework } from '../frameworks';
 const DEFAULT_EMULATOR_PORT = 3000;
 const DEFAULT_EMULATOR_HOST = 'localhost';
 
-export const serve = async (key: string='default') => {
-    const config = await getDeployConfig(key, true);
+export const serve = async (options: any[]) => {
+    const config = await getDeployConfig('default', true);
     const getProjectPath = getProjectPathFactory(config);
+    const firebaseTools = await getFirebaseTools();
+    const ora = getOra();
+    const winston = getWinston();
+    const tripleBeam = getTripleBeam();
 
     if (!process.env.FIREBASE_TOKEN) {
         await firebaseTools.login();

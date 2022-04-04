@@ -14,10 +14,11 @@
 
 import { promises as fsPromises } from 'fs';
 import { dirname, join, relative } from 'path';
+import type { NextConfig } from 'next/dist/server/config-shared';
+
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
 import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn } from '../../utils';
-import type { NextConfig } from 'next/dist/server/config-shared';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 const DEFAULT_DEV_PORT = 7811;

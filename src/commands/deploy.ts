@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import firebaseTools from 'firebase-tools';
-import ora from 'ora';
-import winston from "winston";
-import tripleBeam from 'triple-beam';
-import chalk from "chalk";
-
+import { getChalk, getFirebaseTools, getOra, getTripleBeam, getWinston } from '../firebase';
 import { build as buildFramework } from '../frameworks';
 import { debugLogger, getDeployConfig, getProjectPathFactory, defaultFirebaseToolsOptions } from '../utils';
 
-export const deploy = async (key: string='default', options: { debug?: true }) => {
-    const config = await getDeployConfig(key, true);
+export const deploy = async (options: any[]) => {
+    const config = await getDeployConfig('default', true);
     const getProjectPath = getProjectPathFactory(config);
+    const firebaseTools = await getFirebaseTools();
+    const ora = getOra();
+    const winston = getWinston();
+    const tripleBeam = getTripleBeam();
+    const chalk = getChalk();
 
     if (!process.env.FIREBASE_TOKEN) {
         await firebaseTools.login();
@@ -33,7 +33,7 @@ export const deploy = async (key: string='default', options: { debug?: true }) =
         ora(`Logged into Firebase as ${email}`).succeed();
     }
 
-    if (options.debug) firebaseTools.logger.logger.add(debugLogger());
+    if (options.includes('--debug')) firebaseTools.logger.logger.add(debugLogger());
 
     const { usingCloudFunctions } = await buildFramework(config, getProjectPath);
 

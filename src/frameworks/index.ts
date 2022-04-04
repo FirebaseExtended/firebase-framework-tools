@@ -1,5 +1,6 @@
-import { DeployConfig, PathFactory } from '../utils';
 import { existsSync } from 'fs';
+
+import { DeployConfig, PathFactory } from '../utils';
 
 const dynamicImport = (getProjectPath: PathFactory) => {
     const exists = (...files: string[]) => files.some(file => existsSync(getProjectPath(file)));

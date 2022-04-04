@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { DeployConfig, PathFactory } from '../../utils';
 import type { FirebaseOptions } from 'firebase/app';
-import { promises as fsPromises, existsSync } from 'fs';
 import { join } from 'path';
+import { promises as fsPromises, existsSync } from 'fs';
+
+import { DeployConfig, PathFactory } from '../../utils';
 
 const { readdir, readFile } = fsPromises;
 

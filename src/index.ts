@@ -13,10 +13,11 @@
 // limitations under the License.
 
 import { join } from 'path';
+import { exit } from 'process';
+import { getFirebaseTools, getNormalizedHostingConfig } from './firebase';
+
 import { build } from './frameworks';
 import { DEFAULT_REGION } from './utils';
-import { normalizedHostingConfigs } from 'firebase-tools/lib/hosting/normalizedHostingConfigs';
-import { exit } from 'process';
 
 export type PrepareOptions = {
     includeCloudFunctions: boolean;
@@ -27,7 +28,8 @@ type BuildResult = Awaited<ReturnType<typeof build>> & { functionName: string, s
 export const prepare = async (targetNames: string[], context: any, options: any) => {
     let startBuildQueue: (arg: []) => void;
     let buildQueue = new Promise<BuildResult[]>((resolve) => startBuildQueue = resolve);
-    const configs = normalizedHostingConfigs(options, { resolveTargets: true });
+    await getFirebaseTools();
+    const configs = getNormalizedHostingConfig()(options, { resolveTargets: true });
     if (configs.length === 0) return;
     configs.forEach(({ source, site, public: publicDir}: any) => {
         if (!source) return;

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
-import { DeployConfig, getProjectPathFactory } from '../../utils';
-import { promises as fsPromises } from 'fs';
-const { readFile } = fsPromises;
 import type { FirebaseOptions } from 'firebase/app';
+import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
+import { promises as fsPromises } from 'fs';
+
+import { DeployConfig, getProjectPathFactory } from '../../utils';
+
+const { readFile } = fsPromises;
 
 export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
         targets: {

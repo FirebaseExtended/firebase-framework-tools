@@ -16,6 +16,8 @@ import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptions
 import { promises as fsPromises } from 'fs';
 import { join } from 'path';
 
+import { getCliColorStrip, getTripleBeam, getWinston } from './firebase';
+
 export const DEFAULT_SERVICE_NAME = 'ssr';
 export const DEFAULT_REGION = 'us-central1';
 export const DEFAULT_GCF_GEN = 2;
@@ -113,9 +115,9 @@ const tryStringify = (value: any) => {
 };
 
 export const debugLogger = () => {
-    const winston: typeof import('winston') = require('winston');
-    const tripleBeam: typeof import('triple-beam') = require('triple-beam');
-    const ansiStrip: typeof import('cli-color/strip') = require('cli-color/strip');
+    const winston = getWinston();
+    const tripleBeam = getTripleBeam();
+    const ansiStrip = getCliColorStrip();
     return new winston.transports.File({
         level: "debug",
         filename: join(process.cwd(), 'firebase-debug.log'),

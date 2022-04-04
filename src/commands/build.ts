@@ -15,8 +15,8 @@
 import { build as buildFramework } from '../frameworks';
 import { getDeployConfig, getProjectPathFactory } from '../utils';
 
-export const build = async (key: string='default') => {
-    const config = await getDeployConfig(key);
+export const build = async (options: any[]) => {
+    const config = await getDeployConfig('default');
     const getProjectPath = getProjectPathFactory(config);
     await buildFramework(config, getProjectPath);
 };

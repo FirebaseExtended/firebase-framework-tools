@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import { promises as fsPromises } from 'fs';
+import { dirname, join } from 'path';
 
 import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
 import { shortSiteName } from '../../prompts';
 import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn } from '../../utils';
-import { dirname, join } from 'path';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
