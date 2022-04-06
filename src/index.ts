@@ -67,9 +67,10 @@ export const prepare = async (targetNames: string[], context: any, options: any)
         const rewrites = options.config.get('hosting.rewrites') || [];
         if (usingCloudFunctions) {
             if (!targetNames.includes('functions')) targetNames.push('functions');
-            // TODO implement a better way of not deleting functions
-            options.only = [options.only, 'hosting', `functions:${functionName}`].filter(it => it).join(',');
-            options.config.set('functions', { source: functionsDist});
+            options.config.set('functions', {
+                source: functionsDist,
+                codebase: 'firebase-frameworks',
+            });
             // TODO get the other firebase.json modifications
             options.config.set('hosting.rewrites', [ ...rewrites, {
                 source: '**',
