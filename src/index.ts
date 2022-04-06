@@ -53,11 +53,11 @@ export const prepare = async (targetNames: string[], context: any, options: any)
     startBuildQueue!([]);
     const results = await buildQueue;
     if (targetNames.includes('functions') && results.some(it => it.usingCloudFunctions)) {
-        console.error('Unable to deploy functions alongside web frameworks at the moment.\nDeploy the seperately with "firebase deploy --only hosting" and "firebase deploy --only functions".');
+        console.error('Unable to deploy functions alongside web frameworks.\nDeploy hosting and functions separately with "firebase deploy --only hosting" and "firebase deploy --only functions".');
         exit(1);
     }
     if (results.filter(it => it.usingCloudFunctions).length > 1) {
-        console.error('Unable deploy multiple web frameworks that use Cloud Functions at the same time.\nDeploy the seperately with "firebase deploy --only hosting:YOUR_TARGET".');
+        console.error('Unable to deploy multiple web frameworks that utilize Cloud Functions.\nDeploy them separately with "firebase deploy --only hosting:YOUR_TARGET".');
         exit(1);
     }
     // TODO how should we handle pushing multiple sites?
