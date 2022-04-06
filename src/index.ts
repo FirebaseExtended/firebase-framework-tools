@@ -62,14 +62,14 @@ export const prepare = async (targetNames: string[], context: any, options: any)
     }
     // TODO how should we handle pushing multiple sites?
     //      we should error if they are already deploying Cloud Functions for now
-    results.forEach(({ usingCloudFunctions, hostingDist, functionsDist, functionName }) => {
+    results.forEach(({ usingCloudFunctions, hostingDist, site, functionsDist, functionName }) => {
         options.config.set('hosting.public', hostingDist);
         const rewrites = options.config.get('hosting.rewrites') || [];
         if (usingCloudFunctions) {
             if (!targetNames.includes('functions')) targetNames.push('functions');
             options.config.set('functions', {
                 source: functionsDist,
-                codebase: 'firebase-frameworks',
+                codebase: `firebase-frameworks-${site}`,
             });
             // TODO get the other firebase.json modifications
             options.config.set('hosting.rewrites', [ ...rewrites, {
