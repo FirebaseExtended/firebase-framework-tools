@@ -43,7 +43,7 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             dist,
             project: context.project,
             site,
-            function: {
+            function: context.hostingChannel ? undefined : {
                 name: functionName,
                 region: DEFAULT_REGION,
                 gen: 2,
@@ -66,11 +66,16 @@ export const prepare = async (targetNames: string[], context: any, options: any)
         options.config.set('hosting.public', hostingDist);
         const rewrites = options.config.get('hosting.rewrites') || [];
         if (usingCloudFunctions) {
-            if (!targetNames.includes('functions')) targetNames.push('functions');
-            options.config.set('functions', {
-                source: functionsDist,
-                codebase: `firebase-frameworks-${site}`,
-            });
+            if (context.hostingChannel) {
+                // TODO if interactive, ask to proceed
+                console.error('Cannot preview changes to the backend, you will only see changes to the static content on this channel.');
+            } else {
+                if (!targetNames.includes('functions')) targetNames.unshift('functions');
+                options.config.set('functions', {
+                    source: functionsDist,
+                    codebase: `firebase-frameworks-${site}`,
+                });
+            }
             // TODO get the other firebase.json modifications
             options.config.set('hosting.rewrites', [ ...rewrites, {
                 source: '**',
