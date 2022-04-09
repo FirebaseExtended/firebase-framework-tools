@@ -63,7 +63,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
         const { default: nextBuild }: typeof import('next/dist/build') = require(getProjectPath('node_modules', 'next', 'dist', 'build'));
         await nextBuild(getProjectPath(), null, false, false, true);
         // TODO be a bit smarter about this
-        await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`).catch(() => {});
+        await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`, { cwd: getProjectPath() }).catch(() => {});
     }
 
     let nextConfig: NextConfig;

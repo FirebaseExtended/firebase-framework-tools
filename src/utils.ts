@@ -25,7 +25,7 @@ export const DEFAULT_GCF_GEN = 2;
 const { readFile } = fsPromises;
 
 export const exec = (command: string, options: ExecOptions={}) => new Promise((resolve, reject) =>
-    execCallback(command, {}, (error, stdout) => {
+    execCallback(command, options, (error, stdout) => {
         if (error) {
             reject(error);
             return;

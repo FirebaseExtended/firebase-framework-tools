@@ -23,7 +23,7 @@ export type PrepareOptions = {
     includeCloudFunctions: boolean;
 }
 
-type BuildResult = Awaited<ReturnType<typeof build>> & { functionName: string, site: string, hostingDist: string, functionsDist: string, };
+type BuildResult = Awaited<ReturnType<typeof build>> & { functionName: string, target: string, site: string, hostingDist: string, functionsDist: string, };
 
 export const prepare = async (targetNames: string[], context: any, options: any) => {
     let startBuildQueue: (arg: []) => void;
@@ -31,7 +31,7 @@ export const prepare = async (targetNames: string[], context: any, options: any)
     await getFirebaseTools();
     const configs = getNormalizedHostingConfig()(options, { resolveTargets: true });
     if (configs.length === 0) return;
-    configs.forEach(({ source, site, public: publicDir}: any) => {
+    configs.forEach(({ source, site, target, public: publicDir }: any) => {
         if (!source) return;
         const dist = join(process.cwd(), '.firebase', site);
         const hostingDist = join('.firebase', site, 'hosting');
@@ -49,23 +49,15 @@ export const prepare = async (targetNames: string[], context: any, options: any)
                 region: DEFAULT_REGION,
                 gen: 2,
             },
-        }, getProjectPath).then(result => (results.push({ ...result, functionName, site, hostingDist, functionsDist }), results)));
+        }, getProjectPath).then(result => (results.push({ ...result, functionName, site, target, hostingDist, functionsDist }), results)));
     });
     startBuildQueue!([]);
     const results = await buildQueue;
-    if (targetNames.includes('functions') && results.some(it => it.usingCloudFunctions)) {
-        console.error('Unable to deploy functions alongside web frameworks.\nDeploy hosting and functions separately with "firebase deploy --only hosting" and "firebase deploy --only functions".');
-        exit(1);
-    }
-    if (results.filter(it => it.usingCloudFunctions).length > 1) {
-        console.error('Unable to deploy multiple web frameworks that utilize Cloud Functions.\nDeploy them separately with "firebase deploy --only hosting:YOUR_TARGET".');
-        exit(1);
-    }
-    // TODO how should we handle pushing multiple sites?
-    //      we should error if they are already deploying Cloud Functions for now
-    await Promise.all(results.map(async ({ usingCloudFunctions, hostingDist, site, functionsDist, functionName }) => {
-        options.config.set('hosting.public', hostingDist);
-        const rewrites = options.config.get('hosting.rewrites') || [];
+    const hostingConfig = options.config.get('hosting');
+    await Promise.all(results.map(async ({ usingCloudFunctions, hostingDist, site, target, functionsDist, functionName }) => {
+        const hostingIndex = Array.isArray(hostingConfig) ? `[${hostingConfig.findIndex((it: any) => it.site === site || it.target === target)}]` : '';
+        options.config.set(`hosting${hostingIndex}.public`, hostingDist);
+        const rewrites = options.config.get(`hosting${hostingIndex}.rewrites`) || [];
         if (usingCloudFunctions) {
             if (context.hostingChannel) {
                 // TODO move to prompts
@@ -82,14 +74,20 @@ export const prepare = async (targetNames: string[], context: any, options: any)
                     console.error(message);
                 }
             } else {
-                if (!targetNames.includes('functions')) targetNames.unshift('functions');
-                options.config.set('functions', {
+                const functionConfig = {
                     source: functionsDist,
                     codebase: `firebase-frameworks-${site}`,
-                });
+                };
+                if (targetNames.includes('functions')) {
+                    const combinedFunctionsConfig = [functionConfig].concat(options.config.get('functions') || []);
+                    options.config.set('functions', combinedFunctionsConfig);
+                } else {
+                    targetNames.unshift('functions');
+                    options.config.set('functions', functionConfig);
+                }
             }
             // TODO get the other firebase.json modifications
-            options.config.set('hosting.rewrites', [ ...rewrites, {
+            options.config.set(`hosting${hostingIndex}.rewrites`, [ ...rewrites, {
                 source: '**',
                 run: {
                     serviceId: functionName,
@@ -97,7 +95,7 @@ export const prepare = async (targetNames: string[], context: any, options: any)
                 },
             }]);
         } else {
-            options.config.set('hosting.rewrites', [...rewrites, {
+            options.config.set(`hosting${hostingIndex}.rewrites`, [...rewrites, {
                 source: '**',
                 destination: '/index.html',
             }]);
