@@ -14,7 +14,7 @@
 
 import { join } from 'path';
 import { exit } from 'process';
-import { getFirebaseTools, getNormalizedHostingConfig } from './firebase';
+import { getFirebaseTools, getNormalizedHostingConfig, getInquirer } from './firebase';
 
 import { build } from './frameworks';
 import { DEFAULT_REGION } from './utils';
@@ -43,7 +43,8 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             dist,
             project: context.project,
             site,
-            function: context.hostingChannel ? undefined : {
+            // TODO refactor to skip the function build step, if unneeded
+            function: {
                 name: functionName,
                 region: DEFAULT_REGION,
                 gen: 2,
@@ -62,13 +63,24 @@ export const prepare = async (targetNames: string[], context: any, options: any)
     }
     // TODO how should we handle pushing multiple sites?
     //      we should error if they are already deploying Cloud Functions for now
-    results.forEach(({ usingCloudFunctions, hostingDist, site, functionsDist, functionName }) => {
+    await Promise.all(results.map(async ({ usingCloudFunctions, hostingDist, site, functionsDist, functionName }) => {
         options.config.set('hosting.public', hostingDist);
         const rewrites = options.config.get('hosting.rewrites') || [];
         if (usingCloudFunctions) {
             if (context.hostingChannel) {
-                // TODO if interactive, ask to proceed
-                console.error('Cannot preview changes to the backend, you will only see changes to the static content on this channel.');
+                // TODO move to prompts
+                const message = 'Cannot preview changes to the backend, you will only see changes to the static content on this channel.';
+                if (!options.nonInteractive) {
+                    const { continueDeploy } = await getInquirer().prompt({
+                        type: 'confirm',
+                        name: 'continueDeploy',
+                        message: `${message} Would you like to continue with the deploy?`,
+                        default: true,
+                    });
+                    if (!continueDeploy) exit(1);
+                } else {
+                    console.error(message);
+                }
             } else {
                 if (!targetNames.includes('functions')) targetNames.unshift('functions');
                 options.config.set('functions', {
@@ -90,5 +102,5 @@ export const prepare = async (targetNames: string[], context: any, options: any)
                 destination: '/index.html',
             }]);
         }
-    });
+    }));
 }
