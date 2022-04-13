@@ -89,10 +89,7 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             // TODO get the other firebase.json modifications
             options.config.set(`hosting${hostingIndex}.rewrites`, [ ...rewrites, {
                 source: '**',
-                run: {
-                    serviceId: functionName,
-                    region: DEFAULT_REGION,
-                },
+                function: functionName,
             }]);
         } else {
             options.config.set(`hosting${hostingIndex}.rewrites`, [...rewrites, {

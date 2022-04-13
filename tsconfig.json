@@ -15,7 +15,6 @@
   },
   "include": [
     "src/index.ts",
-    "src/cli.ts",
     "types/*.d.ts",
   ]
 }

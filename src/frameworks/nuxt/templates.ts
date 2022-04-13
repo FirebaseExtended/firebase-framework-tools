@@ -20,45 +20,8 @@ import { DeployConfig, PathFactory } from '../../utils';
 
 const { readdir, readFile } = fsPromises;
 
-export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
-        targets: {
-            [project]: {
-                hosting: {
-                    site: [site]
-                }
-            }
-        },
-        projects: {
-            default: project
-        },
-    }, null, 2);
-
-export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev: boolean) => {
-    const basePath = '';
-    const functionRewrite = config.function ? (dev || config.function.gen === 1 ?
-        { function: config.function.name } :
-        { run: {
-            serviceId: config.function.name,
-            region: config.function.region,
-        } }) : undefined;
-    const functions = config.function ? { functions: { source: 'functions' } } : {};
-    return JSON.stringify({
-        ...functions,
-        hosting: {
-            target: 'site',
-            public: dev ? '../static' : 'hosting',
-            rewrites: functionRewrite ? [{
-                source: `${basePath ? `${basePath}/` : ''}**`,
-                ...functionRewrite,
-            }] : [],
-            cleanUrls: true,
-        },
-    }, null, 2);
-}
-
-export const newServerJs = (config: DeployConfig, devServerPort: number|undefined, options: FirebaseOptions|null, isNuxt3: boolean) => {
+export const newServerJs = (config: DeployConfig, options: FirebaseOptions|null, isNuxt3: boolean) => {
     const { gen, name, region } = config.function!;
-    const dev = !!devServerPort;
     const conditionalImports = gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
@@ -89,16 +52,9 @@ const firebaseAppsLRU = new LRU({
 });
 ` : ''}
 
-${dev ? `const { createProxyMiddleware } = require('http-proxy-middleware');
-const expressApp = require('express')();
-expressApp.use('/', createProxyMiddleware({
-    target: 'http://localhost:${devServerPort}',
-    changeOrigin: true,
-    logLevel: 'silent',
-}));` :
-(isNuxt3 ? "const nuxt = import('./index.mjs');" :
+${isNuxt3 ? "const nuxt = import('./index.mjs');" :
 `const { loadNuxt } = require('nuxt');
-const nuxt = loadNuxt('start');`) }
+const nuxt = loadNuxt('start');` }
 
 exports[${JSON.stringify(name)}] = ${onRequest}async (req, res) => {${options ? `
 // TODO figure out why middleware isn't doing this for us
@@ -156,9 +112,8 @@ exports[${JSON.stringify(name)}] = ${onRequest}async (req, res) => {${options ? 
         req['__FIREBASE_APP_NAME'] = app.name;
     }
 ` : ''}
-    ${dev ? `expressApp(req, res);` :
-`    const { ${isNuxt3 ? '' : 'render: '}handle } = await nuxt;
-    handle(req, res);`}
+    const { ${isNuxt3 ? '' : 'render: '}handle } = await nuxt;
+    handle(req, res);
 });
 `;
 }
@@ -168,9 +123,8 @@ const FIREBASE_ADMIN_VERSION = '^10.0.0';
 const FIREBASE_FUNCTIONS_VERSION = '^3.16.0';
 const COOKIE_VERSION = '^0.4.2';
 const LRU_CACHE_VERSION = '^7.3.1';
-const HTTP_PROXY_MIDDLEWARE_VERSION = '^2.0.4';
 
-export const newPackageJson = async (packageJson: any, dev: boolean, getProjectPath: PathFactory) => {
+export const newPackageJson = async (packageJson: any, getProjectPath: PathFactory) => {
     // Unclear if this is needed at this point
     const nodeModulesPath = getProjectPath('.output', 'server', 'node_modules');
     const directories = existsSync(nodeModulesPath) ? await readdir(nodeModulesPath) : [];
@@ -180,41 +134,18 @@ export const newPackageJson = async (packageJson: any, dev: boolean, getProjectP
         return [packageJson.name, packageJson.version];
     }));
     const staticDeps = Object.fromEntries(staticDepsArray);
-    if (dev) {
-        const newPackageJSON = {
-            name: 'firebase-functions',
-            private: true,
-            scripts: {},
-            dependencies: {
-                [packageJson.name]: process.cwd(),
-                ...staticDeps,
-                'http-proxy-middleware': HTTP_PROXY_MIDDLEWARE_VERSION,
-                'firebase-admin': FIREBASE_ADMIN_VERSION,
-                'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
-                'cookie': COOKIE_VERSION,
-                'lru-cache': LRU_CACHE_VERSION,
-            },
-            devDependencies: {},
-            main: 'server.js',
-            engines: {
-                node: packageJson.engines?.node ?? NODE_VERSION
-            },
-        };
-        return JSON.stringify(newPackageJSON, null, 2);
-    } else {
-        const newPackageJSON = { ...packageJson };
-        newPackageJSON.main = 'server.js';
-        newPackageJSON.dependencies ||= {};
-        newPackageJSON.dependencies = {
-            ...newPackageJSON.dependencies,
-            ...staticDeps,
-            'firebase-admin': FIREBASE_ADMIN_VERSION,
-            'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
-            'cookie': COOKIE_VERSION,
-            'lru-cache': LRU_CACHE_VERSION,
-        };
-        newPackageJSON.engines ||= {};
-        newPackageJSON.engines.node ||= NODE_VERSION;
-        return JSON.stringify(newPackageJSON, null, 2);
-    }
+    const newPackageJSON = { ...packageJson };
+    newPackageJSON.main = 'server.js';
+    newPackageJSON.dependencies ||= {};
+    newPackageJSON.dependencies = {
+        ...newPackageJSON.dependencies,
+        ...staticDeps,
+        'firebase-admin': FIREBASE_ADMIN_VERSION,
+        'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
+        'cookie': COOKIE_VERSION,
+        'lru-cache': LRU_CACHE_VERSION,
+    };
+    newPackageJSON.engines ||= {};
+    newPackageJSON.engines.node ||= NODE_VERSION;
+    return JSON.stringify(newPackageJSON, null, 2);
 };

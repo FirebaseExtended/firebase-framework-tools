@@ -1,15 +1,4 @@
-# Firebase Experimental framework-aware CLI
-
-## Usage
-
-```bash
-$ npm i -g firebase-frameworks
-$ cd <MY-APP>
-$ firebase-frameworks init
-$ firebase-frameworks build
-$ firebase-frameworks serve
-$ firebase-frameworks deploy
-```
+# Firebase CLI framework-awareness
 
 ## Frameworks
 
@@ -41,10 +30,8 @@ just a few small guidelines you need to follow. [See CONTRIBUTING](./CONTRIBUTIN
 
 ## Building
 
-Build and globally install this library
-
 ```bash
 $ cd <YOUR-GIT-CHECKOUT>
 $ npm i
-$ npm run dev
+$ npm run build
 ```

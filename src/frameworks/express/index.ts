@@ -15,18 +15,13 @@
 import { promises as fsPromises } from 'fs';
 import { dirname, join } from 'path';
 
-import { newServerJs, newPackageJson, newFirebaseJson, newFirebaseRc } from './templates';
-import { shortSiteName } from '../../prompts';
+import { newServerJs, newPackageJson} from './templates';
+import { shortSiteName } from '../../utils';
 import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn } from '../../utils';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
-export const serve = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
-    const buildResults = await build(config, undefined, getProjectPath);
-    return { ...buildResults, stop: () => Promise.resolve() };
-}
-
-export const build = async (config: DeployConfig | Required<DeployConfig>, devServerPort: number|undefined, getProjectPath: PathFactory) => {
+export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
@@ -116,9 +111,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
     let firebaseProjectConfig = null;
     const { project, site } = config;
     if (project && site) {
-        if (!config.dist) {
-            await writeFile(deployPath('.firebaserc'), newFirebaseRc(project, site));
-        }
         // TODO check if firebase/auth is used
         const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
         if (serverRenderMethod && hasFirebaseDependency) {
@@ -139,10 +131,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, devSe
                 }
             }
         }
-    }
-
-    if (!config.dist) {
-        await writeFile(deployPath('firebase.json'), await newFirebaseJson(config, !!devServerPort));
     }
 
     if (serverRenderMethod) {

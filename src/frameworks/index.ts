@@ -12,10 +12,5 @@ const dynamicImport = (getProjectPath: PathFactory) => {
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
     const command = await dynamicImport(getProjectPath);
-    return command.build(config, undefined, getProjectPath);
-};
-
-export const serve = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
-    const command = await dynamicImport(getProjectPath);
-    return command.serve(config, getProjectPath);
+    return command.build(config, getProjectPath);
 };

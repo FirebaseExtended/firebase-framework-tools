@@ -29,12 +29,7 @@ export const getFirebaseTools = () => firebaseTools ||=
         }
     });
 
-export const getWinston = (): typeof import('winston') => require(`${firebaseToolsPath}/node_modules/winston`);
-export const getTripleBeam = (): typeof import('triple-beam') => require(`${firebaseToolsPath}/node_modules/triple-beam`);
-export const getOra = (): typeof import('ora') => require(`${firebaseToolsPath}/node_modules/ora`);
-export const getChalk = (): typeof import('chalk') => require(`${firebaseToolsPath}/node_modules/chalk`);
 export const getInquirer = (): typeof import('inquirer') => require(`${firebaseToolsPath}/node_modules/inquirer`);
-export const getCliColorStrip = (): typeof import('cli-color/strip') => require(`${firebaseToolsPath}/node_modules/cli-color/strip`);
 
 export const getNormalizedHostingConfig = (): (...args: any[]) => any[] =>
     require(`${firebaseToolsPath}/lib/hosting/normalizedHostingConfigs`).

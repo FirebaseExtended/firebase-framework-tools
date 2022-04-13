@@ -20,19 +20,7 @@ import { DeployConfig, getProjectPathFactory } from '../../utils';
 
 const { readFile } = fsPromises;
 
-export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
-        targets: {
-            [project]: {
-                hosting: {
-                    site: [site]
-                }
-            }
-        },
-        projects: {
-            default: project
-        },
-    }, null, 2);
-
+/*
 export type Manifest = {
     distDir?: string,
     basePath?: string,
@@ -41,76 +29,58 @@ export type Manifest = {
     rewrites?: (Rewrite & { regex: string})[],
 };
 
-export const newFirebaseJson = async (config: DeployConfig, distDir: string, dev: boolean, ssr: boolean) => {
-    if (dev) {
-        return JSON.stringify({
-            hosting: {
-                public: '../public',
-                rewrites: config.function ? [{
-                    source: '**',
-                    function: config.function.name
-                }] : []
-            }
-        });
-    } else {
-        const getProjectPath = getProjectPathFactory(config);
-        const manifestBuffer = await readFile(getProjectPath(distDir, 'routes-manifest.json'));
-        const manifest: Manifest = JSON.parse(manifestBuffer.toString());
-        const {
-            basePath,
-            headers: nextJsHeaders=[],
-            redirects: nextJsRedirects=[],
-            rewrites: nextJsRewrites=[],
-        } = manifest;
-        const headers = nextJsHeaders.map(({ source, headers }) => ({ source, headers }));
-        const redirects = nextJsRedirects
-            .filter(({ internal }: any) => !internal)
-            .map(({ source, destination, statusCode: type }) => ({ source, destination, type }));
-        // TODO only grab the beforeFile, rather than throw
-        if (!Array.isArray(nextJsRewrites)) throw 'Only simple rewrites are allowed';
-        // TODO i18n, skip has rather than throw away let SSR handle
-        const rewrites = nextJsRewrites.map(({ source, destination, locale, has }) => {
-            if (has) throw 'Only simple rewrites are allowed';
-            return { source, destination };
-        });
-        const functionRewrite = ssr ?
-            config.function!.gen === 1 &&
-                { function: config.function!.name } ||
-                { run: {
-                    serviceId: config.function!.name,
-                    region: config.function!.region,
-                } } :
-            // TODO don't hardcode
-            { destination: '/index.html' }
-        // TODO types
-        rewrites.push({
-            source: `${basePath ? `${basePath}/` : ''}**`,
-            ...functionRewrite,
-        } as any);
-        const functions = config.function ? { functions: { source: 'functions' } } : {};
-        return JSON.stringify({
-            ...functions,
-            hosting: {
-                target: 'site',
-                public: 'hosting',
-                rewrites,
-                redirects,
-                headers,
-                cleanUrls: true,
-            },
-        }, null, 2);
-    }
-}
+export const newFirebaseJson = async (config: DeployConfig, distDir: string, ssr: boolean) => {
+    const getProjectPath = getProjectPathFactory(config);
+    const manifestBuffer = await readFile(getProjectPath(distDir, 'routes-manifest.json'));
+    const manifest: Manifest = JSON.parse(manifestBuffer.toString());
+    const {
+        basePath,
+        headers: nextJsHeaders=[],
+        redirects: nextJsRedirects=[],
+        rewrites: nextJsRewrites=[],
+    } = manifest;
+    const headers = nextJsHeaders.map(({ source, headers }) => ({ source, headers }));
+    const redirects = nextJsRedirects
+        .filter(({ internal }: any) => !internal)
+        .map(({ source, destination, statusCode: type }) => ({ source, destination, type }));
+    // TODO only grab the beforeFile, rather than throw
+    if (!Array.isArray(nextJsRewrites)) throw 'Only simple rewrites are allowed';
+    // TODO i18n, skip has rather than throw away let SSR handle
+    const rewrites = nextJsRewrites.map(({ source, destination, locale, has }) => {
+        if (has) throw 'Only simple rewrites are allowed';
+        return { source, destination };
+    });
+    const functionRewrite = ssr ?
+        config.function!.gen === 1 &&
+            { function: config.function!.name } ||
+            { run: {
+                serviceId: config.function!.name,
+                region: config.function!.region,
+            } } :
+        // TODO don't hardcode
+        { destination: '/index.html' }
+    // TODO types
+    rewrites.push({
+        source: `${basePath ? `${basePath}/` : ''}**`,
+        ...functionRewrite,
+    } as any);
+    const functions = config.function ? { functions: { source: 'functions' } } : {};
+    return JSON.stringify({
+        ...functions,
+        hosting: {
+            target: 'site',
+            public: 'hosting',
+            rewrites,
+            redirects,
+            headers,
+            cleanUrls: true,
+        },
+    }, null, 2);
+}*/
 
-// TODO currently having trouble with this in dev-mode, with the serve command
-// I suspect there's something off as I've not been testing this flow, the errors
-// are hard to follow though. Auth complains of an invalid API key or something behind
-// undefined (config perhaps). This could be a rehydration issue or just something off
-// in my codebase. Works well in a prod build though...
 // TODO dry this out, lots of duplication between the frameworks.
-export const newServerJs = (config: DeployConfig, devServerPort: number|undefined, options: FirebaseOptions|null) => {
+export const newServerJs = (config: DeployConfig, options: FirebaseOptions|null) => {
     const { gen, name, region } = config.function!;
-    const dev = !!devServerPort;
     const conditionalImports = gen === 1 ?
         "const functions = require('firebase-functions');" :
         'const { onRequest } = require(\'firebase-functions/v2/https\');';
@@ -144,15 +114,8 @@ const firebaseAppsLRU = new LRU({
 });
 ` : ''}
 
-${dev ? `const { createProxyMiddleware } = require('http-proxy-middleware');
-const expressApp = require('express')();
-expressApp.use('/', createProxyMiddleware({
-    target: 'http://localhost:${devServerPort}',
-    changeOrigin: true,
-    logLevel: 'silent',
-}));` :
-`const nextApp = next({ dev: false, dir: __dirname });
-const nextAppPrepare = nextApp.prepare();`}
+const nextApp = next({ dev: false, dir: __dirname });
+const nextAppPrepare = nextApp.prepare();
 
 exports[${JSON.stringify(name)}] = ${onRequest}async (req, res) => {${options ? `
 // TODO figure out why middleware isn't doing this for us
@@ -207,13 +170,13 @@ exports[${JSON.stringify(name)}] = ${onRequest}async (req, res) => {${options ? 
         //      can we drop this and just use useRouter().query.__FIREBASE_APP_NAME?
         // Pass the authenticated firebase app name to getInitialProps, getServerSideProps via req
         // I'd normally reach for a global here, but we need to think about concurrency now with CF3v2
-        req['__FIREBASE_APP_NAME'] = app.name;
+        req['firebaseApp'] = app;
+        req['currentUser'] = auth.currentUser;
     }
 ` : ''}
-    ${dev ? `expressApp(req, res);` :
-    `const parsedUrl = parse(req.url, true);
+    const parsedUrl = parse(req.url, true);
     await nextAppPrepare;
-    nextApp.getRequestHandler()(req, res, parsedUrl);`}
+    nextApp.getRequestHandler()(req, res, parsedUrl);
 });
 `;
 }
@@ -223,39 +186,16 @@ const FIREBASE_ADMIN_VERSION = '^10.0.0';
 const FIREBASE_FUNCTIONS_VERSION = '^3.16.0';
 const COOKIE_VERSION = '^0.4.2';
 const LRU_CACHE_VERSION = '^7.3.1';
-const HTTP_PROXY_MIDDLEWARE_VERSION = '^2.0.4';
 
-export const newPackageJson = (packageJson: any, dev: boolean) => {
-    if (dev) {
-        const newPackageJSON = {
-            name: 'firebase-functions',
-            private: true,
-            scripts: {},
-            dependencies: {
-                [packageJson.name]: process.cwd(),
-                'http-proxy-middleware': HTTP_PROXY_MIDDLEWARE_VERSION,
-                'firebase-admin': FIREBASE_ADMIN_VERSION,
-                'firebase-functions': FIREBASE_FUNCTIONS_VERSION,
-                'cookie': COOKIE_VERSION,
-                'lru-cache': LRU_CACHE_VERSION,
-            },
-            devDependencies: {},
-            main: 'server.js',
-            engines: {
-                node: packageJson.engines?.node ?? NODE_VERSION
-            },
-        };
-        return JSON.stringify(newPackageJSON, null, 2);
-    } else {
-        const newPackageJSON = { ...packageJson };
-        newPackageJSON.main = 'server.js';
-        // TODO test these with semver, error if already set out of range
-        newPackageJSON.dependencies['firebase-admin'] ||= FIREBASE_ADMIN_VERSION;
-        newPackageJSON.dependencies['firebase-functions'] ||= FIREBASE_FUNCTIONS_VERSION;
-        newPackageJSON.dependencies['cookie'] ||= COOKIE_VERSION;
-        newPackageJSON.dependencies['lru-cache'] ||= LRU_CACHE_VERSION;
-        newPackageJSON.engines ||= {};
-        newPackageJSON.engines.node ||= NODE_VERSION;
-        return JSON.stringify(newPackageJSON, null, 2);
-    }
+export const newPackageJson = (packageJson: any) => {
+    const newPackageJSON = { ...packageJson };
+    newPackageJSON.main = 'server.js';
+    // TODO test these with semver, error if already set out of range
+    newPackageJSON.dependencies['firebase-admin'] ||= FIREBASE_ADMIN_VERSION;
+    newPackageJSON.dependencies['firebase-functions'] ||= FIREBASE_FUNCTIONS_VERSION;
+    newPackageJSON.dependencies['cookie'] ||= COOKIE_VERSION;
+    newPackageJSON.dependencies['lru-cache'] ||= LRU_CACHE_VERSION;
+    newPackageJSON.engines ||= {};
+    newPackageJSON.engines.node ||= NODE_VERSION;
+    return JSON.stringify(newPackageJSON, null, 2);
 };

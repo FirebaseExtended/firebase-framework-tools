@@ -2,7 +2,6 @@ import { replaceInFile } from 'replace-in-file';
 
 const ES_MODULES = [
     "getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs')",
-    "'ora'",
 ];
 
 const main = async () => {

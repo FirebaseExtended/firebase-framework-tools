@@ -20,42 +20,6 @@ import { DeployConfig, PathFactory } from '../../utils';
 
 const { readdir, readFile } = fsPromises;
 
-export const newFirebaseRc = (project: string, site: string) => JSON.stringify({
-        targets: {
-            [project]: {
-                hosting: {
-                    site: [site]
-                }
-            }
-        },
-        projects: {
-            default: project
-        },
-    }, null, 2);
-
-export const newFirebaseJson = async (config: DeployConfig, dev: boolean) => {
-    const basePath = '';
-    const functionRewrite = config.function ? (dev || config.function.gen === 1 ?
-        { function: config.function.name } :
-        { run: {
-            serviceId: config.function.name,
-            region: config.function.region,
-        } }) : undefined;
-    const functions = config.function ? { functions: { source: 'functions' } } : {};
-    return JSON.stringify({
-        ...functions,
-        hosting: {
-            target: 'site',
-            public: 'hosting',
-            rewrites: functionRewrite ? [{
-                source: `${basePath ? `${basePath}/` : ''}**`,
-                ...functionRewrite,
-            }] : [],
-            cleanUrls: true,
-        },
-    }, null, 2);
-}
-
 export const newServerJs = (config: DeployConfig, options: FirebaseOptions|null, importSnippet: string) => {
     const { gen, region, name } = config.function!;
     const conditionalImports = gen === 1 ?
