@@ -1,0 +1,148 @@
+name: Test and publish
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+  pull_request:
+    branches:
+      - "**"
+  release:
+    types:
+      - published
+  schedule:
+    - cron: 0 0 * * 1-5
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '16'
+      - name: node_modules cache
+        uses: actions/cache@v2
+        id: node_modules_cache
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-16-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-16-
+      - name: Install deps
+        if: steps.node_modules_cache.outputs.cache-hit != 'true'
+        run: npm ci
+      - name: Build
+        run: ./build.sh
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: firebase-frameworks-${{ github.run_id }}
+          path: dist
+          retention-days: 1
+
+  test:
+    runs-on: ${{ matrix.os }}
+    needs: build
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        node: [ "14", "16", "18" ]
+        framework: [ "next@12", "nuxt@2" ]
+      fail-fast: false
+    name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node }}
+          check-latest: true
+      - name: node_modules cache
+        id: node_modules_cache
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.node }}-
+      - name: Install deps
+        if: steps.node_modules_cache.outputs.cache-hit != 'true'
+        run: npm ci
+      - name: Firebase emulator cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase_emulators
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+      - name: Relocate Artifacts
+        run: mv firebase-frameworks-${{ github.run_id }} dist
+
+  contribute:
+    runs-on: ${{ matrix.os }}
+    name: Contribute Node ${{ matrix.node }} (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        node: [ "14", "16", "18" ]
+        exclude:
+          # we build with this combination, safely skip
+          - os: ubuntu-latest
+            node: 16
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node }}
+          check-latest: true
+      - name: node_modules cache
+        uses: actions/cache@v2
+        id: node_modules_cache
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.node }}-
+      - name: Install deps
+        if: steps.node_modules_cache.outputs.cache-hit != 'true'
+        run: npm ci
+      - name: Build
+        run: npm run build
+
+  # Break the branch protection test into a seperate step, so we can manage the matrix more easily
+  test_and_contribute:
+    runs-on: ubuntu-latest
+    name: Branch protection
+    needs: ['test', 'contribute']
+    steps:
+      - run: true
+
+  publish:
+    runs-on: ubuntu-latest
+    name: Publish (NPM)
+    needs: ['build', 'test']
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '16'
+          registry-url: 'https://wombat-dressing-room.appspot.com'
+      - name: 'Download Artifacts'
+        uses: actions/download-artifact@v2
+      - name: Relocate Artifacts
+        run: mv firebase-frameworks-${{ github.run_id }} dist
+      - name: Publish
+        run: ./dist/publish.sh
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
