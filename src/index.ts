@@ -14,7 +14,7 @@
 
 import { join } from 'path';
 import { exit } from 'process';
-import { getFirebaseTools, getNormalizedHostingConfig, getInquirer } from './firebase';
+import { getFirebaseTools, normalizedHostingConfig, getInquirer, needProjectId } from './firebase';
 
 import { build } from './frameworks';
 import { DEFAULT_REGION } from './utils';
@@ -29,8 +29,9 @@ export const prepare = async (targetNames: string[], context: any, options: any)
     let startBuildQueue: (arg: []) => void;
     let buildQueue = new Promise<BuildResult[]>((resolve) => startBuildQueue = resolve);
     await getFirebaseTools();
-    const configs = getNormalizedHostingConfig()(options, { resolveTargets: true });
+    const configs = normalizedHostingConfig(options, { resolveTargets: true });
     if (configs.length === 0) return;
+    const project = needProjectId(context);
     configs.forEach(({ source, site, target, public: publicDir }: any) => {
         if (!source) return;
         const dist = join(process.cwd(), '.firebase', site);
@@ -41,7 +42,7 @@ export const prepare = async (targetNames: string[], context: any, options: any)
         const functionName = `ssr${site.replace(/-/g, '')}`;
         buildQueue = buildQueue.then(results => build({
             dist,
-            project: context.project,
+            project,
             site,
             // TODO refactor to skip the function build step, if unneeded
             function: {

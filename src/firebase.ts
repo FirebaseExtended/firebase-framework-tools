@@ -31,6 +31,10 @@ export const getFirebaseTools = () => firebaseTools ||=
 
 export const getInquirer = (): typeof import('inquirer') => require(`${firebaseToolsPath}/node_modules/inquirer`);
 
-export const getNormalizedHostingConfig = (): (...args: any[]) => any[] =>
+export const normalizedHostingConfig = (...args: any[]) =>
     require(`${firebaseToolsPath}/lib/hosting/normalizedHostingConfigs`).
-        normalizedHostingConfigs;
+        normalizedHostingConfigs(...args) as any[];
+
+export const needProjectId = (...args: any[]) =>
+    require(`${firebaseToolsPath}/lib/projectUtils`).
+        needProjectId(...args) as string|undefined;
