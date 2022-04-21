@@ -134,5 +134,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         });
     }
 
-    return { usingCloudFunctions: needsCloudFunction };
+    return { usingCloudFunctions: needsCloudFunction, rewrites: [], redirects: [], headers: [] };
 }

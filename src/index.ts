@@ -14,33 +14,30 @@
 
 import { join } from 'path';
 import { exit } from 'process';
-import { getFirebaseTools, normalizedHostingConfig, getInquirer, needProjectId } from './firebase';
+import { getFirebaseTools, normalizedHostingConfigs, getInquirer, needProjectId } from './firebase';
 
 import { build } from './frameworks';
-import { DEFAULT_REGION } from './utils';
+import { DEFAULT_REGION, spawn } from './utils';
 
-export type PrepareOptions = {
-    includeCloudFunctions: boolean;
-}
-
-type BuildResult = Awaited<ReturnType<typeof build>> & { functionName: string, target: string, site: string, hostingDist: string, functionsDist: string, };
-
-export const prepare = async (targetNames: string[], context: any, options: any) => {
-    let startBuildQueue: (arg: []) => void;
-    let buildQueue = new Promise<BuildResult[]>((resolve) => startBuildQueue = resolve);
+export const prepare = async (targetNames: string[], context: any, options: any, dev: boolean) => {
     await getFirebaseTools();
-    const configs = normalizedHostingConfig(options, { resolveTargets: true });
-    if (configs.length === 0) return;
     const project = needProjectId(context);
-    configs.forEach(({ source, site, target, public: publicDir }: any) => {
-        if (!source) return;
+    // options.site is not present when emulated. We could call requireHostingSite but IAM permissions haven't
+    // been booted up (at this point) and we may be offline, so just use projectId. Most of the time
+    // the default site is named the same as the project & for frameworks this is only used for naming the
+    // function... unless you're using authenticated server-context TODO explore the implication here.
+    const configs = normalizedHostingConfigs({ site: project, ...options}, { resolveTargets: true });
+    if (configs.length === 0) return;
+    const hostingConfig = options.config.get('hosting');
+    for (const { source, site, target, public: publicDir } of configs) {
+        if (!source) continue;
         const dist = join(process.cwd(), '.firebase', site);
         const hostingDist = join('.firebase', site, 'hosting');
         const functionsDist = join('.firebase', site, 'functions');
         if (publicDir) throw `hosting.public and hosting.source cannot both be set in firebase.json`;
         const getProjectPath = (...args: string[]) => join(process.cwd(), source, ...args);
         const functionName = `ssr${site.replace(/-/g, '')}`;
-        buildQueue = buildQueue.then(results => build({
+        const { usingCloudFunctions, rewrites, redirects, headers } = await build({
             dist,
             project,
             site,
@@ -50,16 +47,17 @@ export const prepare = async (targetNames: string[], context: any, options: any)
                 region: DEFAULT_REGION,
                 gen: 2,
             },
-        }, getProjectPath).then(result => (results.push({ ...result, functionName, site, target, hostingDist, functionsDist }), results)));
-    });
-    startBuildQueue!([]);
-    const results = await buildQueue;
-    const hostingConfig = options.config.get('hosting');
-    await Promise.all(results.map(async ({ usingCloudFunctions, hostingDist, site, target, functionsDist, functionName }) => {
+        }, getProjectPath);
         const hostingIndex = Array.isArray(hostingConfig) ? `[${hostingConfig.findIndex((it: any) => it.site === site || it.target === target)}]` : '';
         options.config.set(`hosting${hostingIndex}.public`, hostingDist);
-        const rewrites = options.config.get(`hosting${hostingIndex}.rewrites`) || [];
+        const existingRewrites = options.config.get(`hosting${hostingIndex}.rewrites`) || [];
         if (usingCloudFunctions) {
+            // Only need to do this in dev, since we have a functions.yaml, so discovery isn't needed
+            await spawn('npm', ['i', '--prefix', functionsDist, '--only', 'production', '--no-audit', '--no-fund', '--silent'], {}, stdoutChunk => {
+                console.log(stdoutChunk.toString());
+            }, errChunk => {
+                console.error(errChunk.toString());
+            });
             if (context.hostingChannel) {
                 // TODO move to prompts
                 const message = 'Cannot preview changes to the backend, you will only see changes to the static content on this channel.';
@@ -88,15 +86,31 @@ export const prepare = async (targetNames: string[], context: any, options: any)
                 }
             }
             // TODO get the other firebase.json modifications
-            options.config.set(`hosting${hostingIndex}.rewrites`, [ ...rewrites, {
-                source: '**',
-                function: functionName,
-            }]);
+            options.config.set(`hosting${hostingIndex}.rewrites`, [
+                ...existingRewrites,
+                ...rewrites, {
+                    source: '**',
+                    function: functionName,
+                }
+            ]);
         } else {
-            options.config.set(`hosting${hostingIndex}.rewrites`, [...rewrites, {
-                source: '**',
-                destination: '/index.html',
-            }]);
+            options.config.set(`hosting${hostingIndex}.rewrites`, [
+                ...existingRewrites,
+                ...rewrites, {
+                    source: '**',
+                    destination: '/index.html',
+                }
+            ]);
         }
-    }));
+        const existingRedirects = options.config.get(`hosting${hostingIndex}.redirects`) || [];
+        options.config.set(`hosting${hostingIndex}.redirects`, [
+            ...existingRedirects,
+            ...redirects
+        ]);
+        const existingHeaders = options.config.get(`hosting${hostingIndex}.headers`) || [];
+        options.config.set(`hosting${hostingIndex}.headers`, [
+            ...existingHeaders,
+            ...headers
+        ]);
+    }
 }

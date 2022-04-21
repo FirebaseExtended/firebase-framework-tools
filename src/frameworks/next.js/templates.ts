@@ -20,21 +20,24 @@ import { DeployConfig, getProjectPathFactory } from '../../utils';
 
 const { readFile } = fsPromises;
 
-/*
+
 export type Manifest = {
     distDir?: string,
     basePath?: string,
     headers?: (Header & { regex: string})[],
     redirects?: (Redirect & { regex: string})[],
-    rewrites?: (Rewrite & { regex: string})[],
+    rewrites?: (Rewrite & { regex: string})[] | {
+        beforeFiles?: (Rewrite & { regex: string})[],
+        afterFiles?: (Rewrite & { regex: string})[],
+        fallback?: (Rewrite & { regex: string})[],
+    },
 };
 
-export const newFirebaseJson = async (config: DeployConfig, distDir: string, ssr: boolean) => {
+export const firebaseJsonStuff = async (config: DeployConfig, distDir: string) => {
     const getProjectPath = getProjectPathFactory(config);
     const manifestBuffer = await readFile(getProjectPath(distDir, 'routes-manifest.json'));
     const manifest: Manifest = JSON.parse(manifestBuffer.toString());
     const {
-        basePath,
         headers: nextJsHeaders=[],
         redirects: nextJsRedirects=[],
         rewrites: nextJsRewrites=[],
@@ -43,40 +46,31 @@ export const newFirebaseJson = async (config: DeployConfig, distDir: string, ssr
     const redirects = nextJsRedirects
         .filter(({ internal }: any) => !internal)
         .map(({ source, destination, statusCode: type }) => ({ source, destination, type }));
-    // TODO only grab the beforeFile, rather than throw
-    if (!Array.isArray(nextJsRewrites)) throw 'Only simple rewrites are allowed';
-    // TODO i18n, skip has rather than throw away let SSR handle
-    const rewrites = nextJsRewrites.map(({ source, destination, locale, has }) => {
-        if (has) throw 'Only simple rewrites are allowed';
+    const nextJsRewritesToUse = Array.isArray(nextJsRewrites) ? nextJsRewrites : nextJsRewrites.beforeFiles || [];
+    const rewrites = nextJsRewritesToUse.map(({ source, destination, locale, has }) => {
+        // Can we change i18n into Firebase settings?
+        if (has) return undefined;
         return { source, destination };
-    });
-    const functionRewrite = ssr ?
-        config.function!.gen === 1 &&
-            { function: config.function!.name } ||
-            { run: {
-                serviceId: config.function!.name,
-                region: config.function!.region,
-            } } :
-        // TODO don't hardcode
-        { destination: '/index.html' }
-    // TODO types
-    rewrites.push({
-        source: `${basePath ? `${basePath}/` : ''}**`,
-        ...functionRewrite,
-    } as any);
-    const functions = config.function ? { functions: { source: 'functions' } } : {};
+    }).filter(it => it);
+    return { headers, rewrites, redirects };
+}
+
+export const newFunctionsYaml = (config: DeployConfig) => {
+    const { gen, name, region } = config.function!;
     return JSON.stringify({
-        ...functions,
-        hosting: {
-            target: 'site',
-            public: 'hosting',
-            rewrites,
-            redirects,
-            headers,
-            cleanUrls: true,
+        endpoints: {
+            [name]: {
+                platform:  `gcfv${gen}`,
+                region: [region],
+                labels: {},
+                httpsTrigger: {},
+                entryPoint: name
+            }
         },
+        specVersion: 'v1alpha1',
+        requiredAPIs: []
     }, null, 2);
-}*/
+};
 
 // TODO dry this out, lots of duplication between the frameworks.
 export const newServerJs = (config: DeployConfig, options: FirebaseOptions|null) => {
@@ -193,6 +187,7 @@ export const newPackageJson = (packageJson: any) => {
     // TODO test these with semver, error if already set out of range
     newPackageJSON.dependencies['firebase-admin'] ||= FIREBASE_ADMIN_VERSION;
     newPackageJSON.dependencies['firebase-functions'] ||= FIREBASE_FUNCTIONS_VERSION;
+    // TODO if auth-context needed
     newPackageJSON.dependencies['cookie'] ||= COOKIE_VERSION;
     newPackageJSON.dependencies['lru-cache'] ||= LRU_CACHE_VERSION;
     newPackageJSON.engines ||= {};

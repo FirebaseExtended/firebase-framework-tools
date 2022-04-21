@@ -162,5 +162,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         });
     }
 
-    return { usingCloudFunctions: !!serverRenderMethod };
+    return { usingCloudFunctions: !!serverRenderMethod, rewrites: [], redirects: [], headers: [] };
 }

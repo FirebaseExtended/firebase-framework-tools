@@ -19,9 +19,10 @@
   "scripts": {
     "build": "rm -rf dist && tsc && ts-node ./build.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:next": "rm -rf e2e && npx create-next-app e2e --use-npm --ts && npm run e2e:config && cd e2e && firebase emulators:exec --only hosting \"exit 0\"",
-    "test:nuxt": "rm -rf e2e && npx create-nuxt-app e2e --answers '$(cat create-nuxt-answers.json)' && npm run e2e:config && cd e2e && firebase emulators:exec --only hosting \"exit 0\"",
-    "e2e:config": "cd e2e && echo '{\"projects\": {\"default\": \"nextjs-demo-73e34\"}}' > .firebaserc && echo '{\"hosting\": {\"source\": \".\",\"site\":\"nextjs-demo-73e34\"}, \"emulators\": {\"hosting\": {\"port\": 8080}}}' > firebase.json"
+    "e2e:build-next": "rm -rf e2e && npx create-next-app e2e --use-npm --ts",
+    "e2e:build-nuxt": "rm -rf e2e && npx create-nuxt-app e2e --answers '$(cat create-nuxt-answers.json)'",
+    "e2e:config": "cd e2e && echo '{\"projects\": {\"default\": \"nextjs-demo-73e34\"}}' > .firebaserc && echo '{\"hosting\": {\"source\": \".\",\"site\":\"nextjs-demo-73e34\"}, \"emulators\": {\"hosting\": {\"port\": 8080}}}' > firebase.json",
+    "test:e2e": "npm run e2e:config && cd e2e && firebase emulators:exec \"exit 0\""
   },
   "exports": {
     ".": {

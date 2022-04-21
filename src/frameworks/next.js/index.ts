@@ -16,7 +16,7 @@ import { promises as fsPromises } from 'fs';
 import { dirname, join, relative } from 'path';
 import type { NextConfig } from 'next/dist/server/config-shared';
 
-import { newServerJs, newPackageJson } from './templates';
+import { newServerJs, newPackageJson, newFunctionsYaml, firebaseJsonStuff } from './templates';
 import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn, shortSiteName } from '../../utils';
 import { getFirebaseTools } from '../../firebase';
 
@@ -73,6 +73,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
         const prerenderManifestBuffer = await readFile(getProjectPath(distDir, 'prerender-manifest.json'));
         const prerenderManifest = JSON.parse(prerenderManifestBuffer.toString());
+        // TODO drop from hosting if revalidate
         Object.keys(prerenderManifest.routes).forEach(route => {
             // / => index.json => index.html => index.html
             // /foo => foo.json => foo.html
@@ -138,19 +139,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
             writeFile(deployPath('functions', 'package.json'), newPackageJson(packageJson)),
             writeFile(deployPath('functions', 'server.js'), newServerJs(config, firebaseProjectConfig)),
+            writeFile(deployPath('functions', 'functions.yaml'), newFunctionsYaml(config)),
         );
     }
 
     await Promise.all(asyncSteps);
 
-    if (needsCloudFunction) {
-        // TODO add to the firebaseTools log
-        await spawn('npm', ['i', '--prefix', deployPath('functions'), '--only', 'production', '--no-audit', '--no-fund', '--silent'], {}, stdoutChunk => {
-            console.log(stdoutChunk.toString());
-        }, errChunk => {
-            console.error(errChunk.toString());
-        });
-    }
-
-    return { usingCloudFunctions: needsCloudFunction };
+    return { usingCloudFunctions: needsCloudFunction, ...(await firebaseJsonStuff(config, distDir)) };
 }
