@@ -15,6 +15,9 @@
   },
   "include": [
     "src/index.ts",
+    "src/server/index.ts",
+    "src/server/firebase-aware.ts",
+    "src/frameworks/*/server.ts",
     "types/*.d.ts",
   ]
 }

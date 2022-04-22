@@ -18,7 +18,6 @@ import { join } from 'path';
 
 export const DEFAULT_REGION = 'us-central1';
 
-
 export const shortSiteName = (site?: FirebaseHostingSite) => site?.name && site.name.split('/').pop();
 
 export const exec = (command: string, options: ExecOptions={}) => new Promise((resolve, reject) =>
@@ -53,14 +52,13 @@ export const spawn = (
 });
 
 export type DeployConfig = {
-    dist?: string,
+    dist: string,
     prefix?: string,
     project?: string ,
     site?: string,
     function?: {
         name: string,
         region: string,
-        gen: 1 | 2,
     };
 };
 

@@ -15,10 +15,9 @@
 import { promises as fsPromises } from 'fs';
 import { dirname, join, relative } from 'path';
 import type { NextConfig } from 'next/dist/server/config-shared';
+import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
 
-import { newServerJs, newPackageJson, newFunctionsYaml, firebaseJsonStuff } from './templates';
-import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn, shortSiteName } from '../../utils';
-import { getFirebaseTools } from '../../firebase';
+import { DeployConfig, PathFactory, exec } from '../../utils';
 
 const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
@@ -49,12 +48,12 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     await mkdir(getHostingPath('_next', 'static'), { recursive: true });
 
-    let needsCloudFunction = !!config.function;
+    let usingCloudFunctions = !!config.function;
     const asyncSteps: Array<Promise<any>> = [];
 
     const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
     if (exportDetailJson.success) {
-        needsCloudFunction = false;
+        usingCloudFunctions = false;
         asyncSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
     } else {
         await exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`);
@@ -97,7 +96,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         });
     }
 
-    if (needsCloudFunction) {
+    if (usingCloudFunctions) {
         await mkdir(deployPath('functions'), { recursive: true });
         asyncSteps.push(
             copyFile(getProjectPath('next.config.js'), deployPath('functions', 'next.config.js')),
@@ -109,41 +108,38 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
 
-    let firebaseProjectConfig = null;
-    const { project, site } = config;
-    if (project && site) {
-        // TODO check if firebase/auth is used
-        const hasFirebaseDependency = !!packageJson.dependencies.firebase;
-        if (needsCloudFunction && hasFirebaseDependency) {
-            const firebaseTools = await getFirebaseTools();
-            const { sites } = await firebaseTools.hosting.sites.list({
-                project,
-                ...defaultFirebaseToolsOptions(deployPath()),
-            });
-            const selectedSite = sites.find(it => shortSiteName(it) === site);
-            if (selectedSite) {
-                const { appId } = selectedSite;
-                if (appId) {
-                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(deployPath()));
-                    firebaseProjectConfig = result.sdkConfig;
-                } else {
-                    console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context`);
-                }
-            }
-        }
-    }
-
-    if (needsCloudFunction) {
-        asyncSteps.push(
-            copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
-            copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
-            writeFile(deployPath('functions', 'package.json'), newPackageJson(packageJson)),
-            writeFile(deployPath('functions', 'server.js'), newServerJs(config, firebaseProjectConfig)),
-            writeFile(deployPath('functions', 'functions.yaml'), newFunctionsYaml(config)),
-        );
-    }
-
     await Promise.all(asyncSteps);
 
-    return { usingCloudFunctions: needsCloudFunction, ...(await firebaseJsonStuff(config, distDir)) };
+    const manifestBuffer = await readFile(getProjectPath(distDir, 'routes-manifest.json'));
+    const manifest: Manifest = JSON.parse(manifestBuffer.toString());
+    const {
+        headers: nextJsHeaders=[],
+        redirects: nextJsRedirects=[],
+        rewrites: nextJsRewrites=[],
+    } = manifest;
+    const headers = nextJsHeaders.map(({ source, headers }) => ({ source, headers }));
+    const redirects = nextJsRedirects
+        .filter(({ internal }: any) => !internal)
+        .map(({ source, destination, statusCode: type }) => ({ source, destination, type }));
+    const nextJsRewritesToUse = Array.isArray(nextJsRewrites) ? nextJsRewrites : nextJsRewrites.beforeFiles || [];
+    const rewrites = nextJsRewritesToUse.map(({ source, destination, locale, has }) => {
+        // Can we change i18n into Firebase settings?
+        if (has) return undefined;
+        return { source, destination };
+    }).filter(it => it);
+
+    return { usingCloudFunctions, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null };
 }
+
+
+export type Manifest = {
+    distDir?: string,
+    basePath?: string,
+    headers?: (Header & { regex: string})[],
+    redirects?: (Redirect & { regex: string})[],
+    rewrites?: (Rewrite & { regex: string})[] | {
+        beforeFiles?: (Rewrite & { regex: string})[],
+        afterFiles?: (Rewrite & { regex: string})[],
+        fallback?: (Rewrite & { regex: string})[],
+    },
+};

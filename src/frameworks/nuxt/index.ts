@@ -15,124 +15,59 @@
 import { promises as fsPromises } from 'fs'
 import { join } from 'path';
 
-import { newServerJs, newPackageJson } from './templates';
-import { shortSiteName } from '../../utils';
-import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn } from '../../utils';
+import { DeployConfig, PathFactory, exec } from '../../utils';
+import { build as buildNuxt3 } from '../nuxt3';
 
-const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
-const DEFAULT_DEV_PORT = 7812;
-
-let _nuxt;
-const getNuxt = async (getProjectPath: PathFactory): Promise<typeof import('@nuxt/kit')> => _nuxt ||= await (async () => {
-    try {
-        const nuxt = require(getProjectPath('node_modules', 'nuxt'));
-        return {
-            ...nuxt,
-            buildNuxt: nuxt.build,
-            isNuxt3: () => false,
-            getNuxtVersion: () => nuxt.Nuxt.version.split('v')[1],
-        }
-    } catch(e) {
-        return {
-            ...(await import(getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs'))),
-            // Simplify until we can pass the app to serve, isNuxt3 requires an app be passed
-            // though unsure if we even need to do this Next.js style, perhaps we can serve directly
-            isNuxt3: () => true,
-        }
-    }
-})();
+const { readFile, rm, mkdir } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    const { loadNuxt, isNuxt3, buildNuxt, loadNuxtConfig } = await getNuxt(getProjectPath);
+    let nuxt;
+    try {
+        nuxt = require(getProjectPath('node_modules', 'nuxt'));
+    } catch(e) {
+        return await buildNuxt3(config, getProjectPath);
+    }
 
-    const nuxtApp = await loadNuxt({
+    const nuxtApp = await nuxt.loadNuxt({
         for: 'build',
-        cwd: getProjectPath(),
         rootDir: getProjectPath(),
-        overrides: { nitro: { preset: 'node' } },
-    } as any);
+    });
 
-    await buildNuxt(nuxtApp);
-
-    const nuxtConfig = await loadNuxtConfig({
-        cwd: getProjectPath(),
-        rootDir: getProjectPath(),
-    } as any);
-
-    const baseURL = isNuxt3() ? nuxtConfig.app.baseURL : '';
-    const buildAssetsDir = isNuxt3() ? nuxtConfig.app.buildAssetsDir : '_nuxt';
-    const distDir = isNuxt3() ? '.output' : join('.nuxt', 'dist');
-
-    const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
-
-    const getHostingPath = (...args: string[]) => deployPath('hosting', ...baseURL.split('/'), ...args);
+    const deployPath = (...args: string[]) => join(config.dist, ...args);
 
     await rm(deployPath(), { recursive: true, force: true });
 
-    // TODO also check Nuxt's settings
-    const needsCloudFunction = !!config.function;
-    await mkdir(deployPath('functions'), { recursive: true });
-    await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
+    const { options: { target, app: { basePath, assetsPath }, buildDir, dir: { static: staticDir } } } = await nuxt.build(nuxtApp);
+    await mkdir(deployPath('hosting', basePath, assetsPath), { recursive: true });
 
-    if (isNuxt3()) {
-        if (needsCloudFunction) {
-            await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
-        }
-        await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
+    let usingCloudFunctions = false;
+    if (target === 'static') {
+        const nuxtApp = await nuxt.loadNuxt({
+            for: 'start',
+            rootDir: getProjectPath(),
+        });
+        await nuxtApp.server.listen(0);
+        const { getBuilder } = require(getProjectPath('node_modules', '@nuxt', 'builder'));
+        const { Generator } = require(getProjectPath('node_modules', '@nuxt', 'generator'));
+        const builder = await getBuilder(nuxtApp);
+        const generator = new Generator(nuxtApp, builder);
+        await generator.generate({ build: false, init: true });
+        await exec(`cp -r ${join(generator.distPath, '*')} ${deployPath('hosting')}`);
+        await nuxtApp.server.close();
+        usingCloudFunctions = !generator.isFullStatic;
     } else {
-        if (needsCloudFunction) {
-            await exec(`cp -r ${getProjectPath(distDir, '..')} ${deployPath('functions')}`);
-        }
-        await exec(`cp -r ${getProjectPath(distDir, 'client', '*')} ${deployPath('hosting', buildAssetsDir)}`);
-        await exec(`cp -r ${getProjectPath('static', '*')} ${deployPath('hosting')}`);
+        await exec(`cp -r ${join(buildDir, 'dist', 'client', '*')} ${deployPath('hosting', assetsPath)}`);
+        await exec(`cp -r ${getProjectPath(staticDir, '*')} ${deployPath('hosting')}`);
+    }
+
+    if (usingCloudFunctions) {
+        await mkdir(deployPath('functions'), { recursive: true });
+        await exec(`cp -r ${buildDir} ${deployPath('functions')}`);
     }
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
 
-    let firebaseProjectConfig = null;
-    const { project, site } = config;
-    if (project && site) {
-        // TODO check if firebase/auth is used
-        const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
-        if (needsCloudFunction && hasFirebaseDependency) {
-            const { default: firebaseTools }: typeof import('firebase-tools') = require('firebase-tools');
-            const { sites } = await firebaseTools.hosting.sites.list({
-                project,
-                ...defaultFirebaseToolsOptions(deployPath()),
-            });
-            const selectedSite = sites.find(it => shortSiteName(it) === site);
-            if (selectedSite) {
-                const { appId } = selectedSite;
-                if (appId) {
-                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(deployPath()));
-                    firebaseProjectConfig = result.sdkConfig;
-                } else {
-                    // TODO add color yellow, maybe prompt?
-                    console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context`);
-                }
-            }
-        }
-    }
-
-    if (needsCloudFunction) {
-        await Promise.all([
-            copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
-            copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
-            newPackageJson(packageJson, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-            writeFile(deployPath('functions', 'server.js'), newServerJs(config, firebaseProjectConfig, isNuxt3())),
-        ]);
-    }
-
-    if (needsCloudFunction) {
-        // TODO add to the firebaseTools log
-        await spawn('npm', ['i', '--prefix', deployPath('functions'), '--only', 'production'], {}, stdoutChunk => {
-            console.log(stdoutChunk.toString());
-        }, errChunk => {
-            console.error(errChunk.toString());
-        });
-    }
-
-    return { usingCloudFunctions: needsCloudFunction, rewrites: [], redirects: [], headers: [] };
+    return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], packageJson, framework: 'nuxt', bootstrapScript: null };
 }

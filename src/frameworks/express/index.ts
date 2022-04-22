@@ -15,11 +15,9 @@
 import { promises as fsPromises } from 'fs';
 import { dirname, join } from 'path';
 
-import { newServerJs, newPackageJson} from './templates';
-import { shortSiteName } from '../../utils';
-import { defaultFirebaseToolsOptions, DeployConfig, PathFactory, exec, spawn } from '../../utils';
+import { DeployConfig, PathFactory, exec, spawn } from '../../utils';
 
-const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
+const { readFile, rm, mkdir, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
@@ -90,7 +88,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         }
         bootstrapScript += ';\n';
         const method = stack.shift();
-        bootstrapScript += `const handle = async (req, res) => (await bootstrap)${method ? `.${method}` : ''}(req, res);`;
+        bootstrapScript += `exports.handle = async (req, res) => (await bootstrap)${method ? `.${method}` : ''}(req, res);`;
     }
 
     const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
@@ -108,31 +106,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         await exec(`cp -r ${getProjectPath(packageJson.directories.serve, '*')} ${deployPath('hosting')}`);
     }
 
-    let firebaseProjectConfig = null;
-    const { project, site } = config;
-    if (project && site) {
-        // TODO check if firebase/auth is used
-        const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
-        if (serverRenderMethod && hasFirebaseDependency) {
-            const { default: firebaseTools }: typeof import('firebase-tools') = require('firebase-tools');
-            const { sites } = await firebaseTools.hosting.sites.list({
-                project,
-                ...defaultFirebaseToolsOptions(deployPath()),
-            });
-            const selectedSite = sites.find(it => shortSiteName(it) === site);
-            if (selectedSite) {
-                const { appId } = selectedSite;
-                if (appId) {
-                    const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(deployPath()));
-                    firebaseProjectConfig = result.sdkConfig;
-                } else {
-                    // TODO allow them to choose
-                    console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context`);
-                }
-            }
-        }
-    }
-
     if (serverRenderMethod) {
         const npmPackResults = JSON.parse(await exec(`npm pack ${getProjectPath()} --dry-run --json`) as string);
 
@@ -147,20 +120,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
                     )
                 )
         );
-        await Promise.all([
-            copyFile(getProjectPath('package-lock.json'), deployPath('functions', 'package-lock.json')).catch(() => {}),
-            copyFile(getProjectPath('yarn.lock'), deployPath('functions', 'yarn.lock')).catch(() => {}),
-            newPackageJson(packageJson, getProjectPath).then(json => writeFile(deployPath('functions', 'package.json'), json)),
-            writeFile(deployPath('functions', 'server.js'), newServerJs(config, firebaseProjectConfig, bootstrapScript)),
-        ]);
-
-        // TODO add to the firebaseTools log
-        await spawn('npm', ['i', '--prefix', deployPath('functions'), '--only', 'production'], {}, stdoutChunk => {
-            console.log(stdoutChunk.toString());
-        }, errChunk => {
-            console.error(errChunk.toString());
-        });
     }
 
-    return { usingCloudFunctions: !!serverRenderMethod, rewrites: [], redirects: [], headers: [] };
+    return { usingCloudFunctions: !!serverRenderMethod, framework: 'express', rewrites: [], redirects: [], headers: [], packageJson, bootstrapScript };
 }
