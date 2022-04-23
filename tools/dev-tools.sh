@@ -4,4 +4,4 @@ npm run clean:dev &&
     npm i -g firebase-tools &&
     cd $(npm root -g)/firebase-tools &&
     npm i --save --force $FIREBASE_FRAMEWORKS_TARBALL &&
-    cd $(pwd)
+    cd -
