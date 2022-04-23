@@ -152,6 +152,8 @@ jobs:
       - name: Relocate Artifacts
         run: mv firebase-frameworks-${{ github.run_id }} dist
       - name: Publish
-        run: ./dist/publish.sh
+        run: |
+          chmod +x ./dist/publish.sh
+          ./dist/publish.sh
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
