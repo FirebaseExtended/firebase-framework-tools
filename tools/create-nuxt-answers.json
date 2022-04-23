@@ -1,0 +1,12 @@
+{
+    "name": "foo",
+    "language": "ts",
+    "pm": "npm",
+    "ui": "none",
+    "features": [],
+    "linter": [],
+    "test": "none",
+    "mode": "universal",
+    "target": "static",
+    "devTools": []
+}

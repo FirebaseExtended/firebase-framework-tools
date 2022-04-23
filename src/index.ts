@@ -12,35 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { join } from 'path';
+import { basename, join } from 'path';
 import { exit } from 'process';
-import { getFirebaseTools, normalizedHostingConfig, getInquirer, needProjectId } from './firebase';
+import { getFirebaseTools, normalizedHostingConfigs, getInquirer, needProjectId } from './firebase';
+import { promises as fs } from 'fs';
 
 import { build } from './frameworks';
-import { DEFAULT_REGION } from './utils';
+import { defaultFirebaseToolsOptions, DEFAULT_REGION, shortSiteName, spawn } from './utils';
 
-export type PrepareOptions = {
-    includeCloudFunctions: boolean;
-}
+const { writeFile, copyFile } = fs;
 
-type BuildResult = Awaited<ReturnType<typeof build>> & { functionName: string, target: string, site: string, hostingDist: string, functionsDist: string, };
+const NODE_VERSION = parseInt(process.versions.node, 10).toString();
+const FIREBASE_ADMIN_VERSION = '__FIREBASE_ADMIN_VERSION__';
+const FIREBASE_FUNCTIONS_VERSION = '__FIREBASE_FUNCTIONS_VERSION__';
+const COOKIE_VERSION = '__COOKIE_VERSION__';
+const LRU_CACHE_VERSION = '__LRU_CACHE_VERSION__';
+// Aloow the version to be overriden this is stripped out before deploying to NPM (tools/prepare.ts)
+const FIREBASE_FRAMEWORKS_VERSION = process.env.FIREBASE_FRAMEWORKS_TARBALL || '__FIREBASE_FRAMEWORKS_VERSION__';
 
 export const prepare = async (targetNames: string[], context: any, options: any) => {
-    let startBuildQueue: (arg: []) => void;
-    let buildQueue = new Promise<BuildResult[]>((resolve) => startBuildQueue = resolve);
-    await getFirebaseTools();
-    const configs = normalizedHostingConfig(options, { resolveTargets: true });
-    if (configs.length === 0) return;
+    const firebaseTools = await getFirebaseTools();
     const project = needProjectId(context);
-    configs.forEach(({ source, site, target, public: publicDir }: any) => {
-        if (!source) return;
+    // options.site is not present when emulated. We could call requireHostingSite but IAM permissions haven't
+    // been booted up (at this point) and we may be offline, so just use projectId. Most of the time
+    // the default site is named the same as the project & for frameworks this is only used for naming the
+    // function... unless you're using authenticated server-context TODO explore the implication here.
+    const configs = normalizedHostingConfigs({ site: project, ...options}, { resolveTargets: true });
+    if (configs.length === 0) return;
+    const hostingConfig = options.config.get('hosting');
+    for (const { source, site, target, public: publicDir } of configs) {
+        if (!source) continue;
         const dist = join(process.cwd(), '.firebase', site);
         const hostingDist = join('.firebase', site, 'hosting');
         const functionsDist = join('.firebase', site, 'functions');
         if (publicDir) throw `hosting.public and hosting.source cannot both be set in firebase.json`;
         const getProjectPath = (...args: string[]) => join(process.cwd(), source, ...args);
         const functionName = `ssr${site.replace(/-/g, '')}`;
-        buildQueue = buildQueue.then(results => build({
+        const { usingCloudFunctions, rewrites, redirects, headers, framework, packageJson, bootstrapScript='' } = await build({
             dist,
             project,
             site,
@@ -48,17 +56,12 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             function: {
                 name: functionName,
                 region: DEFAULT_REGION,
-                gen: 2,
             },
-        }, getProjectPath).then(result => (results.push({ ...result, functionName, site, target, hostingDist, functionsDist }), results)));
-    });
-    startBuildQueue!([]);
-    const results = await buildQueue;
-    const hostingConfig = options.config.get('hosting');
-    await Promise.all(results.map(async ({ usingCloudFunctions, hostingDist, site, target, functionsDist, functionName }) => {
+        }, getProjectPath);
+        // TODO this is a little janky, explore a better way of doing this
         const hostingIndex = Array.isArray(hostingConfig) ? `[${hostingConfig.findIndex((it: any) => it.site === site || it.target === target)}]` : '';
         options.config.set(`hosting${hostingIndex}.public`, hostingDist);
-        const rewrites = options.config.get(`hosting${hostingIndex}.rewrites`) || [];
+        const existingRewrites = options.config.get(`hosting${hostingIndex}.rewrites`) || [];
         if (usingCloudFunctions) {
             if (context.hostingChannel) {
                 // TODO move to prompts
@@ -88,15 +91,114 @@ export const prepare = async (targetNames: string[], context: any, options: any)
                 }
             }
             // TODO get the other firebase.json modifications
-            options.config.set(`hosting${hostingIndex}.rewrites`, [ ...rewrites, {
-                source: '**',
-                function: functionName,
-            }]);
+            options.config.set(`hosting${hostingIndex}.rewrites`, [
+                ...existingRewrites,
+                ...rewrites, {
+                    source: '**',
+                    function: functionName,
+                }
+            ]);
+
+            let firebaseProjectConfig = null;
+            // TODO check if firebase/auth is used
+            const hasFirebaseDependency = !!packageJson.dependencies?.firebase;
+            if (hasFirebaseDependency) {
+                const { sites } = await firebaseTools.hosting.sites.list({
+                    project,
+                    ...defaultFirebaseToolsOptions(process.cwd()),
+                });
+                const selectedSite = sites.find(it => shortSiteName(it) === site);
+                if (selectedSite) {
+                    const { appId } = selectedSite;
+                    if (appId) {
+                        const result = await firebaseTools.apps.sdkconfig('web', appId, defaultFirebaseToolsOptions(process.cwd()));
+                        firebaseProjectConfig = result.sdkConfig;
+                    } else {
+                        // TODO add color yellow, maybe prompt?
+                        console.warn(`No Firebase app associated with site ${site}, unable to provide authenticated server context`);
+                    }
+                }
+            }
+            const firebaseAwareness = !!firebaseProjectConfig;
+
+            packageJson.main = 'server.js';
+            packageJson.dependencies ||= {};
+            // TODO dev mode override to local directory
+            if (FIREBASE_FRAMEWORKS_VERSION.startsWith('/')) {
+                const filename = basename(FIREBASE_FRAMEWORKS_VERSION);
+                await copyFile(FIREBASE_FRAMEWORKS_VERSION, join(functionsDist, filename));
+                packageJson.dependencies['firebase-frameworks'] = `./${filename}`;
+            } else {
+                packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
+            }
+            // TODO test these with semver, error if already set out of range
+            packageJson.dependencies['firebase-admin'] ||= FIREBASE_ADMIN_VERSION;
+            packageJson.dependencies['firebase-functions'] ||= FIREBASE_FUNCTIONS_VERSION;
+            if (firebaseAwareness) {
+                packageJson.dependencies['cookie'] ||= COOKIE_VERSION;
+                packageJson.dependencies['lru-cache'] ||= LRU_CACHE_VERSION;
+            }
+            packageJson.engines ||= {};
+            packageJson.engines.node ||= NODE_VERSION;
+
+            await writeFile(join(functionsDist, 'package.json'), JSON.stringify(packageJson, null, 2));
+
+            await copyFile(getProjectPath('package-lock.json'), join(functionsDist, 'package-lock.json')).catch(() => {});
+
+            // TODO support yarn?
+            // await copyFile(getProjectPath('yarn.lock'), join(functionsDist, 'yarn.lock')).catch(() => {});
+
+            // Only need to do this in dev, since we have a functions.yaml, so discovery isn't needed
+            // Welp, that didn't work, since firebase-tools checks that they have a minimum firebase-frameworks SDK installed...
+            // TODO explore symlinks and ways to make this faster, better, stronger
+            await spawn('npm', ['i', '--prefix', functionsDist, '--only', 'production', '--no-audit', '--no-fund', '--silent'], {}, stdoutChunk => {
+                console.log(stdoutChunk.toString());
+            }, errChunk => {
+                console.error(errChunk.toString());
+            });
+
+            // TODO allow configuration of the Cloud Function
+            await writeFile(join(functionsDist, 'settings.js'), `exports.HTTPS_OPTIONS = {};
+exports.FRAMEWORK = '${framework}';
+exports.FIREBASE_CONFIG = ${JSON.stringify(firebaseProjectConfig)};
+`);
+
+            if (bootstrapScript) {
+                await writeFile(join(functionsDist, 'bootstrap.js'), bootstrapScript);
+            }
+            await writeFile(join(functionsDist, 'server.js'), `exports['${functionName}'] = require('firebase-frameworks/server').default;\n`);
+            await writeFile(join(functionsDist, 'functions.yaml'), JSON.stringify({
+                endpoints: {
+                    [functionName]: {
+                        platform:  'gcfv2',
+                        region: [DEFAULT_REGION],
+                        labels: {},
+                        httpsTrigger: {},
+                        entryPoint: functionName
+                    }
+                },
+                specVersion: 'v1alpha1',
+                // TODO add persistent disk if needed
+                requiredAPIs: []
+            }, null, 2));
         } else {
-            options.config.set(`hosting${hostingIndex}.rewrites`, [...rewrites, {
-                source: '**',
-                destination: '/index.html',
-            }]);
+            options.config.set(`hosting${hostingIndex}.rewrites`, [
+                ...existingRewrites,
+                ...rewrites, {
+                    source: '**',
+                    destination: '/index.html',
+                }
+            ]);
         }
-    }));
+        const existingRedirects = options.config.get(`hosting${hostingIndex}.redirects`) || [];
+        options.config.set(`hosting${hostingIndex}.redirects`, [
+            ...existingRedirects,
+            ...redirects
+        ]);
+        const existingHeaders = options.config.get(`hosting${hostingIndex}.headers`) || [];
+        options.config.set(`hosting${hostingIndex}.headers`, [
+            ...existingHeaders,
+            ...headers
+        ]);
+    }
 }

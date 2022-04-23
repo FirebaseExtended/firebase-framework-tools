@@ -4,16 +4,16 @@
 
 <table>
     <thead>
-        <tr><td></td><th colspan="2"><sub><sup>Built-in frameworks</sub></sup></th><td></td></tr>
-        <tr><th></th><th>Next.js</th><th>Nuxt</th><th>Custom</th></tr>
+        <tr><td></td><th colspan="3"><sub><sup>Built-in frameworks</sub></sup></th><td></td></tr>
+        <tr><th></th><th>Next.js</th><th>Angular</th><th>Nuxt</th><th>Custom</th></tr>
     </thead>
     <tbody>
-        <tr><th>SSR</th><td>✅</td><td>✅<td>👍</td></tr>
-        <tr><th>SPA</th><td>✅</td><td>✅</td><td>👍</td></tr>
-        <tr><th>SSG</th><td>✅</td><td>✅</td><td>👍</td></tr>
-        <tr><th>SWR/E</th><td>❌</a></td><td>❌</a></td><td>❌</a></td></tr>
-        <tr><th>Auth+SSR</th><td>✅<td>👍</td><td>👍</td></tr>
-        <tr><th>Status</th><td>🔬</td><td>🔬</td><td>🔬</td></tr>
+        <tr><th>SSR</th><td>✅</td><td>✅</td><td>✅</td><td>👍</td></tr>
+        <tr><th>SPA</th><td>✅</td><td>✅</td><td>✅</td><td>👍</td></tr>
+        <tr><th>SSG</th><td>✅</td><td>✅</td><td>✅</td><td>👍</td></tr>
+        <tr><th>SWR/E</th><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        <tr><th>Auth+SSR</th><td>✅</td><td>✅</td><td>👍</td><td>👍</td></tr>
+        <tr><th>Status</th><td>🔬</td><td>🔬</td><td>🔬</td><td>🔬</td></tr>
     </tbody>
 </table>
 

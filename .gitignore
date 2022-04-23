@@ -5,3 +5,7 @@ node_modules
 *.log
 .DS_Store
 /examples/
+/e2e/
+/firebase-tools/
+firebase-tools-*.tgz
+/package/

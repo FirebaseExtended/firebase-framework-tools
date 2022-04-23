@@ -38,7 +38,7 @@ jobs:
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Build
-        run: ./build.sh
+        run: ./tools/prepare.sh
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         with:
@@ -51,9 +51,9 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, macos-latest ]
         node: [ "14", "16", "18" ]
-        framework: [ "next@12", "nuxt@2" ]
+        framework: [ "next", "nuxt", "angular" ]
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
@@ -84,13 +84,17 @@ jobs:
         uses: actions/download-artifact@v2
       - name: Relocate Artifacts
         run: mv firebase-frameworks-${{ github.run_id }} dist
+      - name: Test
+        run: npm run test:${{ matrix.framework }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
   contribute:
     runs-on: ${{ matrix.os }}
     name: Contribute Node ${{ matrix.node }} (${{ matrix.os }})
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, macos-latest ]
         node: [ "14", "16", "18" ]
         exclude:
           # we build with this combination, safely skip
@@ -123,7 +127,7 @@ jobs:
   test_and_contribute:
     runs-on: ubuntu-latest
     name: Branch protection
-    needs: ['test', 'contribute']
+    needs: ['build', 'contribute']
     steps:
       - run: true
 
