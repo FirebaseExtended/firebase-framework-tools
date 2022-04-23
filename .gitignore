@@ -6,3 +6,6 @@ node_modules
 .DS_Store
 /examples/
 /e2e/
+/firebase-tools/
+firebase-tools-*.tgz
+/package/

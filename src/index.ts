@@ -27,9 +27,10 @@ const FIREBASE_ADMIN_VERSION = '__FIREBASE_ADMIN_VERSION__';
 const FIREBASE_FUNCTIONS_VERSION = '__FIREBASE_FUNCTIONS_VERSION__';
 const COOKIE_VERSION = '__COOKIE_VERSION__';
 const LRU_CACHE_VERSION = '__LRU_CACHE_VERSION__';
-const FIREBASE_FRAMEWORKS_VERSION = '__FIREBASE_FRAMEWORKS_VERSION__';
+// Aloow the version to be overriden this is stripped out before deploying to NPM (tools/prepare.ts)
+const FIREBASE_FRAMEWORKS_VERSION = process.env.FIREBASE_FRAMEWORKS_TARBALL || '__FIREBASE_FRAMEWORKS_VERSION__';
 
-export const prepare = async (targetNames: string[], context: any, options: any, dev: boolean) => {
+export const prepare = async (targetNames: string[], context: any, options: any) => {
     const firebaseTools = await getFirebaseTools();
     const project = needProjectId(context);
     // options.site is not present when emulated. We could call requireHostingSite but IAM permissions haven't
