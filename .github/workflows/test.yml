@@ -146,7 +146,8 @@ jobs:
         uses: actions/setup-node@v2-beta
         with:
           node-version: '16'
-          registry-url: 'https://wombat-dressing-room.appspot.com'
+          # registry-url: 'https://wombat-dressing-room.appspot.com'
+          registry-url: 'https://registry.npmjs.org'
       - name: 'Download Artifacts'
         uses: actions/download-artifact@v2
       - name: Relocate Artifacts
@@ -156,4 +157,5 @@ jobs:
           chmod +x ./dist/publish.sh
           ./dist/publish.sh
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_NPM_TOKEN }}
