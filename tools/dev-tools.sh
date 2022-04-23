@@ -4,7 +4,6 @@ npm run clean:dev &&
     tar -xf $(npm pack firebase-tools) &&
     mv package firebase-tools &&
     cd firebase-tools &&
-    (echo $(cat package.json | jq 'del(.scripts.prepare)') > package.json) &&
-    npm i --save --force $FIREBASE_FRAMEWORKS_TARBALL &&
-    npm install --force -g . &&
+    npm i --save --force --ignore-scripts $FIREBASE_FRAMEWORKS_TARBALL &&
+    npm install --ignore-scripts --force -g . &&
     cd ..
