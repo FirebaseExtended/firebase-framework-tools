@@ -21,7 +21,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "e2e:build-next": "rm -rf e2e && npx create-next-app e2e --use-npm --ts",
     "e2e:build-nuxt": "rm -rf e2e && npx create-nuxt-app e2e --answers '$(cat ./tools/create-nuxt-answers.json)'",
-    "e2e:build-angular": "rm -rf e2e && ng new e2e --defaults --skip-git",
+    "e2e:build-angular": "rm -rf e2e && npx @angular/cli new e2e --defaults --skip-git",
     "e2e:config": "cp ./tools/firebase.json ./e2e && cp ./tools/.firebaserc ./e2e",
     "test:e2e": "npm run e2e:config && cd e2e && firebase emulators:exec \"exit 0\"",
     "clean:build": "rm -rf dist",
