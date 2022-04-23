@@ -121,6 +121,7 @@ export const prepare = async (targetNames: string[], context: any, options: any,
             const firebaseAwareness = !!firebaseProjectConfig;
 
             packageJson.main = 'server.js';
+            packageJson.dependencies ||= {};
             // TODO dev mode override to local directory
             if (FIREBASE_FRAMEWORKS_VERSION.startsWith('/')) {
                 const filename = basename(FIREBASE_FRAMEWORKS_VERSION);

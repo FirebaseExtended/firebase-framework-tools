@@ -94,8 +94,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...args);
 
-    await rm(deployPath(), { recursive: true, force: true });
-
     if (serverRenderMethod) {
         await mkdir(deployPath('functions'), { recursive: true });
     }

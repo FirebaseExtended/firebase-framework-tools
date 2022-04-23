@@ -21,7 +21,7 @@ const { readFile, rm, mkdir, readdir } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    const { loadNuxt, buildNuxt, loadNuxtConfig }: typeof import('@nuxt/kit') = await import(getProjectPath('node_modules', '@nuxt', 'kit', 'dist', 'index.mjs'));
+    const { loadNuxt, buildNuxt } = await import('@nuxt/kit');
 
     const nuxtApp = await loadNuxt({
         cwd: getProjectPath(),
@@ -30,25 +30,15 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             _generate: true,
         },
     });
-    console.log(nuxtApp);
     const { options: { app: { baseURL, buildAssetsDir } } } = nuxtApp;
 
     await buildNuxt(nuxtApp);
 
-    const nuxtConfig = await loadNuxtConfig({
-        cwd: getProjectPath(),
-    });
-
-    // TODO don't hardcode, can this be configured?
     const distDir = '.output';
 
     const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
-
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...baseURL.split('/'), ...args);
 
-    await rm(deployPath(), { recursive: true, force: true });
-
-    // TODO also check Nuxt's settings
     const usingCloudFunctions = !!config.function;
     await mkdir(deployPath('functions'), { recursive: true });
     await mkdir(getHostingPath(buildAssetsDir), { recursive: true });

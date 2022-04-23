@@ -24,7 +24,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     let nuxt;
     try {
-        nuxt = require(getProjectPath('node_modules', 'nuxt'));
+        nuxt = require('nuxt');
     } catch(e) {
         return await buildNuxt3(config, getProjectPath);
     }
@@ -35,8 +35,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     });
 
     const deployPath = (...args: string[]) => join(config.dist, ...args);
-
-    await rm(deployPath(), { recursive: true, force: true });
 
     const { options: { target, app: { basePath, assetsPath }, buildDir, dir: { static: staticDir } } } = await nuxt.build(nuxtApp);
     await mkdir(deployPath('hosting', basePath, assetsPath), { recursive: true });

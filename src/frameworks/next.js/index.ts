@@ -16,6 +16,7 @@ import { promises as fsPromises } from 'fs';
 import { dirname, join, relative } from 'path';
 import type { NextConfig } from 'next/dist/server/config-shared';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
+import nextBuild from 'next/dist/build';
 
 import { DeployConfig, PathFactory, exec } from '../../utils';
 
@@ -23,7 +24,6 @@ const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    const { default: nextBuild }: typeof import('next/dist/build') = require(getProjectPath('node_modules', 'next', 'dist', 'build'));
     await nextBuild(getProjectPath(), null, false, false, true);
     // TODO be a bit smarter about this
     await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`, { cwd: getProjectPath() }).catch(() => {});
@@ -43,8 +43,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...basePath.split('/'), ...args);
-
-    await rm(deployPath(), { recursive: true, force: true });
 
     await mkdir(getHostingPath('_next', 'static'), { recursive: true });
 

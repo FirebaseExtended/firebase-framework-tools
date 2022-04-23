@@ -43,6 +43,8 @@
     "tslib": "^2.3.1"
   },
   "devDependencies": {
+    "@angular-devkit/architect": "^0.1303.3",
+    "@angular-devkit/core": "^13.3.3",
     "@nuxt/types": "^2.15.8",
     "@types/cookie": "^0.5.1",
     "@types/inquirer": "^8.1.3",
