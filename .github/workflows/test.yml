@@ -72,11 +72,11 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.node }}-
+      - name: Install npm@8.5.0
+        run: npm install -g npm@8.5.0
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
-        run: |
-          npm install -g npm@8.5.0
-          npm ci
+        run: npm ci
       - name: Firebase emulator cache
         uses: actions/cache@v2
         with:
