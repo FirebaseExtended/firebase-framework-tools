@@ -74,7 +74,9 @@ jobs:
             ${{ runner.os }}-${{ matrix.node }}-
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: |
+          npm install -g npm@8.5.0
+          npm ci
       - name: Firebase emulator cache
         uses: actions/cache@v2
         with:
