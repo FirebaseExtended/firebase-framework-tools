@@ -26,9 +26,9 @@
     "clean:build": "rm -rf dist",
     "clean:e2e": "rm -rf e2e",
     "clean:dev": "npm uninstall -g firebase-tools && rm -rf firebase-tools",
-    "dev": "npm run build && source ./tools/dev-tools.sh",
-    "test:next": "source ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e",
-    "test:nuxt": "source ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e"
+    "dev": "npm run build && ./tools/dev-tools.sh",
+    "test:next": ". ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e",
+    "test:nuxt": ". ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e"
   },
   "exports": {
     ".": {

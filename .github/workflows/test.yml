@@ -51,9 +51,9 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, macos-latest ]
         node: [ "14", "16", "18" ]
-        framework: [ "next", "nuxt" ]
+        framework: [ "next", "nuxt", "angular" ]
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
@@ -94,7 +94,7 @@ jobs:
     name: Contribute Node ${{ matrix.node }} (${{ matrix.os }})
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, macos-latest ]
         node: [ "14", "16", "18" ]
         exclude:
           # we build with this combination, safely skip
