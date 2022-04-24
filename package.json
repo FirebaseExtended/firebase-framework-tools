@@ -1,9 +1,9 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.3.0",
-  "description": "An experimental framework-aware Firebase CLI",
+  "version": "0.4.0",
+  "description": "Experimental addon to the Firebase CLI to add web framework support",
   "main": "dist/index.js",
-  "repository": "github:FirebaseExtended/firebase-framework-tools",
+  "repository": "FirebaseExtended/firebase-framework-tools",
   "author": {
     "name": "Firebase",
     "url": "https://firebase.google.com/"
@@ -14,7 +14,11 @@
   "keywords": [
     "firebase",
     "firebase-tools",
-    "next.js"
+    "next.js",
+    "angular",
+    "nuxt",
+    "nuxt3",
+    "ssr"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc && ts-node ./tools/build.ts",
