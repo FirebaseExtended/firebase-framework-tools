@@ -89,7 +89,10 @@ jobs:
       - name: Relocate Artifacts
         run: mv firebase-frameworks-${{ github.run_id }} dist
       - name: Test
-        run: npm run test:${{ matrix.framework }}
+        run: |
+          npm i -g firebase-tools
+          npm i --prefix $(npm root -g)/firebase-tools --force --save .
+          npm run test:${{ matrix.framework }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 

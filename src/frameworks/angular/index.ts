@@ -44,26 +44,23 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             serverTarget = targetFromTargetString(options.serverTarget);
         if (prerenderTarget) {
             const prerenderOptions = await architectHost.getOptionsForTarget(prerenderTarget);
-            if (!prerenderOptions) throw 'foo';
-            if (typeof prerenderOptions.browserTarget !== 'string') throw 'foo';
-            if (typeof prerenderOptions.serverTarget !== 'string') throw 'foo';
             if (browserTarget) {
-                if (targetStringFromTarget(browserTarget) !== prerenderOptions.browserTarget)
+                if (targetStringFromTarget(browserTarget) !== prerenderOptions?.browserTarget)
                     throw 'foo';
             } else {
+                if (typeof prerenderOptions?.browserTarget !== 'string') throw 'foo';
                 browserTarget = targetFromTargetString(prerenderOptions.browserTarget);
             }
-            if (serverTarget && targetStringFromTarget(serverTarget) !== prerenderOptions.serverTarget)
+            if (serverTarget && targetStringFromTarget(serverTarget) !== prerenderOptions?.serverTarget)
                 throw 'foo';
         }
     } else if (workspaceProject.targets.has('prerender')) {
         // TODO test and warn if production doesn't exist, fallback to default
         prerenderTarget = { project, target: 'prerender', configuration: 'production' };
         const production = await architectHost.getOptionsForTarget(prerenderTarget);
-        if (!production) throw 'foo';
-        if (typeof production.browserTarget !== 'string') throw 'foo';
-        if (typeof production.serverTarget !== 'string') throw 'foo';
+        if (typeof production?.browserTarget !== 'string') throw 'foo';
         browserTarget = targetFromTargetString(production.browserTarget);
+        if (typeof production?.serverTarget !== 'string') throw 'foo';
         serverTarget = targetFromTargetString(production.serverTarget);
     } else {
         // TODO test and warn if production doesn't exist, fallback to default

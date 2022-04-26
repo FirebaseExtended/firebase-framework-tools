@@ -30,10 +30,9 @@
     "test:e2e": "npm run e2e:config && cd e2e && firebase emulators:exec \"exit 0\"",
     "clean:build": "rm -rf dist",
     "clean:e2e": "rm -rf e2e",
-    "clean:dev": "npm uninstall -g firebase-tools && rm -rf firebase-tools",
-    "test:angular": ". ./tools/dev-tools.sh && npm run e2e:build-angular && npm run test:e2e",
-    "test:next": ". ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e",
-    "test:nuxt": ". ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e"
+    "test:angular": "npm run e2e:build-angular && npm run test:e2e",
+    "test:next": "npm run e2e:build-next && npm run test:e2e",
+    "test:nuxt": "npm run e2e:build-next && npm run test:e2e"
   },
   "exports": {
     ".": {
