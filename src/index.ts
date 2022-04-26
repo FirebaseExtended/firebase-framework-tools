@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { basename, join } from 'path';
+import { join } from 'path';
 import { exit } from 'process';
-import { getFirebaseTools, normalizedHostingConfigs, getInquirer, needProjectId } from './firebase';
 import { promises as fs } from 'fs';
 
 import { build } from './frameworks';
 import { defaultFirebaseToolsOptions, DEFAULT_REGION, shortSiteName, spawn } from './utils';
+import { getFirebaseTools, normalizedHostingConfigs, getInquirer, needProjectId } from './firebase';
 
 const { writeFile, copyFile } = fs;
 
@@ -27,8 +27,7 @@ const FIREBASE_ADMIN_VERSION = '__FIREBASE_ADMIN_VERSION__';
 const FIREBASE_FUNCTIONS_VERSION = '__FIREBASE_FUNCTIONS_VERSION__';
 const COOKIE_VERSION = '__COOKIE_VERSION__';
 const LRU_CACHE_VERSION = '__LRU_CACHE_VERSION__';
-// Aloow the version to be overriden this is stripped out before deploying to NPM (tools/prepare.ts)
-const FIREBASE_FRAMEWORKS_VERSION = process.env.FIREBASE_FRAMEWORKS_TARBALL || '__FIREBASE_FRAMEWORKS_VERSION__';
+const FIREBASE_FRAMEWORKS_VERSION = '__FIREBASE_FRAMEWORKS_VERSION__';
 
 export const prepare = async (targetNames: string[], context: any, options: any) => {
     const firebaseTools = await getFirebaseTools();
@@ -123,14 +122,7 @@ export const prepare = async (targetNames: string[], context: any, options: any)
 
             packageJson.main = 'server.js';
             packageJson.dependencies ||= {};
-            // TODO dev mode override to local directory
-            if (FIREBASE_FRAMEWORKS_VERSION.startsWith('/')) {
-                const filename = basename(FIREBASE_FRAMEWORKS_VERSION);
-                await copyFile(FIREBASE_FRAMEWORKS_VERSION, join(functionsDist, filename));
-                packageJson.dependencies['firebase-frameworks'] = `./${filename}`;
-            } else {
-                packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
-            }
+            packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
             // TODO test these with semver, error if already set out of range
             packageJson.dependencies['firebase-admin'] ||= FIREBASE_ADMIN_VERSION;
             packageJson.dependencies['firebase-functions'] ||= FIREBASE_FUNCTIONS_VERSION;
@@ -145,13 +137,11 @@ export const prepare = async (targetNames: string[], context: any, options: any)
 
             await copyFile(getProjectPath('package-lock.json'), join(functionsDist, 'package-lock.json')).catch(() => {});
 
-            // TODO support yarn?
-            // await copyFile(getProjectPath('yarn.lock'), join(functionsDist, 'yarn.lock')).catch(() => {});
-
             // Only need to do this in dev, since we have a functions.yaml, so discovery isn't needed
             // Welp, that didn't work, since firebase-tools checks that they have a minimum firebase-frameworks SDK installed...
             // TODO explore symlinks and ways to make this faster, better, stronger
-            await spawn('npm', ['i', '--prefix', functionsDist, '--only', 'production', '--no-audit', '--no-fund', '--silent'], {}, stdoutChunk => {
+            //      log to firebase-tools
+            await spawn('npm', ['i', '--only', 'production', '--no-audit', '--no-fund', '--silent'], { cwd: functionsDist }, stdoutChunk => {
                 console.log(stdoutChunk.toString());
             }, errChunk => {
                 console.error(errChunk.toString());

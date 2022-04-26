@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio } from 'child_process';
+import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio, spawnSync } from 'child_process';
 import { FirebaseHostingSite } from 'firebase-tools';
 import { join } from 'path';
 
@@ -72,3 +72,9 @@ export const defaultFirebaseToolsOptions = (projectRoot: string) => ({
 export type PathFactory = (...args: string[]) => string;
 
 export const getProjectPathFactory = (config: DeployConfig): PathFactory => (...args) => join(process.cwd(), config.prefix ?? '.', ...args);
+
+export const findDependency = (name: string, cwd=process.cwd()) => {
+    const result = spawnSync('npm', ['list', name, '--json'], { cwd });
+    if (!result.stdout) return undefined;
+    return JSON.parse(result.stdout.toString()).dependencies?.[name];
+}

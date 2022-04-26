@@ -31,7 +31,6 @@
     "clean:build": "rm -rf dist",
     "clean:e2e": "rm -rf e2e",
     "clean:dev": "npm uninstall -g firebase-tools && rm -rf firebase-tools",
-    "dev": "npm run build && ./tools/dev-tools.sh",
     "test:angular": ". ./tools/dev-tools.sh && npm run e2e:build-angular && npm run test:e2e",
     "test:next": ". ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e",
     "test:nuxt": ". ./tools/dev-tools.sh && npm run e2e:build-next && npm run test:e2e"

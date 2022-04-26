@@ -1,96 +1,141 @@
-import { spawnSync } from 'child_process';
+import { NodeJsAsyncHost } from '@angular-devkit/core/node';
+import { workspaces, logging } from '@angular-devkit/core';
+import { WorkspaceNodeModulesArchitectHost } from '@angular-devkit/architect/node';
+import { Target, Architect, targetFromTargetString, targetStringFromTarget } from '@angular-devkit/architect';
 import { promises } from 'fs';
 import { join } from 'path';
 
-import { DeployConfig, exec, PathFactory, spawn } from '../../utils';
+import { DeployConfig, exec, findDependency, PathFactory, spawn } from '../../utils';
 
 const { mkdir } = promises;
 
-const escapeRegExp = (str: string) => str.replace(/[\-\[\]\/{}()*+?.\\^$|]/g, '\\$&');
-
-const findPackageVersion = (packageManager: string, name: string) => {
-    const match = spawnSync(packageManager, ['list', name], { cwd: process.cwd() }).output.toString().match(`[^|\s]${escapeRegExp(name)}[@| ][^\s]+(\s.+)?$`);
-    return match ? match[0].split(new RegExp(`${escapeRegExp(name)}[@| ]`))[1].split(/\s/)[0] : null;
-};
-
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    const { NodeJsAsyncHost } = await import('@angular-devkit/core/node');
-    const { workspaces, logging } = await import('@angular-devkit/core');
-    const { WorkspaceNodeModulesArchitectHost } = await import('@angular-devkit/architect/node');
-    const { Architect } = await import('@angular-devkit/architect');
+    // TODO log to firebase-tools
+    const logger = new logging.Logger('firebase-tools');
+    logger.subscribe(it => console.log(it));
 
     const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
-    const logger = new logging.Logger('foo');
-    // TODO pipe to firebase-tools log
-    logger.subscribe(it => console.log(it));
     const { workspace } = await workspaces.readWorkspace(getProjectPath(), host);
     const architectHost = new WorkspaceNodeModulesArchitectHost(workspace, getProjectPath());
     const architect = new Architect(architectHost);
-    const angularJson = JSON.parse(await host.readFile('angular.json'));
-    const project = angularJson.defaultProject;
+
+    let project: string|undefined = (globalThis as any).NG_DEPLOY_PROJECT;
+    let browserTarget: Target|undefined;
+    let serverTarget: Target|undefined;;
+    let prerenderTarget: Target|undefined;
+
+    if (!project) {
+        const angularJson = JSON.parse(await host.readFile('angular.json'));
+        project = angularJson.defaultProject;
+        if (!project) throw `angular.json missing defaultProject`;
+    }
+    // TODO if there are multiple projects warn
     const workspaceProject = workspace.projects.get(project);
-    if (!workspaceProject) throw 'foo';
-    const buildTarget = workspaceProject.targets.get('build');
-    if (!buildTarget) throw 'bar';
-    const serverTarget = workspaceProject.targets.get('server');
-    const usingCloudFunctions = !!serverTarget;
-    const prerenderTarget = workspaceProject.targets.get('prerender');
+    if (!workspaceProject) throw `No project ${project} found.`;
+    const deployTargetDefinition = workspaceProject.targets.get('deploy');
+    if (deployTargetDefinition?.builder === '@angular/fire:deploy') {
+        const options = deployTargetDefinition.options;
+        if (typeof options?.prerenderTarget === 'string')
+            prerenderTarget = targetFromTargetString(options.prerenderTarget);
+        if (typeof options?.browserTarget === 'string')
+            browserTarget = targetFromTargetString(options.browserTarget);
+        if (typeof options?.serverTarget === 'string')
+            serverTarget = targetFromTargetString(options.serverTarget);
+        if (prerenderTarget) {
+            const prerenderOptions = await architectHost.getOptionsForTarget(prerenderTarget);
+            if (!prerenderOptions) throw 'foo';
+            if (typeof prerenderOptions.browserTarget !== 'string') throw 'foo';
+            if (typeof prerenderOptions.serverTarget !== 'string') throw 'foo';
+            if (browserTarget) {
+                if (targetStringFromTarget(browserTarget) !== prerenderOptions.browserTarget)
+                    throw 'foo';
+            } else {
+                browserTarget = targetFromTargetString(prerenderOptions.browserTarget);
+            }
+            if (serverTarget && targetStringFromTarget(serverTarget) !== prerenderOptions.serverTarget)
+                throw 'foo';
+        }
+    } else if (workspaceProject.targets.has('prerender')) {
+        // TODO test and warn if production doesn't exist, fallback to default
+        prerenderTarget = { project, target: 'prerender', configuration: 'production' };
+        const production = await architectHost.getOptionsForTarget(prerenderTarget);
+        if (!production) throw 'foo';
+        if (typeof production.browserTarget !== 'string') throw 'foo';
+        if (typeof production.serverTarget !== 'string') throw 'foo';
+        browserTarget = targetFromTargetString(production.browserTarget);
+        serverTarget = targetFromTargetString(production.serverTarget);
+    } else {
+        // TODO test and warn if production doesn't exist, fallback to default
+        const configuration = 'production';
+        if (workspaceProject.targets.has('build'))
+            browserTarget = { project, target: 'built', configuration };
+        if (workspaceProject.targets.has('server'))
+            serverTarget = { project, target: 'server', configuration };
+    }
+
+    const scheduleTarget = async (target: Target) => {
+        const run = await architect.scheduleTarget(target, undefined, { logger });
+        const { success, error } = await run.output.toPromise();
+        if (!success) throw new Error(error);
+    }
+
+    if (!browserTarget) throw 'No build target...';
+
     if (prerenderTarget) {
         // TODO fix once we can migrate to ESM. Spawn for now.
         // ERR require() of ES Module .../node_modules/@nguniversal/express-engine/fesm2015/express-engine.mjs not supported.
         //     Instead change the require of .../node_modules/@nguniversal/express-engine/fesm2015/express-engine.mjs to a dynamic
         //     import() which is available in all CommonJS modules.
-        // const run = await architect.scheduleTarget({ project, target: 'prerender', configuration: 'production' }, undefined, { logger });
-        // const result = await run.output.toPromise();
-        // console.log(result);
-        // if (!result.success) throw result.error;
+        // await scheduleTarget(prerenderTarget);
         await spawn(
             'node_modules/.bin/ng',
-            ['run', [project, 'prerender'].join(':')],
-            {cwd: process.cwd() },
+            ['run', targetStringFromTarget(prerenderTarget)],
+            { cwd: process.cwd() },
+            // TODO log to firebase-tools
             out => console.log(out.toString()),
             err => console.error(err.toString())
         );
     } else {
-        const run = await architect.scheduleTarget({ project, target: 'build' }, undefined, { logger });
-        const { error, success } = await run.output.toPromise();
-        if (!success) throw error;
-        if (serverTarget) {
-            const run = await architect.scheduleTarget({ project, target: 'server' }, undefined, { logger });
-            const { error, success } = await run.output.toPromise();
-            if (!success) throw error;
-        }
+        await scheduleTarget(browserTarget);
+        if (serverTarget) await scheduleTarget(serverTarget);
     }
 
     const deployPath = (...args: string[]) => join(config.dist, ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...args);
 
-    const browserOutputPath = buildTarget.options!.outputPath as string;
+    const browserTargetOptions = await architectHost.getOptionsForTarget(browserTarget);
+    if (typeof browserTargetOptions?.outputPath !== 'string') throw 'foo';
+    const browserOutputPath = browserTargetOptions.outputPath;
     await mkdir(getHostingPath(), { recursive: true });
     await exec(`cp -r ${getProjectPath(browserOutputPath)}/* ${getHostingPath()}`);
 
+    const usingCloudFunctions = !!serverTarget;
+
     let bootstrapScript = '';
     const packageJson = JSON.parse(await host.readFile('package.json'));
-    if (usingCloudFunctions) {
-        const serverOutputPath = serverTarget.options!.outputPath as string;
+    if (serverTarget) {
+        const serverTargetOptions = await architectHost.getOptionsForTarget(serverTarget);
+        if (typeof serverTargetOptions?.outputPath !== 'string') throw 'foo';
+        const serverOutputPath = serverTargetOptions.outputPath;
         await mkdir(deployPath('functions', serverOutputPath), { recursive: true });
         await mkdir(deployPath('functions', browserOutputPath), { recursive: true });
         await exec(`cp -r ${getProjectPath(serverOutputPath)}/* ${deployPath('functions', serverOutputPath)}`);
         await exec(`cp -r ${getProjectPath(browserOutputPath)}/* ${deployPath('functions', browserOutputPath)}`);
         bootstrapScript = `exports.handle = require('./${serverOutputPath}/main.js').app();\n`;
-        const bundleDependencies = serverTarget.options?.bundleDependencies ?? true;
+        const bundleDependencies = serverTargetOptions.bundleDependencies ?? true;
         if (bundleDependencies) {
-            const packageManager = angularJson.cli?.packageManager ?? 'npm';
             const dependencies: Record<string, string> = {};
-            const externalDependencies: string[] = serverTarget.options?.externalDependencies as any || [];
+            const externalDependencies: string[] = serverTargetOptions.externalDependencies as any || [];
             externalDependencies.forEach(externalDependency => {
-                const packageVersion = findPackageVersion(packageManager, externalDependency);
+                const packageVersion = findDependency(externalDependency)?.version;
                 if (packageVersion) { dependencies[externalDependency] = packageVersion; }
             });
             packageJson.dependencies = dependencies;
         }
     }
+
+    // TODO add immutable header on static assets
 
     return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], framework: 'express', packageJson, bootstrapScript };
 };
