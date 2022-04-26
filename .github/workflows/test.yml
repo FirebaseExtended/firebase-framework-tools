@@ -91,7 +91,7 @@ jobs:
       - name: Test
         run: |
           npm i -g firebase-tools
-          npm i --prefix $(npm root -g)/firebase-tools --force --save .
+          npm i --prefix $(npm root -g)/firebase-tools --ignore-scripts --force --save .
           npm run test:${{ matrix.framework }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
