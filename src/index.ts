@@ -121,6 +121,7 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             const firebaseAwareness = !!firebaseProjectConfig;
 
             packageJson.main = 'server.js';
+            delete packageJson.devDependencies;
             packageJson.dependencies ||= {};
             packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
             // TODO test these with semver, error if already set out of range
