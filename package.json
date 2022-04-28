@@ -21,7 +21,7 @@
     "ssr"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc && ts-node ./tools/build.ts",
+    "build": "rm -rf dist && tsc && ts-node ./tools/build.ts && npm pack .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "e2e:build-next": "rm -rf e2e && npx create-next-app e2e --use-npm --ts",
     "e2e:build-nuxt": "rm -rf e2e && npx create-nuxt-app e2e --answers '$(cat ./tools/create-nuxt-answers.json)'",

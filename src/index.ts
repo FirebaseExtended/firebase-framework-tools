@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { join } from 'path';
+import { basename, join } from 'path';
 import { exit } from 'process';
 import { promises as fs } from 'fs';
 
@@ -123,7 +123,14 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             packageJson.main = 'server.js';
             delete packageJson.devDependencies;
             packageJson.dependencies ||= {};
-            packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
+            if (FIREBASE_FRAMEWORKS_VERSION.startsWith('file:')) {
+                const file = FIREBASE_FRAMEWORKS_VERSION.split(':')[1];
+                const filename = basename(file);
+                await copyFile(file, join(functionsDist, filename));
+                packageJson.dependencies['firebase-frameworks'] = `file:${filename}`;
+            } else {
+                packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
+            }
             // TODO test these with semver, error if already set out of range
             packageJson.dependencies['firebase-admin'] ||= FIREBASE_ADMIN_VERSION;
             packageJson.dependencies['firebase-functions'] ||= FIREBASE_FUNCTIONS_VERSION;

@@ -49,7 +49,7 @@ const main = async () => {
     const { version } = require('../package.json');
     const npmList = JSON.parse(spawnSync('npm', ['list', '--json=true'], { encoding: 'utf8' }).stdout.toString());
     const from = ['__FIREBASE_FRAMEWORKS_VERSION__'];
-    const to = [`file:${process.cwd()}`];
+    const to = [`file:${process.cwd()}/firebase-frameworks-${version}.tgz`];
     for (const [dep, { version }] of Object.entries<Record<string, string>>(npmList.dependencies)) {
         from.push(`__${dep.toUpperCase().replace(/[^A-Z]/g, '_')}_VERSION__`);
         to.push(`^${version}`);

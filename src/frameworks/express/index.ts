@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { promises as fsPromises } from 'fs';
-import { dirname, join } from 'path';
+import { join } from 'path';
 
 import { DeployConfig, PathFactory, exec, spawn } from '../../utils';
 
@@ -72,7 +72,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     let bootstrapScript = '';
     if (serverRenderMethod) {
         let stack = serverRenderMethod.slice();
-        const entry = `./${packageJson.main || 'index.js'}`;
+        const entry = packageJson.name;
         if (stack.shift() === 'require') {
             bootstrapScript += `const bootstrap = Promise.resolve(require('${entry}'))`;
         } else {
@@ -105,19 +105,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     }
 
     if (serverRenderMethod) {
-        const npmPackResults = JSON.parse(await exec(`npm pack ${getProjectPath()} --dry-run --json`) as string);
-
-        await Promise.all(
-            // TODO types
-            npmPackResults.
-                find(({ name }: any) => name === packageJson.name ).
-                files.
-                map(({ path }: any) =>
-                    mkdir(dirname(deployPath('functions', path)), { recursive: true }).then(() =>
-                        copyFile(getProjectPath(path), deployPath('functions', path))
-                    )
-                )
-        );
+        const npmPackResults = JSON.parse(await exec(`npm pack ${getProjectPath()} --json`, { cwd: deployPath('functions')}) as string);
+        const matchingPackResult = npmPackResults.find((it: any) => it.name === packageJson.name);
+        const { filename } = matchingPackResult;
+        packageJson.dependencies ||= {};
+        packageJson.dependencies[packageJson.name] = `file:${filename}`;
     }
 
     return { usingCloudFunctions: !!serverRenderMethod, framework: 'express', rewrites: [], redirects: [], headers: [], packageJson, bootstrapScript };
