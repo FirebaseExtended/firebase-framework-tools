@@ -15,6 +15,7 @@
 import { existsSync } from 'fs';
 import { readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
+import { copy } from 'fs-extra';
 
 import { DeployConfig, PathFactory, exec } from '../../utils';
 
@@ -43,9 +44,9 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     await mkdir(getHostingPath(buildAssetsDir), { recursive: true });
 
     if (usingCloudFunctions) {
-        await exec(`cp -r ${getProjectPath(distDir, 'server', '*')} ${deployPath('functions')}`);
+        await copy(getProjectPath(distDir, 'server'), deployPath('functions'));
     }
-    await exec(`cp -r ${getProjectPath(distDir, 'public', '*')} ${deployPath('hosting')}`);
+    await copy(getProjectPath(distDir, 'public'), deployPath('hosting'));
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());

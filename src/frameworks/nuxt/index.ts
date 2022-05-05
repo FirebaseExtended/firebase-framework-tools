@@ -14,8 +14,9 @@
 
 import { readFile, mkdir } from 'fs/promises'
 import { join } from 'path';
+import { copy } from 'fs-extra';
 
-import { DeployConfig, PathFactory, exec } from '../../utils';
+import { DeployConfig, PathFactory } from '../../utils';
 import { build as buildNuxt3 } from '../nuxt3';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
@@ -49,17 +50,17 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         const builder = await getBuilder(nuxtApp);
         const generator = new Generator(nuxtApp, builder);
         await generator.generate({ build: false, init: true });
-        await exec(`cp -r ${join(generator.distPath, '*')} ${deployPath('hosting')}`);
+        await copy(generator.distPath, deployPath('hosting'));
         await nuxtApp.server.close();
         usingCloudFunctions = !generator.isFullStatic;
     } else {
-        await exec(`cp -r ${join(buildDir, 'dist', 'client', '*')} ${deployPath('hosting', assetsPath)}`);
-        await exec(`cp -r ${getProjectPath(staticDir, '*')} ${deployPath('hosting')}`);
+        await copy(join(buildDir, 'dist', 'client'), deployPath('hosting', assetsPath));
+        await copy(getProjectPath(staticDir), deployPath('hosting'));
     }
 
     if (usingCloudFunctions) {
         await mkdir(deployPath('functions'), { recursive: true });
-        await exec(`cp -r ${buildDir} ${deployPath('functions')}`);
+        await copy(buildDir, deployPath('functions'));
     }
 
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));

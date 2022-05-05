@@ -17,7 +17,7 @@ import { exit } from 'process';
 import { writeFile, copyFile, stat } from 'fs/promises';
 
 import { build } from './frameworks';
-import { defaultFirebaseToolsOptions, DEFAULT_REGION, exec, shortSiteName, spawn } from './utils';
+import { defaultFirebaseToolsOptions, DEFAULT_REGION, shortSiteName } from './utils';
 import { getFirebaseTools, normalizedHostingConfigs, getInquirer, needProjectId } from './firebase';
 import { spawnSync } from 'child_process';
 

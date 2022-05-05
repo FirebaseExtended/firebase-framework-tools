@@ -4,8 +4,10 @@ import { WorkspaceNodeModulesArchitectHost } from '@angular-devkit/architect/nod
 import { Target, Architect, targetFromTargetString, targetStringFromTarget } from '@angular-devkit/architect';
 import { mkdir } from 'fs/promises';
 import { join } from 'path';
+import { copy } from 'fs-extra';
+import { parse } from 'jsonc-parser';
 
-import { DeployConfig, exec, findDependency, PathFactory, spawn } from '../../utils';
+import { DeployConfig, findDependency, PathFactory, spawn } from '../../utils';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
@@ -24,7 +26,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     let prerenderTarget: Target|undefined;
 
     if (!project) {
-        const angularJson = JSON.parse(await host.readFile('angular.json'));
+        const angularJson = parse(await host.readFile('angular.json'));
         project = angularJson.defaultProject;
         if (!project) throw `angular.json missing defaultProject`;
     }
@@ -103,7 +105,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     if (typeof browserTargetOptions?.outputPath !== 'string') throw 'foo';
     const browserOutputPath = browserTargetOptions.outputPath;
     await mkdir(getHostingPath(), { recursive: true });
-    await exec(`cp -r ${getProjectPath(browserOutputPath)}/* ${getHostingPath()}`);
+    await copy(getProjectPath(browserOutputPath), getHostingPath());
 
     const usingCloudFunctions = !!serverTarget;
 
@@ -115,8 +117,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         const serverOutputPath = serverTargetOptions.outputPath;
         await mkdir(deployPath('functions', serverOutputPath), { recursive: true });
         await mkdir(deployPath('functions', browserOutputPath), { recursive: true });
-        await exec(`cp -r ${getProjectPath(serverOutputPath)}/* ${deployPath('functions', serverOutputPath)}`);
-        await exec(`cp -r ${getProjectPath(browserOutputPath)}/* ${deployPath('functions', browserOutputPath)}`);
+        await copy(getProjectPath(serverOutputPath), deployPath('functions', serverOutputPath));
+        await copy(getProjectPath(browserOutputPath), deployPath('functions', browserOutputPath));
         bootstrapScript = `exports.handle = require('./${serverOutputPath}/main.js').app();\n`;
         const bundleDependencies = serverTargetOptions.bundleDependencies ?? true;
         if (bundleDependencies) {

@@ -14,6 +14,7 @@
 
 import { readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { copy } from 'fs-extra';
 
 import { DeployConfig, PathFactory, exec, spawn } from '../../utils';
 
@@ -24,7 +25,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     if (packageJson.scripts?.build) {
         // TODO add to the firebaseTools logs
-        await spawn('npm', ['--prefix', getProjectPath(), 'run', 'build'], {}, stdoutChunk => {
+        await spawn('npm', ['run', 'build'], { cwd: getProjectPath() }, stdoutChunk => {
             console.log(stdoutChunk.toString());
         }, errChunk => {
             console.error(errChunk.toString());
@@ -99,7 +100,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     await mkdir(getHostingPath(), { recursive: true });
 
     if (packageJson.directories?.serve) {
-        await exec(`cp -r ${getProjectPath(packageJson.directories.serve, '*')} ${deployPath('hosting')}`);
+        await copy(getProjectPath(packageJson.directories.serve), deployPath('hosting'));
     }
 
     if (serverRenderMethod) {

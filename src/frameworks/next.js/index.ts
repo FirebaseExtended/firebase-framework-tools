@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { readFile, mkdir, copyFile } from 'fs/promises';
-import { dirname, join, relative } from 'path';
+import { readFile, mkdir, copyFile, stat } from 'fs/promises';
+import { dirname, extname, join } from 'path';
 import type { NextConfig } from 'next/dist/server/config-shared';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
 import nextBuild from 'next/dist/build';
+import { copy } from 'fs-extra';
 
 import { DeployConfig, PathFactory, exec } from '../../utils';
 
@@ -50,21 +51,19 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
     if (exportDetailJson.success) {
         usingCloudFunctions = false;
-        asyncSteps.push(exec(`cp -r ${exportDetailJson.outDirectory}/* ${getHostingPath()}`));
-    } else {
-        await exec(`cp -r ${getProjectPath('public')}/* ${getHostingPath()}`);
-        await exec(`cp -r ${getProjectPath(distDir, 'static')} ${getHostingPath('_next')}`);
-
-        // TODO clean this up, probably conflicts with the code blow
-        const serverPagesDir = getProjectPath(distDir, 'server', 'pages');
-        const htmlFiles = (await exec(`find ${serverPagesDir} -name '*.html'`) as string).split("\n").map(it => it.trim());
-        await Promise.all(
-            htmlFiles.map(async path => {
-                const newPath = getHostingPath(relative(serverPagesDir, path));
-                await mkdir(dirname(newPath), { recursive: true });
-                await copyFile(path, newPath);
-            })
+        asyncSteps.push(
+            copy(exportDetailJson.outDirectory, getHostingPath())
         );
+    } else {
+        await copy(getProjectPath('public'), getHostingPath());
+        await copy(getProjectPath(distDir, 'static'), getHostingPath('_next', 'static'));
+
+        const serverPagesDir = getProjectPath(distDir, 'server', 'pages');
+        await copy(serverPagesDir, getHostingPath(), { filter: async filename => {
+            const status = await stat(filename);
+            if (status.isDirectory()) return true;
+            return extname(filename) === '.html'
+        }});
 
         const prerenderManifestBuffer = await readFile(getProjectPath(distDir, 'prerender-manifest.json'));
         const prerenderManifest = JSON.parse(prerenderManifestBuffer.toString());
@@ -96,8 +95,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         await mkdir(deployPath('functions'), { recursive: true });
         asyncSteps.push(
             copyFile(getProjectPath('next.config.js'), deployPath('functions', 'next.config.js')),
-            exec(`cp -r ${getProjectPath('public')} ${deployPath('functions', 'public')}`),
-            exec(`cp -r ${getProjectPath(distDir)} ${deployPath('functions', distDir)}`),
+            copy(getProjectPath('public'), deployPath('functions', 'public')),
+            copy(getProjectPath(distDir), deployPath('functions', distDir)),
         );
     }
 
