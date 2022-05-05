@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { promises as fsPromises, existsSync } from 'fs'
+import { existsSync } from 'fs';
+import { readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
 
 import { DeployConfig, PathFactory, exec } from '../../utils';
-
-const { readFile, rm, mkdir, readdir } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 

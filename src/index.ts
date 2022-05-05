@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { basename, join } from 'path';
+import { basename, join, relative } from 'path';
 import { exit } from 'process';
-import { promises as fs } from 'fs';
+import { writeFile, copyFile, stat } from 'fs/promises';
 
 import { build } from './frameworks';
-import { defaultFirebaseToolsOptions, DEFAULT_REGION, shortSiteName, spawn } from './utils';
+import { defaultFirebaseToolsOptions, DEFAULT_REGION, exec, shortSiteName, spawn } from './utils';
 import { getFirebaseTools, normalizedHostingConfigs, getInquirer, needProjectId } from './firebase';
-
-const { writeFile, copyFile } = fs;
+import { spawnSync } from 'child_process';
 
 const NODE_VERSION = parseInt(process.versions.node, 10).toString();
 const FIREBASE_ADMIN_VERSION = '__FIREBASE_ADMIN_VERSION__';
@@ -123,13 +122,22 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             packageJson.main = 'server.js';
             delete packageJson.devDependencies;
             packageJson.dependencies ||= {};
-            if (FIREBASE_FRAMEWORKS_VERSION.startsWith('file:')) {
-                const file = FIREBASE_FRAMEWORKS_VERSION.split(':')[1];
-                const filename = basename(file);
-                await copyFile(file, join(functionsDist, filename));
-                packageJson.dependencies['firebase-frameworks'] = `file:${filename}`;
-            } else {
-                packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
+            packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
+            for (const [name, version] of Object.entries(packageJson.dependencies as Record<string, string>)) {
+                if (version.startsWith('file:')) {
+                    const path = version.split(':')[1];
+                    const stats = await stat(path);
+                    if (stats.isDirectory()) {
+                        const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });
+                        if (!result.stdout) continue;
+                        const filename = result.stdout.toString().trim();
+                        packageJson.dependencies[name] = `file:${filename}`;
+                    } else {
+                        const filename = basename(path);
+                        await copyFile(path, join(functionsDist, filename));
+                        packageJson.dependencies[name] = `file:${filename}`;
+                    }
+                }
             }
             // TODO test these with semver, error if already set out of range
             packageJson.dependencies['firebase-admin'] ||= FIREBASE_ADMIN_VERSION;
@@ -149,11 +157,10 @@ export const prepare = async (targetNames: string[], context: any, options: any)
             // Welp, that didn't work, since firebase-tools checks that they have a minimum firebase-frameworks SDK installed...
             // TODO explore symlinks and ways to make this faster, better, stronger
             //      log to firebase-tools
-            await spawn('npm', ['i', '--only', 'production', '--no-audit', '--no-fund', '--silent'], { cwd: functionsDist }, stdoutChunk => {
-                console.log(stdoutChunk.toString());
-            }, errChunk => {
-                console.error(errChunk.toString());
-            });
+            const npmInstall = spawnSync('npm', ['i', '--only', 'production', '--no-audit', '--no-fund', '--silent'], { cwd: functionsDist });
+            if (npmInstall.status) {
+                console.error(npmInstall.output.toString());
+            }
 
             // TODO allow configuration of the Cloud Function
             await writeFile(join(functionsDist, 'settings.js'), `exports.HTTPS_OPTIONS = {};

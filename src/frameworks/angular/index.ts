@@ -2,12 +2,10 @@ import { NodeJsAsyncHost } from '@angular-devkit/core/node';
 import { workspaces, logging } from '@angular-devkit/core';
 import { WorkspaceNodeModulesArchitectHost } from '@angular-devkit/architect/node';
 import { Target, Architect, targetFromTargetString, targetStringFromTarget } from '@angular-devkit/architect';
-import { promises } from 'fs';
+import { mkdir } from 'fs/promises';
 import { join } from 'path';
 
 import { DeployConfig, exec, findDependency, PathFactory, spawn } from '../../utils';
-
-const { mkdir } = promises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 

@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { promises as fsPromises } from 'fs';
+import { readFile, mkdir, copyFile } from 'fs/promises';
 import { dirname, join, relative } from 'path';
 import type { NextConfig } from 'next/dist/server/config-shared';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
 import nextBuild from 'next/dist/build';
 
 import { DeployConfig, PathFactory, exec } from '../../utils';
-
-const { readFile, rm, mkdir, writeFile, copyFile } = fsPromises;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
