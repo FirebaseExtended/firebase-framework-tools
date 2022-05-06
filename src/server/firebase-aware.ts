@@ -1,4 +1,4 @@
-import { Request as FunctionsRequest } from 'firebase-functions/v2/https';
+import { Request as FunctionsRequest, onRequest } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
 import { initializeApp as initializeAdminApp } from 'firebase-admin/app';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
@@ -7,18 +7,25 @@ import { getAuth, signInWithCustomToken, User } from 'firebase/auth';
 import cookie from 'cookie';
 import LRU from 'lru-cache';
 
-const { FRAMEWORK, FIREBASE_CONFIG } = require(`${process.cwd()}/settings`);
+import {
+    COOKIE_MAX_AGE,
+    ID_TOKEN_MAX_AGE,
+    LRU_MAX_INSTANCES,
+    LRU_TTL
+} from '../constants';
+
+const { FRAMEWORK, HTTPS_OPTIONS } = require(`${process.cwd()}/settings`);
 const { handle: frameworkHandle } = require(`../frameworks/${FRAMEWORK}/server`);
+const FIREBASE_PROJECT_CONFIG = process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG && JSON.parse(process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG);
 
 const adminApp = initializeAdminApp();
 const adminAuth = getAdminAuth(adminApp);
 
 export type Request = FunctionsRequest & { firebaseApp?: FirebaseApp, currentUser?: User|null };
 
-// TODO performance tune this
 const firebaseAppsLRU = new LRU<string, FirebaseApp>({
-    max: 100,
-    ttl: 1_000 * 60 * 5,
+    max: LRU_MAX_INSTANCES,
+    ttl: LRU_TTL,
     allowStale: true,
     updateAgeOnGet: true,
     dispose: (value) => {
@@ -26,63 +33,61 @@ const firebaseAppsLRU = new LRU<string, FirebaseApp>({
     }
 });
 
-export const handle = async (req: Request, res: Response) => {
-    // TODO figure out why middleware isn't doing this for us
-    const cookies = cookie.parse(req.headers.cookie || '');
-    let _decodeIdTokenMemo;
-    const decodeIdToken = async () => _decodeIdTokenMemo ||= cookies.__session ?
-        await adminAuth.verifySessionCookie(cookies.__session, true).catch(() => null) :
-        null;
-    if (req.url === '/__next/cookie') {
-        if (req.body.user) {
-            const idToken = req.body.user.idToken;
-            const decodedIdTokenFromBody = await adminAuth.verifyIdToken(idToken, true);
-            // TODO freshen the session cookie if needed
-            //      check for idToken having been freshly minted
-            const decodedIdToken = await decodeIdToken();
-            if (decodedIdTokenFromBody.uid === decodedIdToken?.uid) {
-                res.status(304).end();
-            } else {
-                // TODO allow this to be configurable
-                const expiresIn = 60 * 60 * 24 * 5 * 1000;
-                // TODO log the failure
-                const cookie = await adminAuth.createSessionCookie(idToken, { expiresIn }).catch(() => null);
-                if (cookie) {
-                    const options = { maxAge: expiresIn, httpOnly: true, secure: true };
-                    res.cookie('__session', cookie, options).status(201).end();
-                } else {
-                    res.status(401).end();
-                }
-            }
+const mintCookie = async (req: Request, res: Response) => {
+    const idToken = req.header('Authorization')?.split('Bearer ')?.[1];
+    const verifiedIdToken = idToken ? await adminAuth.verifyIdToken(idToken) : null;
+    if (verifiedIdToken) {
+        if (new Date().getTime() / 1_000 - verifiedIdToken.auth_time > ID_TOKEN_MAX_AGE) {
+            res.status(301).end();
         } else {
-            res.status(204).clearCookie('__session').end();
+            const cookie = await adminAuth.createSessionCookie(idToken!, { expiresIn: COOKIE_MAX_AGE }).catch(e => {
+                console.error(e.message);
+            });
+            if (cookie) {
+                const options = { maxAge: COOKIE_MAX_AGE, httpOnly: true, secure: true };
+                res.cookie('__session', cookie, options).status(201).end();
+            } else {
+                res.status(401).end();
+            }
         }
-        return;
+    } else {
+        res.status(204).clearCookie('__session').end();
     }
-    // TODO only go down this path for routes that need it
-    const decodedIdToken = await decodeIdToken();
-    if (FIREBASE_CONFIG && decodedIdToken) {
-        const { uid } = decodedIdToken;
-        let app = firebaseAppsLRU.get(uid);
-        if (!app) {
-            const random = Math.random().toString(36).split('.')[1];
-            const appName = `authenticated-context:${uid}:${random}`;
-            app = initializeApp(FIREBASE_CONFIG, appName);
-            firebaseAppsLRU.set(uid, app);
-        }
-        const auth = getAuth(app);
-        if (auth.currentUser?.uid !== uid) {
-            // TODO get custom claims
-            //      check in with the Auth team to make sure this is the best way of doing this
-            const customToken = await adminAuth.createCustomToken(decodedIdToken.uid);
-            await signInWithCustomToken(auth, customToken);
-        }
-        // TODO can we use a symbol for these or otherwise set them as non iterable
-        //      can we drop this and just use useRouter().query.__FIREBASE_APP_NAME?
-        // Pass the authenticated firebase app name to getInitialProps, getServerSideProps via req
-        // I'd normally reach for a global here, but we need to think about concurrency now with CF3v2
-        req.firebaseApp = app;
-        req.currentUser = auth.currentUser;
-    }
-    frameworkHandle(req, res);
 };
+
+const handleAuth = async (req: Request) => {
+    if (!FIREBASE_PROJECT_CONFIG) return;
+    const cookies = cookie.parse(req.headers.cookie || '');
+    const { __session } = cookies;
+    if (!__session) return;
+    const decodedIdToken = await adminAuth.verifySessionCookie(__session).catch(e => console.error(e.message));
+    if (!decodedIdToken) return;
+    const { uid } = decodedIdToken;
+    let app = firebaseAppsLRU.get(uid);
+    if (!app) {
+        const isRevoked = !(await adminAuth.verifySessionCookie(__session, true).catch(e => console.error(e.message)));
+        if (isRevoked) return;
+        const random = Math.random().toString(36).split('.')[1];
+        const appName = `authenticated-context:${uid}:${random}`;
+        app = initializeApp(FIREBASE_PROJECT_CONFIG, appName);
+        firebaseAppsLRU.set(uid, app);
+    }
+    const auth = getAuth(app);
+    if (auth.currentUser?.uid !== uid) {
+        // TODO(jamesdaniels) get custom claims
+        const customToken = await adminAuth.createCustomToken(uid).catch(e => console.error(e.message));
+        if (!customToken) return;
+        await signInWithCustomToken(auth, customToken);
+    }
+    req.firebaseApp = app;
+    req.currentUser = auth.currentUser;
+};
+
+export const ssr = onRequest(HTTPS_OPTIONS, async (req: Request, res: Response) => {
+    if (req.url === '/__session') {
+        await mintCookie(req, res);
+    } else {
+        await handleAuth(req);
+        frameworkHandle(req, res);
+    }
+});

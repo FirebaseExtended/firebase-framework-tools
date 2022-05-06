@@ -8,7 +8,8 @@ const LOCAL_NODE_MODULES = [
     '@angular-devkit/architect',
     'next/dist/build',
     'nuxt',
-    '@nuxt/kit/dist/index.mjs'
+    '@nuxt/kit/dist/index.mjs',
+    'webpack'
 ];
 
 const ES_MODULES = [

@@ -13,19 +13,17 @@
 // limitations under the License.
 
 import { readFile, mkdir, copyFile, stat } from 'fs/promises';
-import { dirname, extname, join } from 'path';
-import type { NextConfig } from 'next/dist/server/config-shared';
+import { dirname, extname, join, relative, resolve, sep } from 'path';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
+import type { NextConfig } from 'next';
 import nextBuild from 'next/dist/build';
 import { copy } from 'fs-extra';
+import * as webpack from 'webpack';
+import { lt } from 'semver';
 
-import { DeployConfig, PathFactory, exec } from '../../utils';
+import { DeployConfig, PathFactory, exec, findDependency } from '../../utils';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
-
-    await nextBuild(getProjectPath(), null, false, false, true);
-    // TODO be a bit smarter about this
-    await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`, { cwd: getProjectPath() }).catch(() => {});
 
     let nextConfig: NextConfig;
     try {
@@ -36,6 +34,37 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         // Must be Next 11, just import it
         nextConfig = await import(getProjectPath('next.config.js'));
     }
+
+    let usesFirebaseConfig = false;
+    const firebaseDependency = findDependency('firebase', getProjectPath());
+    let overrideConfig: NextConfig|null = null;
+    if (firebaseDependency) {
+        overrideConfig = {
+            ...nextConfig,
+            webpack: (config, context) => {
+                let newConfig = config;
+                if (nextConfig.webpack) newConfig = nextConfig.webpack(config, context);
+                const plugin = new webpack.NormalModuleReplacementPlugin(/^firebase\/(auth)$/, (resource: any) => {
+                    // Don't allow firebase-frameworks to recurse
+                    const frameworksRoot = resolve(`${dirname(require.resolve('../..'))}${sep}..`);
+                    if (resource.context.startsWith(frameworksRoot)) return;
+                    // Don't mutate their node_modules
+                    if (relative(getProjectPath(), resource.context).startsWith(`node_modules${sep}`)) return;
+                    const client = resource.request.split('firebase/')[1];
+                    // auth requires beforeAuthStateChanged, released in 9.7.1
+                    if (client === 'auth' && lt(firebaseDependency.version, '9.7.1')) return;
+                    resource.request = require.resolve(`../../client/${client}`);
+                });
+                newConfig.plugins ||= [];
+                newConfig.plugins.push(plugin);
+                return newConfig;
+            }
+        }
+    }
+
+    await nextBuild(getProjectPath(), overrideConfig as any, false, false, true);
+    // TODO be a bit smarter about this
+    await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`, { cwd: getProjectPath() }).catch(() => {});
 
     // SEMVER these defaults are only needed for Next 11
     const { distDir='.next', basePath='' } = nextConfig;
@@ -123,7 +152,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         return { source, destination };
     }).filter(it => it);
 
-    return { usingCloudFunctions, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null };
+    return { usingCloudFunctions, usesFirebaseConfig, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null };
 }
 
 
