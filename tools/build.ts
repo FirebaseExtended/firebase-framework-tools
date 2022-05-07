@@ -7,6 +7,8 @@ const LOCAL_NODE_MODULES = [
     '@angular-devkit/architect/node',
     '@angular-devkit/architect',
     'next/dist/build',
+    'next/dist/export',
+    'next/dist/trace',
     'nuxt',
     '@nuxt/kit/dist/index.mjs',
     'webpack'
@@ -30,19 +32,19 @@ const main = async () => {
     });
 
     await replaceInFile({
-        files: 'dist/frameworks/**/index.js',
+        files: 'dist/**/*',
         from: LOCAL_NODE_MODULES.map(mod => `require("${mod}")`),
         to: LOCAL_NODE_MODULES.map(mod => `require(\`\${process.cwd()}/node_modules/${mod}\`)`),
     });
 
     await replaceInFile({
-        files: 'dist/frameworks/**/index.js',
+        files: 'dist/**/*',
         from: LOCAL_NODE_MODULES.map(mod => `require('${mod}')`),
         to: LOCAL_NODE_MODULES.map(mod => `require(\`\${process.cwd()}/node_modules/${mod}\`)`),
     });
 
     await replaceInFile({
-        files: 'dist/frameworks/**/index.js',
+        files: 'dist/**/*',
         from: LOCAL_NODE_MODULES.map(mod => `import('${mod}')`),
         to: LOCAL_NODE_MODULES.map(mod => `import(\`\${process.cwd()}/node_modules/${mod}\`)`),
     });

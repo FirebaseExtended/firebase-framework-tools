@@ -13,15 +13,15 @@
 // limitations under the License.
 
 import { readFile, mkdir, copyFile, stat } from 'fs/promises';
-import { dirname, extname, join, relative, resolve, sep } from 'path';
+import { dirname, extname, join } from 'path';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
 import type { NextConfig } from 'next';
 import nextBuild from 'next/dist/build';
+import nextExport from 'next/dist/export';
 import { copy } from 'fs-extra';
-import * as webpack from 'webpack';
-import { lt } from 'semver';
+import { trace } from 'next/dist/trace';
 
-import { DeployConfig, PathFactory, exec, findDependency } from '../../utils';
+import { DeployConfig, PathFactory, exec, findDependency, getWebpackPlugin } from '../../utils';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
@@ -44,17 +44,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             webpack: (config, context) => {
                 let newConfig = config;
                 if (nextConfig.webpack) newConfig = nextConfig.webpack(config, context);
-                const plugin = new webpack.NormalModuleReplacementPlugin(/^firebase\/(auth)$/, (resource: any) => {
-                    // Don't allow firebase-frameworks to recurse
-                    const frameworksRoot = resolve(`${dirname(require.resolve('../..'))}${sep}..`);
-                    if (resource.context.startsWith(frameworksRoot)) return;
-                    // Don't mutate their node_modules
-                    if (relative(getProjectPath(), resource.context).startsWith(`node_modules${sep}`)) return;
-                    const client = resource.request.split('firebase/')[1];
-                    // auth requires beforeAuthStateChanged, released in 9.7.1
-                    if (client === 'auth' && lt(firebaseDependency.version, '9.7.1')) return;
-                    resource.request = require.resolve(`../../client/${client}`);
-                });
+                const plugin = getWebpackPlugin(getProjectPath());
                 newConfig.plugins ||= [];
                 newConfig.plugins.push(plugin);
                 return newConfig;
@@ -62,9 +52,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         }
     }
 
-    await nextBuild(getProjectPath(), overrideConfig as any, false, false, true);
-    // TODO be a bit smarter about this
-    await exec(`${getProjectPath('node_modules', '.bin', 'next')} export`, { cwd: getProjectPath() }).catch(() => {});
 
     // SEMVER these defaults are only needed for Next 11
     const { distDir='.next', basePath='' } = nextConfig;
@@ -72,7 +59,15 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...basePath.split('/'), ...args);
 
-    await mkdir(getHostingPath('_next', 'static'), { recursive: true });
+    await nextBuild(getProjectPath(), overrideConfig as any, false, false, true);
+
+    await nextExport(
+        getProjectPath(),
+        { silent: true, outdir: getHostingPath() },
+        trace('next-export-cli')
+    ).catch(() => {
+        console.warn('\nUnable to export the app, treating as SSR.\n\n');
+    });
 
     let usingCloudFunctions = !!config.function;
     const asyncSteps: Array<Promise<any>> = [];
@@ -80,10 +75,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
     if (exportDetailJson.success) {
         usingCloudFunctions = false;
-        asyncSteps.push(
-            copy(exportDetailJson.outDirectory, getHostingPath())
-        );
     } else {
+        await mkdir(getHostingPath('_next', 'static'), { recursive: true });
         await copy(getProjectPath('public'), getHostingPath());
         await copy(getProjectPath(distDir, 'static'), getHostingPath('_next', 'static'));
 
@@ -152,11 +145,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         return { source, destination };
     }).filter(it => it);
 
+    // TODO use this better detection for usesFirebaseConfig
     return { usingCloudFunctions, usesFirebaseConfig, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null };
 }
 
-
-export type Manifest = {
+type Manifest = {
     distDir?: string,
     basePath?: string,
     headers?: (Header & { regex: string})[],

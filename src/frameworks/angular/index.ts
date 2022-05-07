@@ -30,6 +30,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         project = angularJson.defaultProject;
         if (!project) throw `angular.json missing defaultProject`;
     }
+
     // TODO if there are multiple projects warn
     const workspaceProject = workspace.projects.get(project);
     if (!workspaceProject) throw `No project ${project} found.`;

@@ -12,12 +12,13 @@ import type { FirebaseApp } from 'firebase/app';
 import { ID_TOKEN_MAX_AGE } from '../../constants';
 
 let alreadySetup = false;
-let lastPostedIdToken: string|undefined;
+let lastPostedIdToken: string|undefined|null = null;
 
 const mintCookie = async (user: User|null) => {
     const idTokenResult = user && await user.getIdTokenResult();
     const idTokenAge = idTokenResult && (new Date().getTime() - Date.parse(idTokenResult.issuedAtTime)) / 1_000;
     if (idTokenAge && idTokenAge > ID_TOKEN_MAX_AGE) return;
+    // Specifically trip null => undefined when logged out, to delete any existing cookie
     const idToken = idTokenResult?.token;
     if (lastPostedIdToken === idToken) return;
     lastPostedIdToken = idToken;
