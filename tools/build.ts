@@ -12,7 +12,6 @@ const LOCAL_NODE_MODULES = [
     'nuxt',
     '@nuxt/kit/dist/index.mjs',
     'webpack',
-    'firebase/auth',
 ];
 
 const ES_MODULES = [

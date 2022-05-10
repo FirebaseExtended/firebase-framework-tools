@@ -44,7 +44,8 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             webpack: (config, context) => {
                 let newConfig = config;
                 if (nextConfig.webpack) newConfig = nextConfig.webpack(config, context);
-                const plugin = getWebpackPlugin(getProjectPath());
+                if (context.isServer) return newConfig;
+                const plugin = getWebpackPlugin(context.webpack, getProjectPath());
                 newConfig.plugins ||= [];
                 newConfig.plugins.push(plugin);
                 return newConfig;
@@ -61,12 +62,14 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     await nextBuild(getProjectPath(), overrideConfig as any, false, false, true);
 
+    console.log('Attempting `next export`...');
+
     await nextExport(
         getProjectPath(),
         { silent: true, outdir: getHostingPath() },
         trace('next-export-cli')
     ).catch(() => {
-        console.warn('\nUnable to export the app, treating as SSR.\n\n');
+        console.warn('\nIgnore the above error, Next.js is not respecting the silent flag. Since next export did not succeed we\'ll treat as SSR.\n\n');
     });
 
     let usingCloudFunctions = !!config.function;

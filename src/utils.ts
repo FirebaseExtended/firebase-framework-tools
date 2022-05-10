@@ -14,7 +14,6 @@
 
 import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio, spawnSync } from 'child_process';
 import { dirname, join, relative, resolve, sep } from 'path';
-import { exit } from 'process';
 import { lt } from 'semver';
 import { MIN_FIREBASE_SDK_FOR_AUTH } from './constants';
 
@@ -79,16 +78,9 @@ export const findDependency = (name: string, cwd=process.cwd()) => {
     return search(name, json.dependencies);
 }
 
-export const getWebpackPlugin = (cwd: string) => {
-    let webpack: typeof import('webpack');
-    try {
-        webpack = require('webpack');
-    } catch(e) {
-        console.error('Webpack is required for auth-context awareness in SSR, npm i --save-dev webpack.');
-        exit(1);
-    }
+export const getWebpackPlugin = (webpack: typeof import('webpack'), cwd: string) => {
     const { NormalModuleReplacementPlugin } = webpack;
-    new NormalModuleReplacementPlugin(/^firebase\/(auth)$/, (resource: any) => {
+    return new NormalModuleReplacementPlugin(/^firebase\/(auth)$/, (resource: any) => {
         // Don't allow firebase-frameworks to recurse
         const frameworksRoot = resolve(`${dirname(require.resolve('.'))}${sep}..`);
         if (resource.context.startsWith(frameworksRoot)) return;
@@ -100,6 +92,7 @@ export const getWebpackPlugin = (cwd: string) => {
         if (client === 'auth' && lt(firebaseDependency.version, MIN_FIREBASE_SDK_FOR_AUTH)) return;
         // TODO log to the firebase.log
         console.log(`Substituting import of '${resource.request}' with 'firebase-frameworks/client/${client}' in ${relative(cwd, resource.context)}.`);
-        resource.request = require.resolve(`./client/${client}`);
+        console.log(require.resolve(`firebase-frameworks/client/${client}`));
+        resource.request = require.resolve(`firebase-frameworks/client/${client}`);
     })
 };

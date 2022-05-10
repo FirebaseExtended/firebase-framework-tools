@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "outDir": "dist/client/auth",
+      "target": "esnext",
+      "module": "esnext",
+      "moduleResolution": "node",
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "declaration": true,
+      "skipLibCheck": true
+    },
+    "include": [
+      "src/client/auth/index.ts",
+    ]
+  }
+  
