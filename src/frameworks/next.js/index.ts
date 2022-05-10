@@ -21,7 +21,7 @@ import nextExport from 'next/dist/export';
 import { copy } from 'fs-extra';
 import { trace } from 'next/dist/trace';
 
-import { DeployConfig, PathFactory, findDependency, getWebpackPlugin } from '../../utils';
+import { DeployConfig, PathFactory } from '../../utils';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
@@ -35,24 +35,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         nextConfig = await import(getProjectPath('next.config.js'));
     }
 
-    let usesFirebaseConfig = false;
-    const firebaseDependency = findDependency('firebase', getProjectPath());
-    let overrideConfig: NextConfig|null = null;
-    if (firebaseDependency) {
-        overrideConfig = {
-            ...nextConfig,
-            webpack: (config, context) => {
-                let newConfig = config;
-                if (nextConfig.webpack) newConfig = nextConfig.webpack(config, context);
-                if (context.isServer) return newConfig;
-                const plugin = getWebpackPlugin(context.webpack, getProjectPath());
-                newConfig.plugins ||= [];
-                newConfig.plugins.push(plugin);
-                return newConfig;
-            }
-        }
-    }
-
 
     // SEMVER these defaults are only needed for Next 11
     const { distDir='.next', basePath='' } = nextConfig;
@@ -60,7 +42,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...basePath.split('/'), ...args);
 
-    await nextBuild(getProjectPath(), overrideConfig as any, false, false, true);
+    await nextBuild(getProjectPath(), null, false, false, true);
 
     console.log('Attempting `next export`...');
 
@@ -69,7 +51,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         { silent: true, outdir: getHostingPath() },
         trace('next-export-cli')
     ).catch(() => {
-        console.warn('\nIgnore the above error, Next.js is not respecting the silent flag. Since next export did not succeed we\'ll treat as SSR.\n\n');
+        console.warn('\nYou can safely ignore the above error. Since next export did not succeed we\'ll treat as SSR.\n\n');
     });
 
     let usingCloudFunctions = !!config.function;
@@ -149,7 +131,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     }).filter(it => it);
 
     // TODO use this better detection for usesFirebaseConfig
-    return { usingCloudFunctions, usesFirebaseConfig, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null };
+    return { usingCloudFunctions, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null };
 }
 
 type Manifest = {

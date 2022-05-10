@@ -13,9 +13,7 @@
 // limitations under the License.
 
 import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio, spawnSync } from 'child_process';
-import { dirname, join, relative, resolve, sep } from 'path';
-import { lt } from 'semver';
-import { MIN_FIREBASE_SDK_FOR_AUTH } from './constants';
+import { join } from 'path';
 
 export const exec = (command: string, options: ExecOptions={}) => new Promise((resolve, reject) =>
     execCallback(command, options, (error, stdout) => {
@@ -76,22 +74,4 @@ export const findDependency = (name: string, cwd=process.cwd()) => {
         return null;
     }
     return search(name, json.dependencies);
-}
-
-export const getWebpackPlugin = (webpack: typeof import('webpack'), cwd: string) => {
-    const { NormalModuleReplacementPlugin } = webpack;
-    return new NormalModuleReplacementPlugin(/^firebase\/(auth)$/, (resource: any) => {
-        // Don't allow firebase-frameworks to recurse
-        const frameworksRoot = resolve(`${dirname(require.resolve('.'))}${sep}..`);
-        if (resource.context.startsWith(frameworksRoot)) return;
-        // Don't mutate their node_modules
-        if (relative(cwd, resource.context).startsWith(`node_modules${sep}`)) return;
-        const client = resource.request.split('firebase/')[1];
-        const firebaseDependency = findDependency('firebase', cwd);
-        // auth requires beforeAuthStateChanged, released in 9.8.0
-        if (client === 'auth' && lt(firebaseDependency.version, MIN_FIREBASE_SDK_FOR_AUTH)) return;
-        // TODO log to the firebase.log
-        console.log(`Substituting import of '${resource.request}' with 'firebase-frameworks/client/${client}' in ${relative(cwd, resource.context)}.`);
-        resource.request = require.resolve(`firebase-frameworks/client/${client}`);
-    })
 };
