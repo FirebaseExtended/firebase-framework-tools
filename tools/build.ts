@@ -11,18 +11,18 @@ const LOCAL_NODE_MODULES = [
     'next/dist/trace',
     'nuxt',
     '@nuxt/kit/dist/index.mjs',
-    'webpack'
+    'webpack',
 ];
 
 const ES_MODULES = [
-    ['@nuxt/kit', 'dist/index.mjs' ],
+    ['@nuxt/kit', 'dist/index.mjs'],
 ];
 
 const main = async () => {
     await replaceInFile({
         files: 'dist/**/*',
         from: ES_MODULES.map(([path]) => `Promise.resolve().then(() => __importStar(require('${path}')))`),
-        to: ES_MODULES.map(([path, file]) => `import('${path}/${file}')`),
+        to: ES_MODULES.map(([path, file]) => `import('${path}${file ? `/${file}` : ''}')`),
     });
 
     await replaceInFile({

@@ -42,14 +42,12 @@ const setup = (auth: Auth) => {
 }
 
 export function getAuth(app?: FirebaseApp) {
-    console.log('getFirebaseAuth');
     const auth = getFirebaseAuth(app);
     setup(auth);
     return auth;
 }
 
 export function initializeAuth(app: FirebaseApp, deps?: Dependencies) {
-    console.log('initializeFirebaseAuth');
     const auth = initializeFirebaseAuth(app, deps);
     setup(auth);
     return auth;
