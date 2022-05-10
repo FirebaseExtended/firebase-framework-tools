@@ -12,6 +12,7 @@ const LOCAL_NODE_MODULES = [
     'nuxt',
     '@nuxt/kit/dist/index.mjs',
     'webpack',
+    'firebase/auth',
 ];
 
 const ES_MODULES = [
@@ -21,7 +22,7 @@ const ES_MODULES = [
 const main = async () => {
     await replaceInFile({
         files: 'dist/**/*',
-        from: ES_MODULES.map(([path]) => `Promise.resolve().then(() => __importStar(require('${path}')))`),
+        from: ES_MODULES.map(([path]) =>  new RegExp(`Promise\\.resolve\\(\\)\\.then\\(\\(\\) => __importStar\\(require\\('${path}'\\)\\)\\)`, 'g')),
         to: ES_MODULES.map(([path, file]) => `import('${path}${file ? `/${file}` : ''}')`),
     });
 
@@ -33,19 +34,13 @@ const main = async () => {
 
     await replaceInFile({
         files: 'dist/**/*',
-        from: LOCAL_NODE_MODULES.map(mod => `require("${mod}")`),
+        from: LOCAL_NODE_MODULES.map(mod => new RegExp(`require\\(["']${mod}["']\\)`, 'g')),
         to: LOCAL_NODE_MODULES.map(mod => `require(\`\${process.cwd()}/node_modules/${mod}\`)`),
     });
 
     await replaceInFile({
         files: 'dist/**/*',
-        from: LOCAL_NODE_MODULES.map(mod => `require('${mod}')`),
-        to: LOCAL_NODE_MODULES.map(mod => `require(\`\${process.cwd()}/node_modules/${mod}\`)`),
-    });
-
-    await replaceInFile({
-        files: 'dist/**/*',
-        from: LOCAL_NODE_MODULES.map(mod => `import('${mod}')`),
+        from: LOCAL_NODE_MODULES.map(mod => new RegExp(`import\\(["']${mod}["']\\)`, 'g')),
         to: LOCAL_NODE_MODULES.map(mod => `import(\`\${process.cwd()}/node_modules/${mod}\`)`),
     });
 
