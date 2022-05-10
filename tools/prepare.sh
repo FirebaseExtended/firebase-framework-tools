@@ -18,6 +18,6 @@ npm --no-git-tag-version --allow-same-version -f version $OVERRIDE_VERSION
 
 npm run build &&
     echo "npm --no-git-tag-version --allow-same-version -f version $OVERRIDE_VERSION &&
-    sed 's/exports.FIREBASE_FRAMEWORKS_VERSION =.*/exports.FIREBASE_FRAMEWORKS_VERSION = \"$OVERRIDE_VERSION\"/' ./dist/constants.js &&
+    sed -i 's/exports\.FIREBASE_FRAMEWORKS_VERSION =.*/exports.FIREBASE_FRAMEWORKS_VERSION = \"$OVERRIDE_VERSION\"/' ./dist/constants.js &&
     npm publish . --tag $NPM_TAG" > ./dist/publish.sh &&
     chmod +x ./dist/publish.sh

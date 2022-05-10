@@ -140,7 +140,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish (NPM)
-    needs: ['build', 'test']
+    # needs: ['build', 'test']
+    needs: ['build']
     if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
     steps:
       - name: Checkout
