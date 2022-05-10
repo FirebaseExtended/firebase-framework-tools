@@ -92,7 +92,6 @@ export const getWebpackPlugin = (webpack: typeof import('webpack'), cwd: string)
         if (client === 'auth' && lt(firebaseDependency.version, MIN_FIREBASE_SDK_FOR_AUTH)) return;
         // TODO log to the firebase.log
         console.log(`Substituting import of '${resource.request}' with 'firebase-frameworks/client/${client}' in ${relative(cwd, resource.context)}.`);
-        console.log(require.resolve(`firebase-frameworks/client/${client}`));
         resource.request = require.resolve(`firebase-frameworks/client/${client}`);
     })
 };

@@ -21,7 +21,7 @@ import nextExport from 'next/dist/export';
 import { copy } from 'fs-extra';
 import { trace } from 'next/dist/trace';
 
-import { DeployConfig, PathFactory, exec, findDependency, getWebpackPlugin } from '../../utils';
+import { DeployConfig, PathFactory, findDependency, getWebpackPlugin } from '../../utils';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
