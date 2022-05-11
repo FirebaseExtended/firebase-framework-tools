@@ -92,6 +92,7 @@ jobs:
         run: |
           npm i -g firebase-tools
           npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
+          firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -128,6 +129,14 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Test
+        run: |
+          npm i -g firebase-tools
+          npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
+          firebase --open-sesame frameworkawareness
+          npm run test
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
   # Break the branch protection test into a seperate step, so we can manage the matrix more easily
   test_and_contribute:
