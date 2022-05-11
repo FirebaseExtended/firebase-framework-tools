@@ -52,8 +52,8 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        node: [ "14", "16", "18" ]
-        framework: [ "next", "nuxt", "angular" ]
+        node: [ "14", "16" ]
+        framework: [ "next", "angular", "custom" ]
         exclude:
           # seeing failures on this one, skip for now
           - os: ubuntu-latest
@@ -91,7 +91,8 @@ jobs:
       - name: Test
         run: |
           npm i -g firebase-tools
-          npm i --only production --prefix $(npm root -g)/firebase-tools --ignore-scripts --force --save . || true
+          npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
+          firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -102,7 +103,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        node: [ "14", "16", "18" ]
+        node: [ "14", "16" ]
         exclude:
           # we build with this combination, safely skip
           - os: ubuntu-latest
@@ -128,6 +129,14 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Test
+        run: |
+          npm i -g firebase-tools
+          npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
+          firebase --open-sesame frameworkawareness
+          npm run test
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
   # Break the branch protection test into a seperate step, so we can manage the matrix more easily
   test_and_contribute:
@@ -140,8 +149,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish (NPM)
-    # needs: ['build', 'test']
     needs: ['build']
+    # needs: ['build', 'test']
     if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
     steps:
       - name: Checkout

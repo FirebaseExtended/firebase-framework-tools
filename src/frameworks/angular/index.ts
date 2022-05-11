@@ -13,7 +13,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     // TODO log to firebase-tools
     const logger = new logging.Logger('firebase-tools');
-    logger.subscribe(it => console.log(it));
+    logger.subscribe(it => console.log(it.message));
 
     const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
     const { workspace } = await workspaces.readWorkspace(getProjectPath(), host);
@@ -30,7 +30,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         project = angularJson.defaultProject;
         if (!project) throw `angular.json missing defaultProject`;
     }
-
     // TODO if there are multiple projects warn
     const workspaceProject = workspace.projects.get(project);
     if (!workspaceProject) throw `No project ${project} found.`;
@@ -67,7 +66,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         // TODO test and warn if production doesn't exist, fallback to default
         const configuration = 'production';
         if (workspaceProject.targets.has('build'))
-            browserTarget = { project, target: 'built', configuration };
+            browserTarget = { project, target: 'build', configuration };
         if (workspaceProject.targets.has('server'))
             serverTarget = { project, target: 'server', configuration };
     }
