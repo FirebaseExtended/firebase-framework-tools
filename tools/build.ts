@@ -1,5 +1,6 @@
 import { spawnSync } from 'child_process';
 import { replaceInFile } from 'replace-in-file';
+import { readJSON } from 'fs-extra';
 
 const LOCAL_NODE_MODULES = [
     '@angular-devkit/core/node',
@@ -43,12 +44,12 @@ const main = async () => {
         to: LOCAL_NODE_MODULES.map(mod => `import(\`\${process.cwd()}/node_modules/${mod}\`)`),
     });
 
-    const npmList = JSON.parse(spawnSync('npm', ['list', '--json=true'], { encoding: 'utf8' }).stdout.toString());
+    const { devDependencies } = await readJSON('package.json');
     const from = ['__FIREBASE_FRAMEWORKS_VERSION__'];
     const to = [`file:${process.cwd()}`];
-    for (const [dep, { version }] of Object.entries<Record<string, string>>(npmList.dependencies)) {
+    for (const [dep, version] of Object.entries<Record<string, string>>(devDependencies)) {
         from.push(`__${dep.toUpperCase().replace(/[^A-Z]/g, '_')}_VERSION__`);
-        to.push(`^${version}`);
+        to.push(version as any);
     }
     await replaceInFile({
         files: 'dist/**/*',
