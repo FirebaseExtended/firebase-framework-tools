@@ -52,8 +52,8 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node: [ "14", "16", "18" ]
-        framework: [ "next", "nuxt", "angular", "custom" ]
+        node: [ "14", "16" ]
+        framework: [ "next", "angular", "custom" ]
         exclude:
           # seeing failures on this one, skip for now
           - os: ubuntu-latest
@@ -103,7 +103,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node: [ "14", "16", "18" ]
+        node: [ "14", "16" ]
         exclude:
           # we build with this combination, safely skip
           - os: ubuntu-latest

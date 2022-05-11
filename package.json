@@ -24,7 +24,7 @@
   "scripts": {
     "build": "rimraf dist && tsc && ts-node ./tools/build.ts",
     "dev": "npm run build && ts-node ./tools/dev.ts",
-    "test": "npm run test:angular && npm run test:next && npm run test:nuxt && npm run test:custom",
+    "test": "npm run test:angular && npm run test:next && npm run test:custom",
     "e2e:build-next": "rimraf e2e/next-test && cd e2e && npx create-next-app next-test --use-npm --ts && cd next-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
     "e2e:build-nuxt": "rimraf e2e/nuxt-test && cd e2e && npx create-nuxt-app nuxt-test --answers '$(cat ../tools/create-nuxt-answers.json)' && cd nuxt-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
     "e2e:build-angular": "rimraf e2e/angular-test && cd e2e && npm i -g @angular/cli && ng new angular-test --defaults --skip-git && cd angular-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
