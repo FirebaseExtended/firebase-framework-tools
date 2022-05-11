@@ -44,12 +44,10 @@ To get started, you'll need to initialize Firebase for your framework project. U
 
 #### Initialize a new project
 
-1. Run the initialization command from the CLI:
+Run the initialization command from the CLI:
     ```shell
     firebase init hosting
     ```
-
-1. TODO
 
 #### Initialize an existing project
 
