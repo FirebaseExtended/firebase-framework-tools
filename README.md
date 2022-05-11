@@ -29,7 +29,7 @@
 
 This repository is maintained by Googlers but is not a supported Firebase product. Issues here are answered by maintainers and other community members on GitHub on a best-effort basis.
 
-# Integrate Next.js
+# Deploy Next.js
 
 Easily deploy your Next.js application to Firebase and serve dynamic content to your users.
 
@@ -75,7 +75,7 @@ When you're ready to share your changes with the world, deploy your Next.js app 
 1. Run `firebase deploy` from the terminal.
 2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you did setup one)
 
-# Integrate Nuxt
+# Deploy Angular
 
 Easily deploy your Nuxt application to Firebase and serve dynamic content to your users.
 
