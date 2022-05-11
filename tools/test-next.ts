@@ -1,16 +1,15 @@
 import { exit } from 'process';
-import { readdir, stat } from 'fs/promises';
+import { readdir, access } from 'fs/promises';
 import { join } from 'path';
 
 const site = 'nextjs-demo-73e34';
 
 const run = async () => {
-    if (!(await stat(join('e2e', 'next', '.firebase'))).isDirectory()) throw '.firebase does not exist';
-    if (!(await stat(join('e2e', 'next', '.firebase', site))).isDirectory()) throw `.firebase/${site} does not exist`;
-    if (!(await stat(join('e2e', 'next', '.firebase', site, 'hosting'))).isDirectory()) throw `.firebase/${site}/hosting does not exist`;
+    if (await access(join('e2e', 'nuxt', '.firebase')).then(() => false, () => true)) throw '.firebase does not exist';
+    if (await access(join('e2e', 'nuxt', '.firebase', site)).then(() => false, () => true)) throw `.firebase/${site} does not exist`;
+    if (await access(join('e2e', 'nuxt', '.firebase', site, 'hosting')).then(() => false, () => true)) throw `.firebase/${site}/hosting does not exist`;
     if (!(await readdir(join('e2e', 'next', '.firebase', site, 'hosting'))).length) throw `no files in .firebase/${site}/hosting`;
-    if (!(await stat(join('e2e', 'next', '.firebase', site, 'functions'))).isDirectory()) throw `.firebase/${site}/functions does not exist`;
-    if (!(await readdir(join('e2e', 'next', '.firebase', site, 'functions'))).length) throw `no files in .firebase/${site}/functions`;
+    if (await access(join('e2e', 'next', '.firebase', site, 'functions')).then(() => true, () => false)) throw `.firebase/${site}/functions should not exist`;
 }
 
 run().then(

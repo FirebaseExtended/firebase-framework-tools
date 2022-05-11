@@ -28,7 +28,7 @@
     "e2e:build-next": "rimraf e2e/next && cd e2e && npx create-next-app next --use-npm --ts && cd next && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"sleep 1\"",
     "e2e:build-nuxt": "rimraf e2e/nuxt && cd e2e && npx create-nuxt-app nuxt --answers '$(cat ../tools/create-nuxt-answers.json)' && cd nuxt && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"sleep 1\"",
     "e2e:build-angular": "rimraf e2e/angular && cd e2e && npx @angular/cli new angular --defaults --skip-git && cd angular && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"sleep 1\"",
-    "e2e:build-custom": "rimraf e2e/custom/lib && rm 0rf e2e/custom/.firebase && cd e2e/custom && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"sleep 1\"",
+    "e2e:build-custom": "rimraf e2e/custom/lib && rimraf e2e/custom/.firebase && cd e2e/custom && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"sleep 1\"",
     "clean:build": "rimraf dist",
     "test:angular": "npm run e2e:build-angular && ts-node ./tools/test-angular.ts",
     "test:next": "npm run e2e:build-next && ts-node ./tools/test-next.ts",
