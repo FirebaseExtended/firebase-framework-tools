@@ -51,7 +51,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         node: [ "14", "16", "18" ]
         framework: [ "next", "nuxt", "angular" ]
         exclude:
@@ -140,8 +140,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish (NPM)
-    # needs: ['build', 'test']
-    needs: ['build']
+    needs: ['build', 'test']
     if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
     steps:
       - name: Checkout
