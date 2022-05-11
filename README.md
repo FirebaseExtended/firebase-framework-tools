@@ -111,12 +111,12 @@ Change your hosting config in `firebase.json` to have a `source` option, rather 
 ### Serve locally
 
 You can test your integration locally by following these steps:
-1. Run `firebase serve` from the terminal. This should build your Next.js app and serve it using the Firebase CLI.
+1. Run `firebase serve` from the terminal. This should build your Angular app and serve it using the Firebase CLI.
 2. Open your web app at the local URL returned by the CLI (usually http://localhost:5000)
 
 ### Deploy your app to Firebase Hosting
 
-When you're ready to share your changes with the world, deploy your Next.js app to your live site:
+When you're ready to share your changes with the world, deploy your Angular app to your live site:
 1. Run `firebase deploy` from the terminal.
 2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you did setup one)
 
