@@ -7,9 +7,9 @@
         <tr><td></td><th colspan="3"><sub><sup>Built-in frameworks</sub></sup></th><td></td></tr>
         <tr>
             <th></th>
-            <th><a href="#integrate-nextjs">Next.js</a></th>
-            <th>Angular</th>
-            <th><a href="#integrate-nuxt">Nuxt</a></th>
+            <th><a href="#deploy-nextjs">Next.js</a></th>
+            <th><a href="#deploy-angular">Angular</a></th>
+            <th>Nuxt</th>
             <th>Custom</th>
         </tr>
     </thead>
@@ -77,7 +77,7 @@ When you're ready to share your changes with the world, deploy your Next.js app 
 
 # Deploy Angular
 
-Easily deploy your Nuxt application to Firebase and serve dynamic content to your users.
+Easily deploy your Angular application to Firebase and serve dynamic content to your users.
 
 ## What you'll need before you begin
 
