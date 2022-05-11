@@ -14,11 +14,11 @@
         </tr>
     </thead>
     <tbody>
-        <tr><th>SSR</th><td>✅</td><td>✅</td><td>✅</td><td>👍</td></tr>
-        <tr><th>SPA</th><td>✅</td><td>✅</td><td>✅</td><td>👍</td></tr>
-        <tr><th>SSG</th><td>✅</td><td>✅</td><td>✅</td><td>👍</td></tr>
-        <tr><th>SWR/E</th><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
-        <tr><th>Auth+SSR</th><td>✅</td><td>✅</td><td>👍</td><td>👍</td></tr>
+        <tr><th>SSR</th><td>✅</td><td>✅</td><td>🔜</td><td>👍</td></tr>
+        <tr><th>SPA</th><td>✅</td><td>✅</td><td>🔜</td><td>👍</td></tr>
+        <tr><th>SSG</th><td>✅</td><td>✅</td><td>🔜</td><td>👍</td></tr>
+        <tr><th>SWR/E</th><td>❌</td><td>❌</td><td>🔜</td><td>❌</td></tr>
+        <tr><th>Auth+SSR</th><td>✅</td><td>✅</td><td>🔜</td><td>👍</td></tr>
         <tr><th>Status</th><td>🔬</td><td>🔬</td><td>🔬</td><td>🔬</td></tr>
     </tbody>
 </table>
@@ -36,7 +36,7 @@ Easily deploy your Next.js application to Firebase and serve dynamic content to 
 ## What you'll need before you begin
 
 ### Prerequisites
-- Firebase CLI version 10.8 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
+- Firebase CLI version 10.9.1 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
 - (optional) Billing enabled on your Firebase Project (if you plan to use SSR)
 
 ### Initialize Firebase
@@ -82,7 +82,7 @@ Easily deploy your Angular application to Firebase and serve dynamic content to 
 ## What you'll need before you begin
 
 ### Prerequisites
-- Firebase CLI version 10.8 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
+- Firebase CLI version 10.9.1 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
 - (optional) Billing enabled on your Firebase Project (if you plan to use SSR)
 
 ### Initialize Firebase
