@@ -16,7 +16,7 @@ const run = async () => {
 run().then(
     () => exit(0),
     err => {
-        console.error(err.message);
+        console.error(err.message || err);
         exit(1);
     }
 );
