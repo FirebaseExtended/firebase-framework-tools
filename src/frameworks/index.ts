@@ -1,6 +1,6 @@
 import { spawnSync } from 'child_process';
 import { existsSync } from 'fs';
-import { copyFile, rm, stat, writeFile } from 'fs/promises';
+import { copyFile, rm, stat, writeFile, access } from 'fs/promises';
 import { basename, join, relative } from 'path';
 
 import {
@@ -41,6 +41,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         for (const [name, version] of Object.entries(packageJson.dependencies as Record<string, string>)) {
             if (version.startsWith('file:')) {
                 const path = version.split(':')[1];
+                if (await access(path).catch(() => true)) continue;
                 const stats = await stat(path);
                 if (stats.isDirectory()) {
                     const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });

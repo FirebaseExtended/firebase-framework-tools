@@ -1,6 +1,6 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "main": "dist/index.js",
   "repository": "FirebaseExtended/firebase-framework-tools",
@@ -22,19 +22,18 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "rm -rf dist && tsc && ts-node ./tools/build.ts",
+    "build": "rimraf dist && tsc && ts-node ./tools/build.ts",
     "dev": "npm run build && ts-node ./tools/dev.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "e2e:build-next": "rm -rf e2e && npx create-next-app e2e --use-npm --ts",
-    "e2e:build-nuxt": "rm -rf e2e && npx create-nuxt-app e2e --answers '$(cat ./tools/create-nuxt-answers.json)'",
-    "e2e:build-angular": "rm -rf e2e && npx @angular/cli new e2e --defaults --skip-git",
-    "e2e:config": "cp ./tools/firebase.json ./e2e && cp ./tools/.firebaserc ./e2e",
-    "test:e2e": "npm run e2e:config && cd e2e && firebase emulators:exec \"exit 0\"",
-    "clean:build": "rm -rf dist",
-    "clean:e2e": "rm -rf e2e",
-    "test:angular": "npm run e2e:build-angular && npm run test:e2e",
-    "test:next": "npm run e2e:build-next && npm run test:e2e",
-    "test:nuxt": "npm run e2e:build-next && npm run test:e2e"
+    "test": "npm run test:angular && npm run test:next && npm run test:custom",
+    "e2e:build-next": "rimraf e2e/next-test && cd e2e && npx create-next-app next-test --use-npm --ts && cd next-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
+    "e2e:build-nuxt": "rimraf e2e/nuxt-test && cd e2e && npx create-nuxt-app nuxt-test --answers '$(cat ../tools/create-nuxt-answers.json)' && cd nuxt-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
+    "e2e:build-angular": "rimraf e2e/angular-test && cd e2e && npm i -g @angular/cli && ng new angular-test --defaults --skip-git && cd angular-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
+    "e2e:build-custom": "rimraf e2e/custom/lib && rimraf e2e/custom/.firebase && cd e2e/custom && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
+    "clean:build": "rimraf dist",
+    "test:angular": "npm run e2e:build-angular && ts-node ./tools/test-angular.ts",
+    "test:next": "npm run e2e:build-next && ts-node ./tools/test-next.ts",
+    "test:nuxt": "npm run e2e:build-nuxt && ts-node ./tools/test-nuxt.ts",
+    "test:custom": "npm run e2e:build-custom && ts-node ./tools/test-custom.ts"
   },
   "exports": {
     ".": {
@@ -79,13 +78,13 @@
     "firebase": "^9.8.1",
     "firebase-admin": "^10.1.0",
     "firebase-functions": "^3.20.1",
-    "firebase-tools": "^10.5.0",
     "inquirer": "^8.2.0",
     "lru-cache": "^7.8.1",
     "next": "^12.0.7",
     "nuxt": "^2.15.8",
     "nuxt3": "^3.0.0-27474800.8dd77d7",
     "replace-in-file": "^6.3.2",
+    "rimraf": "^3.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.5.3"
   }
