@@ -81,6 +81,22 @@ When you're ready to share your changes with the world, deploy your Next.js app 
 1. Run `firebase deploy` from the terminal.
 2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you did setup one)
 
+### Common Configurations
+
+#### Add `cleanUrls` option
+
+By default, a page created on `/pages/foo/bar.jsx` is only accessible through the url `/foo/bar.html`.
+To make the page accessible on `/foo/bar` instead, add `cleanUrls` option to your hosting config in firebase.json.
+
+```json
+{
+  "hosting": {
+    "source": ".",
+    "cleanUrls": true
+  }
+}
+```
+
 # Deploy Angular
 
 Easily deploy your Angular application to Firebase and serve dynamic content to your users.
