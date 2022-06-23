@@ -1,4 +1,3 @@
-import { spawnSync } from 'child_process';
 import { replaceInFile } from 'replace-in-file';
 import { readJSON } from 'fs-extra';
 
