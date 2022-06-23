@@ -61,5 +61,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     // TODO can we override existing deps?
     packageJson.dependencies = Object.fromEntries(staticDepsArray);
 
-    return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], packageJson, framework: 'nuxt3', bootstrapScript: null };
+    return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], packageJson, framework: 'nuxt3', bootstrapScript: null, firebaseJson: null };
 }

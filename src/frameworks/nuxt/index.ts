@@ -66,5 +66,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
 
-    return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], packageJson, framework: 'nuxt', bootstrapScript: null };
+    return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], packageJson, framework: 'nuxt', bootstrapScript: null, firebaseJson: null };
 }

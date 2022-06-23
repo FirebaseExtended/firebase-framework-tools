@@ -27,7 +27,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const command = await dynamicImport(getProjectPath);
     await rm(config.dist, { recursive: true, force: true });
     const results = await command.build(config, getProjectPath);
-    const { usingCloudFunctions, packageJson, framework, bootstrapScript, rewrites, redirects, headers } = results;
+    const { usingCloudFunctions, packageJson, framework, bootstrapScript, rewrites, redirects, headers, firebaseJson } = results;
     let usesFirebaseConfig = false;
     if (usingCloudFunctions) {
         const firebaseAuthDependency = findDependency('@firebase/auth', getProjectPath());
@@ -68,6 +68,10 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
         await writeFile(join(functionsDist, 'package.json'), JSON.stringify(packageJson, null, 2));
 
+        if (firebaseJson) {
+          await writeFile(getProjectPath('firebase.json'), JSON.stringify(firebaseJson, null, 2));
+        }
+
         await copyFile(getProjectPath('package-lock.json'), join(functionsDist, 'package-lock.json')).catch(() => {});
 
         const npmInstall = spawnSync('npm', ['i', '--only', 'production', '--no-audit', '--silent'], { cwd: functionsDist });
@@ -104,5 +108,5 @@ exports.FRAMEWORK = '${framework}';
             requiredAPIs: []
         }, null, 2));
     }
-    return { usingCloudFunctions, rewrites, redirects, headers, usesFirebaseConfig };
+    return { usingCloudFunctions, rewrites, redirects, headers, usesFirebaseConfig, firebaseJson: null };
 };
