@@ -130,8 +130,18 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         return { source, destination };
     }).filter(it => it);
 
+    const originalFirebaseJsonBuffer = await readFile(getProjectPath('firebase.json'));
+    const originalFirebaseJson = JSON.parse(originalFirebaseJsonBuffer.toString());
+    const firebaseJson = {
+      ...originalFirebaseJson,
+      hosting: {
+        ...originalFirebaseJson.hosting,
+        cleanUrls : true
+      }
+    };
+
     // TODO use this better detection for usesFirebaseConfig
-    return { usingCloudFunctions, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null };
+    return { usingCloudFunctions, headers, redirects, rewrites, framework: 'next.js', packageJson, bootstrapScript: null, firebaseJson };
 }
 
 type Manifest = {

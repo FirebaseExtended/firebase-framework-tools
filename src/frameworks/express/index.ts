@@ -111,5 +111,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         packageJson.dependencies[packageJson.name] = `file:${filename}`;
     }
 
-    return { usingCloudFunctions: !!serverRenderMethod, framework: 'express', rewrites: [], redirects: [], headers: [], packageJson, bootstrapScript };
+    return { usingCloudFunctions: !!serverRenderMethod, framework: 'express', rewrites: [], redirects: [], headers: [], packageJson, bootstrapScript, firebaseJson: null };
 }
