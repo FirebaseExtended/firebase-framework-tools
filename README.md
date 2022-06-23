@@ -102,7 +102,6 @@ To make the page accessible on `/foo/bar` instead, add `cleanUrls` option to you
 Easily deploy your Angular application to Firebase and serve dynamic content to your users.
 
 ## What you'll need before you begin
-
 ### Prerequisites
 - Firebase CLI version 10.9.1 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
 - (optional) Billing enabled on your Firebase Project (if you plan to use SSR)
@@ -153,4 +152,5 @@ just a few small guidelines you need to follow. [See CONTRIBUTING](./CONTRIBUTIN
 $ cd <YOUR-GIT-CHECKOUT>
 $ npm i
 $ npm run build
+$ npm run prep
 ```

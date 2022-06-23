@@ -23,6 +23,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "rimraf dist && tsc && ts-node ./tools/build.ts",
+    "prep": "npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .) && firebase --open-sesame frameworkawareness",
     "dev": "npm run build && ts-node ./tools/dev.ts",
     "test": "npm run test:angular && npm run test:next && npm run test:custom",
     "e2e:build-next": "rimraf e2e/next-test && cd e2e && npx create-next-app next-test --use-npm --ts && cd next-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc . && firebase emulators:exec \"exit 0\"",
