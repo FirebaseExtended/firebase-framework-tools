@@ -52,13 +52,8 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        node: [ "14", "16" ]
+        node: [ "16", "18" ]
         framework: [ "next", "angular", "custom", "nuxt", "nuxt3" ]
-        exclude:
-          # seeing failures on this one, skip for now
-          - os: ubuntu-latest
-            node: 14
-            framework: angular
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
@@ -103,7 +98,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        node: [ "14", "16" ]
+        node: [ "16", "18" ]
         exclude:
           # we build with this combination, safely skip
           - os: ubuntu-latest
