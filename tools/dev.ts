@@ -27,7 +27,7 @@ const run = async () => {
         to: 'await import("firebase-frameworks/tools")',
     });
 
-    await exec(`npm install --force --ignore-scripts --save ${path}`, { cwd });
+    await exec(`npm install --only production --force --ignore-scripts --save ${path}`, { cwd });
     console.log(`Manually patched firebase-frameworks ${version} into firebase-tools ${firebaseVersion}.\nUndo this operation by globally installing firebase-tools again.`);
 }
 

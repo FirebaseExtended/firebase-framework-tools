@@ -91,7 +91,7 @@ jobs:
       - name: Test
         run: |
           npm i -g firebase-tools
-          npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
+          node --loader ts-node/esm ./tools/dev.ts
           firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:
@@ -130,11 +130,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Test
-        run: |
-          npm i -g firebase-tools
-          npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
-          firebase --open-sesame frameworkawareness
-          npm run test
+        run: npm run test
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
