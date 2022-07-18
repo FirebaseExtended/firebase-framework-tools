@@ -13,7 +13,7 @@ const run = async () => {
         to: `exports.FIREBASE_FRAMEWORKS_VERSION = 'file:${path}';`,
     });
     await exec('npm pack .');
-    const npmRoot = await exec('npm root');
+    const npmRoot = await exec('npm -g root');
     await exec(`npm install --force --ignore-scripts --save ${path}`, { cwd: join(npmRoot as string, 'firebase-tools') });
 }
 
