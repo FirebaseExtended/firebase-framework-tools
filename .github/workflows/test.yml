@@ -53,7 +53,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
         node: [ "14", "16" ]
-        framework: [ "next", "angular", "custom" ]
+        framework: [ "next", "angular", "custom", "nuxt", "nuxt3" ]
         exclude:
           # seeing failures on this one, skip for now
           - os: ubuntu-latest

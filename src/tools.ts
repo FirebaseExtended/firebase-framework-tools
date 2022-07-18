@@ -1,1 +1,1 @@
-export { build } from './frameworks';
+export { build } from './frameworks/index.js';

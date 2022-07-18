@@ -17,11 +17,12 @@ import { readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
 import { copy } from 'fs-extra';
 
-import { DeployConfig, PathFactory, exec } from '../../utils';
+import { DeployConfig, PathFactory, exec } from '../../utils.js';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    const { loadNuxt, buildNuxt } = await import('@nuxt/kit');
+    // @ts-ignore
+    const { loadNuxt, buildNuxt }: typeof import('@nuxt/kit') = await import('@nuxt/kit/dist/index.mjs');
 
     const nuxtApp = await loadNuxt({
         cwd: getProjectPath(),
@@ -29,7 +30,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             nitro: { preset: 'node' },
             _generate: true,
         },
-    });
+    } as any);
     const { options: { app: { baseURL, buildAssetsDir } } } = nuxtApp;
 
     await buildNuxt(nuxtApp);

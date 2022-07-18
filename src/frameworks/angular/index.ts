@@ -1,13 +1,10 @@
-import { NodeJsAsyncHost } from '@angular-devkit/core/node';
-import { workspaces, logging } from '@angular-devkit/core';
-import { WorkspaceNodeModulesArchitectHost } from '@angular-devkit/architect/node';
-import { Target, Architect, targetFromTargetString, targetStringFromTarget } from '@angular-devkit/architect';
+import type { Target } from '@angular-devkit/architect';
 import { mkdir } from 'fs/promises';
 import { join } from 'path';
 import { copy } from 'fs-extra';
 import { parse } from 'jsonc-parser';
 
-import { DeployConfig, findDependency, PathFactory, spawn } from '../../utils';
+import { DeployConfig, findDependency, PathFactory, spawn } from '../../utils.js';
 
 class MyError extends Error {
     constructor(reason: string) {
@@ -17,6 +14,11 @@ class MyError extends Error {
 }
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
+
+    const { NodeJsAsyncHost } = await import('@angular-devkit/core/node/index.js');
+    const { workspaces, logging } = await import('@angular-devkit/core/src/index.js');
+    const { WorkspaceNodeModulesArchitectHost } = await import('@angular-devkit/architect/node/index.js');
+    const { Architect, targetFromTargetString, targetStringFromTarget } = await import('@angular-devkit/architect/src/index.js');
 
     // TODO log to firebase-tools
     const logger = new logging.Logger('firebase-tools');
@@ -47,7 +49,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     if (!project) throw new MyError('Unable to detirmine the application to deploy. Use the NG_DELPOY_PROJECT enivornment varaible or `ng deploy` via @angular/fire.');
 
-    // TODO if there are multiple projects warn
     const workspaceProject = workspace.projects.get(project);
     if (!workspaceProject) throw new MyError(`No project ${project} found.`);
     const deployTargetDefinition = workspaceProject.targets.get('deploy');
@@ -111,18 +112,15 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     if (!browserTarget) throw new MyError('No build target...');
 
     if (prerenderTarget) {
-        // TODO fix once we can migrate to ESM. Spawn for now.
-        // ERR require() of ES Module .../node_modules/@nguniversal/express-engine/fesm2015/express-engine.mjs not supported.
-        //     Instead change the require of .../node_modules/@nguniversal/express-engine/fesm2015/express-engine.mjs to a dynamic
-        //     import() which is available in all CommonJS modules.
+        // TODO there is a bug here. Spawn for now.
         // await scheduleTarget(prerenderTarget);
         await spawn(
             'node_modules/.bin/ng',
             ['run', targetStringFromTarget(prerenderTarget)],
             { cwd: process.cwd() },
             // TODO log to firebase-tools
-            out => console.log(out.toString()),
-            err => console.error(err.toString())
+            (out: any) => console.log(out.toString()),
+            (err: any) => console.error(err.toString())
         );
     } else {
         await scheduleTarget(browserTarget);

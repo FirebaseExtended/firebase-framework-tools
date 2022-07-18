@@ -10,8 +10,8 @@ import {
     FIREBASE_FRAMEWORKS_VERSION,
     FIREBASE_FUNCTIONS_VERSION,
     LRU_CACHE_VERSION
-} from '../constants';
-import { DeployConfig, findDependency, PathFactory } from '../utils';
+} from '../constants.js';
+import { DeployConfig, findDependency, PathFactory } from '../utils.js';
 
 const NODE_VERSION = parseInt(process.versions.node, 10).toString();
 

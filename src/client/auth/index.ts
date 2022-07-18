@@ -4,7 +4,7 @@ import {
     User,
     Auth,
 } from 'firebase/auth';
-import { ID_TOKEN_MAX_AGE } from '../../constants';
+import { ID_TOKEN_MAX_AGE } from '../../constants.js';
 
 let alreadySetup = false;
 let lastPostedIdToken: string|undefined|null = null;
