@@ -20,3 +20,5 @@ run().then(
         exit(1);
     }
 );
+
+export {};
