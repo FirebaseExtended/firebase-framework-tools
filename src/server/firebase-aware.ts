@@ -6,6 +6,7 @@ import { initializeApp, deleteApp, FirebaseApp } from 'firebase/app';
 import { getAuth, signInWithCustomToken, User } from 'firebase/auth';
 import cookie from 'cookie';
 import LRU from 'lru-cache';
+import { pathToFileURL } from 'url';
 
 import {
     COOKIE_MAX_AGE,
@@ -14,7 +15,7 @@ import {
     LRU_TTL
 } from '../constants.js';
 
-const { FRAMEWORK, HTTPS_OPTIONS } = require(`${process.cwd()}/settings`);
+const { FRAMEWORK, HTTPS_OPTIONS } = require(`${pathToFileURL(process.cwd())}/settings`);
 const { handle: frameworkHandle } = require(`../frameworks/${FRAMEWORK}/server`);
 const FIREBASE_PROJECT_CONFIG = process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG && JSON.parse(process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG);
 

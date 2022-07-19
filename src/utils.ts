@@ -14,6 +14,7 @@
 
 import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio, spawnSync } from 'child_process';
 import { join } from 'path';
+import { pathToFileURL } from 'url';
 
 export const exec = (command: string, options: ExecOptions={}) => new Promise((resolve, reject) =>
     execCallback(command, options, (error, stdout) => {
@@ -59,7 +60,7 @@ export type DeployConfig = {
 
 export type PathFactory = (...args: string[]) => string;
 
-export const getProjectPathFactory = (config: DeployConfig): PathFactory => (...args) => join(process.cwd(), config.prefix ?? '.', ...args);
+export const getProjectPathFactory = (config: DeployConfig): PathFactory => (...args) => join(pathToFileURL(process.cwd()).toString(), config.prefix ?? '.', ...args);
 
 export const findDependency = (name: string, cwd=process.cwd()) => {
     const result = spawnSync('npm', ['list', name, '--json', '--omit', 'dev'], { cwd });
