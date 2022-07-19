@@ -17,6 +17,7 @@ import { join } from 'path';
 import { copy } from 'fs-extra';
 
 import { DeployConfig, PathFactory, exec, spawn } from '../../utils.js';
+import { pathToFileURL } from 'url';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
@@ -37,11 +38,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         const allowRecursion = !entry;
         entry ||= await (async () => {
             try {
-                const requiredProject = require(getProjectPath());
+                const requiredProject = require(pathToFileURL(getProjectPath()).toString());
                 if (requiredProject) method = ['require'];
                 return requiredProject;
             } catch(e) {
-                const importedProject = await import(getProjectPath()).catch(() => undefined);
+                const importedProject = await import(pathToFileURL(getProjectPath()).toString()).catch(() => undefined);
                 if (importedProject) method = ['import'];
                 return importedProject;
             }

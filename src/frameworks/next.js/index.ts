@@ -19,6 +19,7 @@ import type { NextConfig } from 'next';
 import { copy } from 'fs-extra';
 
 import { DeployConfig, PathFactory } from '../../utils.js';
+import { pathToFileURL } from 'url';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
@@ -33,7 +34,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, getProjectPath(), null);
     } catch(e) {
         // Must be Next 11, just import it
-        nextConfig = await import(getProjectPath('next.config.js'));
+        nextConfig = await import(pathToFileURL(getProjectPath('next.config.js')).toString());
     }
 
 
