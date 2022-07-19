@@ -51,9 +51,17 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         node: [ "16", "18" ]
         framework: [ "next", "angular", "custom", "nuxt", "nuxt3" ]
+        exclude:
+          # Engine failures for Node 18
+          - node: 18
+            framework: next
+          - node: 18
+            framework: nuxt
+          - node: 18
+            framework: nuxt3
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
@@ -98,7 +106,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        node: [ "16", "18" ]
+        node: [ "16" ] # lots of engine failures with Node 18, skip for now
         exclude:
           # we build with this combination, safely skip
           - os: ubuntu-latest
