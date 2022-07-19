@@ -15,9 +15,13 @@
 import { readFile, mkdir } from 'fs/promises'
 import { join } from 'path';
 import { copy } from 'fs-extra';
+import { pathToFileURL } from 'url';
 
 import { DeployConfig, PathFactory } from '../../utils.js';
 import { build as buildNuxt3 } from '../nuxt3/index.js';
+
+// Used by the build process, don't shake
+const _pathToFileURL = pathToFileURL;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 

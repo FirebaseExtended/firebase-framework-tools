@@ -3,6 +3,10 @@ import { mkdir } from 'fs/promises';
 import { join } from 'path';
 import { copy } from 'fs-extra';
 import { parse } from 'jsonc-parser';
+import { pathToFileURL } from 'url';
+
+// Used by the build process, don't shake
+const _pathToFileUrl = pathToFileURL;
 
 import { DeployConfig, findDependency, PathFactory, spawn } from '../../utils.js';
 

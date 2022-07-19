@@ -28,13 +28,13 @@ const main = async () => {
     await replaceInFile({
         files: 'dist/**/*',
         from: LOCAL_NODE_MODULES.map(mod => new RegExp(`require\\(["'\`]${mod}["'\`]\\)`, 'g')),
-        to: LOCAL_NODE_MODULES.map(mod => `require(\`\${getProjectPath()}/node_modules/${mod}\`)`),
+        to: LOCAL_NODE_MODULES.map(mod => `require(\`\${pathToFileURL(getProjectPath())}/node_modules/${mod}\`)`),
     });
 
     await replaceInFile({
         files: 'dist/**/*',
         from: LOCAL_NODE_MODULES.map(mod => new RegExp(`import\\(["'\`]${mod}["'\`]\\)`, 'g')),
-        to: LOCAL_NODE_MODULES.map(mod => `import(\`\${getProjectPath()}/node_modules/${mod}\`)`),
+        to: LOCAL_NODE_MODULES.map(mod => `import(\`\${pathToFileURL(getProjectPath())}/node_modules/${mod}\`)`),
     });
 
     const { devDependencies } = await readJSON('package.json');

@@ -16,8 +16,12 @@ import { existsSync } from 'fs';
 import { readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
 import { copy } from 'fs-extra';
+import { pathToFileURL } from 'url';
 
-import { DeployConfig, PathFactory, exec } from '../../utils.js';
+import { DeployConfig, PathFactory } from '../../utils.js';
+
+// Used by the build process, don't shake
+const _pathToFileURL = pathToFileURL;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 

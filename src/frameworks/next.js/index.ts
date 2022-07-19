@@ -17,9 +17,9 @@ import { dirname, extname, join } from 'path';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes.js';
 import type { NextConfig } from 'next';
 import { copy } from 'fs-extra';
+import { pathToFileURL } from 'url';
 
 import { DeployConfig, PathFactory } from '../../utils.js';
-import { pathToFileURL } from 'url';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
