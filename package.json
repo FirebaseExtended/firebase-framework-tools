@@ -32,11 +32,11 @@
     "e2e:build-angular": "rimraf e2e/angular-test && cd e2e && npm i -g @angular/cli && ng new angular-test --defaults --skip-git && cd angular-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-custom": "rimraf e2e/custom/lib && rimraf e2e/custom/.firebase && cd e2e/custom && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "clean:build": "rimraf dist",
-    "test:angular": "npm run e2e:build-angular && cd e2e/angular-test && node --loader ts-node/esm ../../tools/test-angular.ts",
-    "test:next": "npm run e2e:build-next && cd e2e/next-test && node --loader ts-node/esm ../../tools/test-next.ts",
-    "test:nuxt": "npm run e2e:build-nuxt && cd e2e/nuxt-test && node --loader ts-node/esm ../../tools/test-nuxt.ts",
-    "test:nuxt3": "npm run e2e:build-nuxt3 && cd e2e/nuxt3-test && node --loader ts-node/esm ../../tools/test-nuxt3.ts",
-    "test:custom": "npm run e2e:build-custom && cd e2e/custom && node --loader ts-node/esm ../../tools/test-custom.ts"
+    "test:angular": "npm run e2e:build-angular && node --loader ts-node/esm ./tools/test-angular.ts",
+    "test:next": "npm run e2e:build-next && node --loader ts-node/esm ./tools/test-next.ts",
+    "test:nuxt": "npm run e2e:build-nuxt && node --loader ts-node/esm ./tools/test-nuxt.ts",
+    "test:nuxt3": "npm run e2e:build-nuxt3 && node --loader ts-node/esm ./tools/test-nuxt3.ts",
+    "test:custom": "npm run e2e:build-custom && node --loader ts-node/esm ./tools/test-custom.ts"
   },
   "exports": {
     ".": {
