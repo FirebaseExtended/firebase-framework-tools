@@ -6,7 +6,6 @@ import { initializeApp, deleteApp, FirebaseApp } from 'firebase/app';
 import { getAuth, signInWithCustomToken, User } from 'firebase/auth';
 import cookie from 'cookie';
 import LRU from 'lru-cache';
-import { pathToFileURL } from 'url';
 
 import {
     COOKIE_MAX_AGE,
@@ -15,8 +14,6 @@ import {
     LRU_TTL
 } from '../constants.js';
 
-const { FRAMEWORK, HTTPS_OPTIONS } = require(`${pathToFileURL(process.cwd())}/settings`);
-const { handle: frameworkHandle } = require(`../frameworks/${FRAMEWORK}/server`);
 const FIREBASE_PROJECT_CONFIG = process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG && JSON.parse(process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG);
 
 const adminApp = initializeAdminApp();
@@ -84,11 +81,11 @@ const handleAuth = async (req: Request) => {
     req.currentUser = auth.currentUser;
 };
 
-export const ssr = onRequest(HTTPS_OPTIONS, async (req: Request, res: Response) => {
+export const handleFactory = (frameworkHandle: (req: Request, res: Response) => void) => async (req: Request, res: Response) => {
     if (req.url === '/__session') {
         await mintCookie(req, res);
     } else {
         await handleAuth(req);
         frameworkHandle(req, res);
     }
-});
+};

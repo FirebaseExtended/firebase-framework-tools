@@ -47,6 +47,10 @@
       "node": "./dist/tools.js",
       "default": null
     },
+    "./frameworks/*/server": {
+      "node": "./dist/frameworks/*/server.js",
+      "default": null
+    },
     "./server": {
       "node": "./dist/server/index.js",
       "default": null

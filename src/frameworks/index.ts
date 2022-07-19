@@ -75,18 +75,24 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             console.error(npmInstall.output.toString());
         }
 
-        // TODO(jamesdaniels) allow configuration of the Cloud Function
-        await writeFile(join(functionsDist, 'settings.js'), `exports.HTTPS_OPTIONS = {};
-exports.FRAMEWORK = '${framework}';
-`);
-
         if (bootstrapScript) {
             await writeFile(join(functionsDist, 'bootstrap.js'), bootstrapScript);
         }
         if (usesFirebaseConfig) {
-            await writeFile(join(functionsDist, 'server.js'), "exports.ssr = require('firebase-frameworks/server/firebase-aware').ssr;\n");
+            await writeFile(join(functionsDist, 'server.js'), `const { onRequest } = require('firebase-functions/v2/https');
+
+const firebaseAwareServer = import('firebase-frameworks/server/firebase-aware');
+const frameworkServer = import('firebase-frameworks/frameworks/${framework}/server');
+const server = Promise.all([firebaseAwareServer, frameworkServer]).then(([ {handleFactory}, {handle} ]) => handleFactory(handle));
+
+exports.ssr = onRequest((req, res) => server.then(it => it(req, res)));
+`);
         } else {
-            await writeFile(join(functionsDist, 'server.js'), "exports.ssr = require('firebase-frameworks/server').ssr;\n");
+            await writeFile(join(functionsDist, 'server.js'), `const { onRequest } = require('firebase-functions/v2/https');
+const server = import('firebase-frameworks/frameworks/${framework}/server');
+
+exports.ssr = onRequest((req, res) => server.then(({handle}) => handle(req, res)));
+`);
         }
 
         await writeFile(join(functionsDist, 'functions.yaml'), JSON.stringify({
