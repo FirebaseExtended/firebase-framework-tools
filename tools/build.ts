@@ -39,7 +39,7 @@ const main = async () => {
 
     const { devDependencies } = await readJSON('package.json');
     const from = ['__FIREBASE_FRAMEWORKS_VERSION__'];
-    const to = [`file:${process.cwd()}`];
+    const to = [`file://${process.cwd()}`];
     for (const [dep, version] of Object.entries<Record<string, string>>(devDependencies)) {
         from.push(`__${dep.toUpperCase().replace(/[^A-Z]/g, '_')}_VERSION__`);
         to.push(version as any);
