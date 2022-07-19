@@ -15,15 +15,20 @@
 import { readFile, mkdir } from 'fs/promises'
 import { join } from 'path';
 import { copy } from 'fs-extra';
+import { pathToFileURL } from 'url';
 
-import { DeployConfig, PathFactory } from '../../utils';
-import { build as buildNuxt3 } from '../nuxt3';
+import { DeployConfig, PathFactory } from '../../utils.js';
+import { build as buildNuxt3 } from '../nuxt3/index.js';
+
+// Used by the build process, don't shake
+const _pathToFileURL = pathToFileURL;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    let nuxt;
+    let nuxt: any;
     try {
-        nuxt = require('nuxt');
+        // @ts-ignore
+        nuxt = await import('nuxt/dist/nuxt.js');
     } catch(e) {
         return await buildNuxt3(config, getProjectPath);
     }
@@ -45,8 +50,10 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             rootDir: getProjectPath(),
         });
         await nuxtApp.server.listen(0);
-        const { getBuilder } = require(getProjectPath('node_modules', '@nuxt', 'builder'));
-        const { Generator } = require(getProjectPath('node_modules', '@nuxt', 'generator'));
+        // @ts-ignore
+        const { getBuilder } = await import('@nuxt/builder/dist/builder.js');
+        // @ts-ignore
+        const { Generator } = await import('@nuxt/generator/dist/generator.js');
         const builder = await getBuilder(nuxtApp);
         const generator = new Generator(nuxtApp, builder);
         await generator.generate({ build: false, init: true });

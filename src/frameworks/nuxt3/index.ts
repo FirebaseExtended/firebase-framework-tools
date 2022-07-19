@@ -16,12 +16,17 @@ import { existsSync } from 'fs';
 import { readFile, mkdir, readdir } from 'fs/promises';
 import { join } from 'path';
 import { copy } from 'fs-extra';
+import { pathToFileURL } from 'url';
 
-import { DeployConfig, PathFactory, exec } from '../../utils';
+import { DeployConfig, PathFactory } from '../../utils.js';
+
+// Used by the build process, don't shake
+const _pathToFileURL = pathToFileURL;
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
-    const { loadNuxt, buildNuxt } = await import('@nuxt/kit');
+    // @ts-ignore
+    const { loadNuxt, buildNuxt }: typeof import('@nuxt/kit') = await import('@nuxt/kit/dist/index.mjs');
 
     const nuxtApp = await loadNuxt({
         cwd: getProjectPath(),
@@ -29,7 +34,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
             nitro: { preset: 'node' },
             _generate: true,
         },
-    });
+    } as any);
     const { options: { app: { baseURL, buildAssetsDir } } } = nuxtApp;
 
     await buildNuxt(nuxtApp);

@@ -14,25 +14,27 @@
 
 import { readFile, mkdir, copyFile, stat } from 'fs/promises';
 import { dirname, extname, join } from 'path';
-import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
+import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes.js';
 import type { NextConfig } from 'next';
-import nextBuild from 'next/dist/build';
-import nextExport from 'next/dist/export';
 import { copy } from 'fs-extra';
-import { trace } from 'next/dist/trace';
+import { pathToFileURL } from 'url';
 
-import { DeployConfig, PathFactory } from '../../utils';
+import { DeployConfig, PathFactory } from '../../utils.js';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
+    const { default: { default: nextBuild } } = await import('next/dist/build/index.js');
+    const { default: { default: nextExport } } = await import('next/dist/export/index.js');
+    const { trace } = await import('next/dist/trace/index.js');
+
     let nextConfig: NextConfig;
     try {
-        const { default: loadConfig }: typeof import('next/dist/server/config') = require(getProjectPath('node_modules', 'next', 'dist', 'server', 'config'));
-        const { PHASE_PRODUCTION_BUILD }: typeof import('next/constants') = require(getProjectPath('node_modules', 'next', 'constants'));
+        const { default: { default: loadConfig } } = await import('next/dist/server/config.js');
+        const { PHASE_PRODUCTION_BUILD } = await import('next/constants.js');
         nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, getProjectPath(), null);
     } catch(e) {
         // Must be Next 11, just import it
-        nextConfig = await import(getProjectPath('next.config.js'));
+        nextConfig = await import(pathToFileURL(getProjectPath('next.config.js')).toString());
     }
 
 
@@ -44,15 +46,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     await nextBuild(getProjectPath(), null, false, false, true);
 
-    console.log('Attempting `next export`...');
-
     await nextExport(
         getProjectPath(),
         { silent: true, outdir: getHostingPath() },
         trace('next-export-cli')
-    ).catch(() => {
-        console.warn('\nYou can safely ignore the above error. Since next export did not succeed we\'ll treat as SSR.\n\n');
-    });
+    ).catch(() => undefined);
 
     let usingCloudFunctions = !!config.function;
     const asyncSteps: Array<Promise<any>> = [];
