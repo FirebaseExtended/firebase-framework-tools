@@ -1,4 +1,4 @@
-import { Request as FunctionsRequest, onRequest } from 'firebase-functions/v2/https';
+import { Request as FunctionsRequest } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
 import { initializeApp as initializeAdminApp } from 'firebase-admin/app';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
@@ -14,7 +14,7 @@ import {
     LRU_TTL
 } from '../constants.js';
 
-const FIREBASE_PROJECT_CONFIG = process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG && JSON.parse(process.env.FRAMEWORKS_FIREBASE_PROJECT_CONFIG);
+const FRAMEWORKS_APP_OPTIONS = process.env.FRAMEWORKS_APP_OPTIONS && JSON.parse(process.env.FRAMEWORKS_APP_OPTIONS);
 
 const adminApp = initializeAdminApp();
 const adminAuth = getAdminAuth(adminApp);
@@ -54,7 +54,7 @@ const mintCookie = async (req: Request, res: Response) => {
 };
 
 const handleAuth = async (req: Request) => {
-    if (!FIREBASE_PROJECT_CONFIG) return;
+    if (!FRAMEWORKS_APP_OPTIONS) return;
     const cookies = cookie.parse(req.headers.cookie || '');
     const { __session } = cookies;
     if (!__session) return;
@@ -67,7 +67,7 @@ const handleAuth = async (req: Request) => {
         if (isRevoked) return;
         const random = Math.random().toString(36).split('.')[1];
         const appName = `authenticated-context:${uid}:${random}`;
-        app = initializeApp(FIREBASE_PROJECT_CONFIG, appName);
+        app = initializeApp(FRAMEWORKS_APP_OPTIONS, appName);
         firebaseAppsLRU.set(uid, app);
     }
     const auth = getAuth(app);

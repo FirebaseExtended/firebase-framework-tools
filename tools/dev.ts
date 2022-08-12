@@ -20,13 +20,6 @@ const run = async () => {
     const firebaseVersion = await exec('firebase --version');
     const cwd = join(npmRoot as string, 'firebase-tools');
 
-    // Modify firebase-tools, switch to dynamic import
-    await replaceInFile({
-        files: join(cwd, 'lib', 'frameworks', 'index.js'),
-        from: 'require("firebase-frameworks/tools")',
-        to: 'await import("firebase-frameworks/tools")',
-    });
-
     await exec(`npm install --only production --force --ignore-scripts --save ${path}`, { cwd });
     console.log(`Manually patched firebase-frameworks ${version} into firebase-tools ${firebaseVersion}.\nUndo this operation by globally installing firebase-tools again.`);
 }

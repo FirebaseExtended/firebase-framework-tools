@@ -1,3 +1,5 @@
+import { copyFile } from 'fs/promises';
+
 export {};
 
 const { default: { replaceInFile } } = await import('replace-in-file');
@@ -49,6 +51,8 @@ const main = async () => {
         from,
         to
     });
+
+    copyFile('src/tools.cjs', 'dist/tools.cjs');
 }
 
 main();

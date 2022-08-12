@@ -1,4 +1,4 @@
-import { spawnSync } from 'child_process';
+import { spawn } from '../utils.js';
 import { existsSync } from 'fs';
 import { copyFile, rm, stat, writeFile, access } from 'fs/promises';
 import { basename, join, relative } from 'path';
@@ -12,6 +12,7 @@ import {
     LRU_CACHE_VERSION
 } from '../constants.js';
 import { DeployConfig, findDependency, PathFactory } from '../utils.js';
+import { spawnSync } from 'child_process';
 
 const NODE_VERSION = parseInt(process.versions.node, 10).toString();
 
@@ -23,26 +24,47 @@ const dynamicImport = (getProjectPath: PathFactory) => {
     return import('./express/index.js');
 };
 
+type EmulatorInfo = { name: string, host: string, port: number };
+
+export const injectConfig = async (dist: string, framework: string, options: any, emulators: EmulatorInfo[], ssr: boolean) => {
+    if (ssr) {
+        const functionsDist = join(dist, 'functions');
+        await writeFile(join(functionsDist, ".env"), `FRAMEWORKS_APP_OPTIONS="${JSON.stringify(options).replace(/"/g, '\\"')}"\n`);
+    }
+    const hostingDist = join(dist, 'hosting');
+    const { default: { replaceInFile } } = await import('replace-in-file');
+    let configScript = `window.__FRAMEWORKS_APP_OPTIONS__=${JSON.stringify(options)};`;
+    if (ssr) configScript += 'window.__FRAMEWORKS_SYNC_CLIENT_AUTH__=true;';
+    emulators.forEach(({port, host, name}) => {
+        configScript += `window.__${name.toUpperCase()}_EMULATOR_HOST__="${host}:${port}";`;
+    });
+    await replaceInFile({
+        files: join(hostingDist, '**', '*.html'),
+        from: '<head>',
+        to: `<head><script>${configScript}</script>`,
+    });
+}
+
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
     const command = await dynamicImport(getProjectPath);
     await rm(config.dist, { recursive: true, force: true });
     const results = await command.build(config, getProjectPath);
     const { usingCloudFunctions, packageJson, framework, bootstrapScript, rewrites, redirects, headers } = results;
-    let usesFirebaseConfig = false;
+    const usesFirebaseConfig = !!findDependency('@firebase/app', getProjectPath());
     if (usingCloudFunctions) {
-        const firebaseAuthDependency = findDependency('@firebase/auth', getProjectPath());
-        usesFirebaseConfig = !!firebaseAuthDependency;
-
         packageJson.main = 'server.js';
         delete packageJson.devDependencies;
         packageJson.dependencies ||= {};
         packageJson.dependencies['firebase-frameworks'] = FIREBASE_FRAMEWORKS_VERSION;
         const functionsDist = join(config.dist, 'functions');
+
+        // TODO dry up deps and overrides
         for (const [name, version] of Object.entries(packageJson.dependencies as Record<string, string>)) {
             if (version.startsWith('file:')) {
                 const path = version.split(':')[1];
                 if (await access(path).catch(() => true)) continue;
                 const stats = await stat(path);
+                console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
                 if (stats.isDirectory()) {
                     const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });
                     if (!result.stdout) continue;
@@ -52,6 +74,24 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
                     const filename = basename(path);
                     await copyFile(path, join(functionsDist, filename));
                     packageJson.dependencies[name] = `file:${filename}`;
+                }
+            }
+        }
+        for (const [name, version] of Object.entries(packageJson.overrides as Record<string, string>)) {
+            if (version.startsWith('file:')) {
+                const path = version.split(':')[1];
+                if (await access(path).catch(() => true)) continue;
+                const stats = await stat(path);
+                console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
+                if (stats.isDirectory()) {
+                    const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });
+                    if (!result.stdout) continue;
+                    const filename = result.stdout.toString().trim();
+                    packageJson.overrides[name] = `file:${filename}`;
+                } else {
+                    const filename = basename(path);
+                    await copyFile(path, join(functionsDist, filename));
+                    packageJson.overrides[name] = `file:${filename}`;
                 }
             }
         }
@@ -70,10 +110,11 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
         await copyFile(getProjectPath('package-lock.json'), join(functionsDist, 'package-lock.json')).catch(() => {});
 
-        const npmInstall = spawnSync('npm', ['i', '--only', 'production', '--no-audit', '--silent'], { cwd: functionsDist });
-        if (npmInstall.status) {
-            console.error(npmInstall.output.toString());
-        }
+        await spawn('npm', ['i', '--only', 'production', '--no-audit'], { cwd: functionsDist }, (stdoutChunk: any) => {
+            console.log(stdoutChunk.toString());
+        }, (errChunk: any) => {
+            console.error(errChunk.toString());
+        });
 
         if (bootstrapScript) {
             await writeFile(join(functionsDist, 'bootstrap.js'), bootstrapScript);

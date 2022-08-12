@@ -12,20 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { readFile, mkdir, copyFile, stat } from 'fs/promises';
+import { readFile, mkdir, copyFile, stat, readdir } from 'fs/promises';
 import { dirname, extname, join } from 'path';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes.js';
 import type { NextConfig } from 'next';
 import { copy } from 'fs-extra';
 import { pathToFileURL } from 'url';
 
-import { DeployConfig, PathFactory } from '../../utils.js';
+import { DeployConfig, PathFactory, spawn } from '../../utils.js';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
     const { default: { default: nextBuild } } = await import('next/dist/build/index.js');
-    const { default: { default: nextExport } } = await import('next/dist/export/index.js');
-    const { trace } = await import('next/dist/trace/index.js');
 
     let nextConfig: NextConfig;
     try {
@@ -46,18 +44,23 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     await nextBuild(getProjectPath(), null, false, false, true);
 
-    await nextExport(
-        getProjectPath(),
-        { silent: true, outdir: getHostingPath() },
-        trace('next-export-cli')
-    ).catch(() => undefined);
+    try {
+        // Using spawn here, rather than their programatic API because I can't silence it
+        // Failures with Next export are expected, we're just trying to do it if we can
+        await spawn('node_modules/.bin/next', ['export', '-o', getHostingPath()], { cwd: getProjectPath() });
+    } catch(e) { }
 
     let usingCloudFunctions = !!config.function;
     const asyncSteps: Array<Promise<any>> = [];
 
     const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
     if (exportDetailJson.success) {
-        usingCloudFunctions = false;
+        const prerenderManifestJSON = await readFile(getProjectPath(distDir, 'prerender-manifest.json')).then(it => JSON.parse(it.toString()));
+        const anyDynamicRouteFallbacks = !!Object.values(prerenderManifestJSON.dynamicRoutes || {}).find((it: any) => it.fallback !== false );
+        const filesInAPIPath = await readdir(getProjectPath('pages', 'api'));
+        if (!anyDynamicRouteFallbacks && filesInAPIPath.length === 0) {
+            usingCloudFunctions = false;
+        }
     } else {
         await mkdir(getHostingPath('_next', 'static'), { recursive: true });
         await copy(getProjectPath('public'), getHostingPath());
