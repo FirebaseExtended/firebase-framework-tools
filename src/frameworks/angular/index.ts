@@ -121,7 +121,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         await spawn(
             'node_modules/.bin/ng',
             ['run', targetStringFromTarget(prerenderTarget)],
-            { cwd: process.cwd() },
+            { cwd: getProjectPath() },
             // TODO log to firebase-tools
             (out: any) => console.log(out.toString()),
             (err: any) => console.error(err.toString())
