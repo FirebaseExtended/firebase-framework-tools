@@ -1,6 +1,6 @@
 import { spawn } from '../utils.js';
 import { existsSync } from 'fs';
-import { copyFile, rm, stat, writeFile, access } from 'fs/promises';
+import { copyFile, rm, stat, writeFile, access, readFile } from 'fs/promises';
 import { basename, join, relative } from 'path';
 
 import {
@@ -16,12 +16,17 @@ import { spawnSync } from 'child_process';
 
 const NODE_VERSION = parseInt(process.versions.node, 10).toString();
 
-const dynamicImport = (getProjectPath: PathFactory) => {
-    const exists = (...files: string[]) => files.some(file => existsSync(getProjectPath(file)));
-    if (exists('next.config.js')) return import('./next.js/index.js');
-    if (exists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
-    if (exists('angular.json')) return import('./angular/index.js');
-    return import('./express/index.js');
+// TODO move this entirely to firebase-tools
+const dynamicImport = async (getProjectPath: PathFactory) => {
+    const fileExists = (...files: string[]) => files.some(file => existsSync(getProjectPath(file)));
+    if (!fileExists('package.json')) throw "We can't detirmine the web framework in use. TODO link";
+    const packageJsonBuffer = await readFile(getProjectPath('package.json'));
+    const packageJson = JSON.parse(packageJsonBuffer.toString());
+    if (packageJson.directories?.serve) import('./express/index.js');
+    if (fileExists('next.config.js')) return import('./next.js/index.js');
+    if (fileExists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
+    if (fileExists('angular.json')) return import('./angular/index.js');
+    throw "We can't detirmine the web framework in use. TODO link";
 };
 
 type EmulatorInfo = { name: string, host: string, port: number };
