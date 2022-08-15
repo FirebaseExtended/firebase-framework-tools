@@ -39,7 +39,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     let prerenderTarget: Target|undefined;
 
     if (!project) {
-        const angularJson = parse(await host.readFile('angular.json'));
+        const angularJson = parse(await host.readFile(getProjectPath('angular.json')));
         project = angularJson.defaultProject;
     }
 
@@ -143,7 +143,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const usingCloudFunctions = !!serverTarget;
 
     let bootstrapScript = '';
-    const packageJson = JSON.parse(await host.readFile('package.json'));
+    const packageJson = JSON.parse(await host.readFile(getProjectPath('package.json')));
     if (serverTarget) {
         const serverTargetOptions = await architectHost.getOptionsForTarget(serverTarget);
         if (typeof serverTargetOptions?.outputPath !== 'string') throw new MyError('serverTarget output path is not a string');
