@@ -119,7 +119,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         // TODO there is a bug here. Spawn for now.
         // await scheduleTarget(prerenderTarget);
         await spawn(
-            'node_modules/.bin/ng',
+            join('node_modules', '.bin', 'ng'),
             ['run', targetStringFromTarget(prerenderTarget)],
             { cwd: getProjectPath() },
             // TODO log to firebase-tools
