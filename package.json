@@ -61,8 +61,7 @@
     "./server/firebase-aware": {
       "node": "./dist/server/firebase-aware.js",
       "default": null
-    },
-    "./client/auth": "./dist/client/auth/index.js"
+    }
   },
   "files": [
     "dist"
