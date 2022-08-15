@@ -46,6 +46,11 @@ const main = async () => {
         from.push(`__${dep.toUpperCase().replace(/[^A-Z]/g, '_')}_VERSION__`);
         to.push(version as any);
     }
+    await replaceInFile({
+        files: 'dist/**/*',
+        from,
+        to
+    });
 
     copyFile('src/tools.cjs', 'dist/tools.cjs');
 }

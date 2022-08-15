@@ -77,21 +77,23 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
                 }
             }
         }
-        for (const [name, version] of Object.entries(packageJson.overrides as Record<string, string>)) {
-            if (version.startsWith('file:')) {
-                const path = version.split(':')[1];
-                if (await access(path).catch(() => true)) continue;
-                const stats = await stat(path);
-                console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
-                if (stats.isDirectory()) {
-                    const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });
-                    if (!result.stdout) continue;
-                    const filename = result.stdout.toString().trim();
-                    packageJson.overrides[name] = `file:${filename}`;
-                } else {
-                    const filename = basename(path);
-                    await copyFile(path, join(functionsDist, filename));
-                    packageJson.overrides[name] = `file:${filename}`;
+        if (packageJson.overrides) {
+            for (const [name, version] of Object.entries(packageJson.overrides as Record<string, string>)) {
+                if (version.startsWith('file:')) {
+                    const path = version.split(':')[1];
+                    if (await access(path).catch(() => true)) continue;
+                    const stats = await stat(path);
+                    console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
+                    if (stats.isDirectory()) {
+                        const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });
+                        if (!result.stdout) continue;
+                        const filename = result.stdout.toString().trim();
+                        packageJson.overrides[name] = `file:${filename}`;
+                    } else {
+                        const filename = basename(path);
+                        await copyFile(path, join(functionsDist, filename));
+                        packageJson.overrides[name] = `file:${filename}`;
+                    }
                 }
             }
         }
