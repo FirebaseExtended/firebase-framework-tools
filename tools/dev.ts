@@ -1,8 +1,11 @@
+export {};
+
 import { exit } from 'process';
-import { replaceInFile } from 'replace-in-file';
 import { join } from 'path';
-import { readJson } from 'fs-extra';
-import { exec } from '../src/utils';
+import { exec } from '../src/utils.js';
+
+const { default: { replaceInFile } } = await import('replace-in-file');
+const { default: { readJson } } = await import('fs-extra');
 
 const run = async () => {
     const { name, version } = await readJson('./package.json');
@@ -13,8 +16,12 @@ const run = async () => {
         to: `exports.FIREBASE_FRAMEWORKS_VERSION = 'file:${path}';`,
     });
     await exec('npm pack .');
-    const npmRoot = await exec('npm root');
-    await exec(`npm install --force --ignore-scripts --save ${path}`, { cwd: join(npmRoot as string, 'firebase-tools') });
+    const npmRoot = await exec('npm -g root');
+    const firebaseVersion = await exec('firebase --version');
+    const cwd = join(npmRoot as string, 'firebase-tools');
+
+    await exec(`npm install --only production --force --ignore-scripts --save ${path}`, { cwd });
+    console.log(`Manually patched firebase-frameworks ${version} into firebase-tools ${firebaseVersion}.\nUndo this operation by globally installing firebase-tools again.`);
 }
 
 run().then(

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "es2020",
+    "module": "NodeNext",
     "types": ["node"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -16,7 +16,6 @@
     "src/server/index.ts",
     "src/server/firebase-aware.ts",
     "src/frameworks/*/server.ts",
-    "src/client/*/index.ts",
     "types/*.d.ts"
   ]
 }

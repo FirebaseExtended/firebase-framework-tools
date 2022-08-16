@@ -1,3 +1,8 @@
-const { handle } = require(`${process.cwd()}/bootstrap.js`);
+import { pathToFileURL } from "url";
 
-export { handle };
+const express = import(`${pathToFileURL(process.cwd())}/bootstrap.js`);
+
+export const handle = async (req: Request, res: Response) => {
+    const { handle } = await express;
+    handle(req, res);
+};

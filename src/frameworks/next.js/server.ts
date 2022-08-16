@@ -1,9 +1,13 @@
 import { parse } from 'url';
-import next from 'next';
-import type { Request } from '../../server';
+import { default as next } from 'next';
+import type { Request } from '../../server/index.js';
 import type { Response } from 'express';
 
-const nextApp = next({ dev: false, dir: process.cwd() });
+const nextApp = next({
+    dev: false,
+    dir: process.cwd(),
+    minimalMode: true,
+});
 const nextAppPrepare = nextApp.prepare();
 
 export const handle = async (req: Request, res: Response) => {

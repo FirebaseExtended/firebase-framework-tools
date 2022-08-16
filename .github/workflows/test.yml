@@ -51,14 +51,21 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
-        node: [ "14", "16" ]
-        framework: [ "next", "angular", "custom" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        node: [ "16", "18" ]
+        framework: [ "next", "angular", "custom", "nuxt", "nuxt3" ]
         exclude:
-          # seeing failures on this one, skip for now
-          - os: ubuntu-latest
-            node: 14
-            framework: angular
+          # Engine failures for Node 18
+          - node: 18
+            framework: next
+          - node: 18
+            framework: nuxt
+          - node: 18
+            framework: nuxt3
+          # JSON serialization problem
+          - node: 16
+            framework: nuxt
+            os: windows-latest
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
@@ -91,7 +98,7 @@ jobs:
       - name: Test
         run: |
           npm i -g firebase-tools
-          npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
+          node --loader ts-node/esm ./tools/dev.ts
           firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:
@@ -103,7 +110,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        node: [ "14", "16" ]
+        node: [ "16" ] # lots of engine failures with Node 18, skip for now
         exclude:
           # we build with this combination, safely skip
           - os: ubuntu-latest
@@ -130,11 +137,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Test
-        run: |
-          npm i -g firebase-tools
-          npm i --only production --force --ignore-scripts --save --prefix $(npm root -g)/firebase-tools $(npm pack .)
-          firebase --open-sesame frameworkawareness
-          npm run test
+        run: npm run test
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 

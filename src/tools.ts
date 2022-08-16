@@ -1,1 +1,1 @@
-export { build } from './frameworks';
+export { build, injectConfig } from './frameworks/index.js';

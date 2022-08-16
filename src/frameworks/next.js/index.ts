@@ -12,27 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { readFile, mkdir, copyFile, stat } from 'fs/promises';
-import { dirname, extname, join } from 'path';
-import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes';
+import { readFile, mkdir, copyFile, stat, readdir } from 'fs/promises';
+import { basename, dirname, extname, join } from 'path';
+import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes.js';
 import type { NextConfig } from 'next';
-import nextBuild from 'next/dist/build';
-import nextExport from 'next/dist/export';
 import { copy } from 'fs-extra';
-import { trace } from 'next/dist/trace';
+import { pathToFileURL } from 'url';
 
-import { DeployConfig, PathFactory } from '../../utils';
+import { Commands, DeployConfig, PathFactory, spawn } from '../../utils.js';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
+    const { default: { default: nextBuild } } = await import('next/dist/build/index.js');
+
     let nextConfig: NextConfig;
     try {
-        const { default: loadConfig }: typeof import('next/dist/server/config') = require(getProjectPath('node_modules', 'next', 'dist', 'server', 'config'));
-        const { PHASE_PRODUCTION_BUILD }: typeof import('next/constants') = require(getProjectPath('node_modules', 'next', 'constants'));
+        const { default: { default: loadConfig } } = await import('next/dist/server/config.js');
+        const { PHASE_PRODUCTION_BUILD } = await import('next/constants.js');
         nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, getProjectPath(), null);
     } catch(e) {
         // Must be Next 11, just import it
-        nextConfig = await import(getProjectPath('next.config.js'));
+        nextConfig = await import(pathToFileURL(getProjectPath('next.config.js')).toString());
     }
 
 
@@ -44,22 +44,31 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     await nextBuild(getProjectPath(), null, false, false, true);
 
-    console.log('Attempting `next export`...');
-
-    await nextExport(
-        getProjectPath(),
-        { silent: true, outdir: getHostingPath() },
-        trace('next-export-cli')
-    ).catch(() => {
-        console.warn('\nYou can safely ignore the above error. Since next export did not succeed we\'ll treat as SSR.\n\n');
-    });
+    try {
+        // Using spawn here, rather than their programatic API because I can't silence it
+        // Failures with Next export are expected, we're just trying to do it if we can
+        await spawn(Commands.next, ['export', '-o', getHostingPath()], { cwd: getProjectPath() });
+    } catch(e) { }
 
     let usingCloudFunctions = !!config.function;
     const asyncSteps: Array<Promise<any>> = [];
 
     const exportDetailJson = await readFile(getProjectPath(distDir, 'export-detail.json')).then(it => JSON.parse(it.toString()), () => { success: false });
     if (exportDetailJson.success) {
-        usingCloudFunctions = false;
+        const prerenderManifestJSON = await readFile(getProjectPath(distDir, 'prerender-manifest.json')).then(it => JSON.parse(it.toString()));
+        const anyDynamicRouteFallbacks = !!Object.values(prerenderManifestJSON.dynamicRoutes || {}).find((it: any) => it.fallback !== false );
+        const pagesManifestJSON = await readFile(getProjectPath(distDir, 'server', 'pages-manifest.json')).then(it => JSON.parse(it.toString()));
+        const prerenderedRoutes = Object.keys(prerenderManifestJSON.routes);
+        const dynamicRoutes = Object.keys(prerenderManifestJSON.dynamicRoutes);
+        const unrenderedPages = Object.keys(pagesManifestJSON).filter(it =>!(
+            ['/_app', '/_error', '/_document', '/404'].includes(it) ||
+            prerenderedRoutes.includes(it) ||
+            dynamicRoutes.includes(it)
+        ));
+        // TODO log these as a reason why Cloud Functions are needed
+        if (!anyDynamicRouteFallbacks && unrenderedPages.length === 0) {
+            usingCloudFunctions = false;
+        }
     } else {
         await mkdir(getHostingPath('_next', 'static'), { recursive: true });
         await copy(getProjectPath('public'), getHostingPath());
