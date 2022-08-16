@@ -16,18 +16,19 @@ import { spawnSync } from 'child_process';
 
 const NODE_VERSION = parseInt(process.versions.node, 10).toString();
 
+const UNKNOWN_FRAMEWORK = new Error("We can't detirmine the web framework in use. TODO link");
+
 // TODO move this entirely to firebase-tools
 const dynamicImport = async (getProjectPath: PathFactory) => {
     const fileExists = (...files: string[]) => files.some(file => existsSync(getProjectPath(file)));
-    if (!fileExists('package.json')) throw "We can't detirmine the web framework in use. TODO link";
+    if (!fileExists('package.json')) throw UNKNOWN_FRAMEWORK;
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
-    console.log(packageJson.directories?.serve);
-    if (packageJson.directories?.serve) import('./express/index.js');
+    if (packageJson.directories?.serve) return import('./express/index.js');
     if (fileExists('next.config.js')) return import('./next.js/index.js');
     if (fileExists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
     if (fileExists('angular.json')) return import('./angular/index.js');
-    throw new Error("We can't detirmine the web framework in use. TODO link");
+    throw UNKNOWN_FRAMEWORK;
 };
 
 type EmulatorInfo = { name: string, host: string, port: number };

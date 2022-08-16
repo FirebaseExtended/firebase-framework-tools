@@ -59,7 +59,7 @@ export type DeployConfig = {
 export type PathFactory = (...args: string[]) => string;
 
 export const findDependency = (name: string, cwd=process.cwd()) => {
-    const result = spawnSync('npm', ['list', name, '--json', '--omit', 'dev'], { cwd });
+    const result = spawnSync(Commands.NPM, ['list', name, '--json', '--omit', 'dev'], { cwd });
     if (!result.stdout) return undefined;
     const json = JSON.parse(result.stdout.toString());
     const search = (searchingFor: string, dependencies={}): any => {
