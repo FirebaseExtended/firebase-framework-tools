@@ -39,9 +39,9 @@ const main = async () => {
         to: LOCAL_NODE_MODULES.map(mod => `import(\`\${pathToFileURL(getProjectPath())}/node_modules/${mod}\`)`),
     });
 
-    const { devDependencies } = await readJSON('package.json');
+    const { devDependencies, version } = await readJSON('package.json');
     const from = ['__FIREBASE_FRAMEWORKS_VERSION__'];
-    const to = [`file://${process.cwd()}`];
+    const to = [version];
     for (const [dep, version] of Object.entries<Record<string, string>>(devDependencies)) {
         from.push(`__${dep.toUpperCase().replace(/[^A-Z]/g, '_')}_VERSION__`);
         to.push(version as any);

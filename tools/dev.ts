@@ -12,8 +12,8 @@ const run = async () => {
     const path = join(process.cwd(), `${name}-${version}.tgz`);
     await replaceInFile({
         files: 'dist/constants.js',
-        from: /^exports\.FIREBASE_FRAMEWORKS_VERSION = .*$/gm,
-        to: `exports.FIREBASE_FRAMEWORKS_VERSION = 'file:${path}';`,
+        from: /^export const FIREBASE_FRAMEWORKS_VERSION = .*$/gm,
+        to: `export const FIREBASE_FRAMEWORKS_VERSION = 'file:${path}';`,
     });
     await exec('npm pack .');
     const npmRoot = await exec('npm -g root');
