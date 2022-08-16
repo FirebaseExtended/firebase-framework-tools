@@ -71,7 +71,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
                 const path = version.split(':')[1];
                 if (await access(path).catch(() => true)) continue;
                 const stats = await stat(path);
-                console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
                 if (stats.isDirectory()) {
                     const result = spawnSync(Commands.NPM, ['pack', relative(functionsDist, path)], { cwd: functionsDist });
                     if (!result.stdout) continue;
@@ -90,7 +89,6 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
                     const path = version.split(':')[1];
                     if (await access(path).catch(() => true)) continue;
                     const stats = await stat(path);
-                    console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
                     if (stats.isDirectory()) {
                         const result = spawnSync(Commands.NPM, ['pack', relative(functionsDist, path)], { cwd: functionsDist });
                         if (!result.stdout) continue;
@@ -119,11 +117,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
         await copyFile(getProjectPath('package-lock.json'), join(functionsDist, 'package-lock.json')).catch(() => {});
 
-        await spawn(Commands.NPM, ['i', '--only', 'production', '--no-audit'], { cwd: functionsDist }, (stdoutChunk: any) => {
-            console.log(stdoutChunk.toString());
-        }, (errChunk: any) => {
-            console.error(errChunk.toString());
-        });
+        await spawn(Commands.NPM, ['i', '--omit', 'dev', '--no-audit'], { cwd: functionsDist });
 
         if (bootstrapScript) {
             await writeFile(join(functionsDist, 'bootstrap.js'), bootstrapScript);

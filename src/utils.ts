@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio, spawnSync } from 'child_process';
+import { join } from 'path';
 
 export const exec = (command: string, options: ExecOptions={}) => new Promise((resolve, reject) =>
     execCallback(command, options, (error, stdout) => {
@@ -75,6 +76,6 @@ export const findDependency = (name: string, cwd=process.cwd()) => {
 
 export const Commands = {
     NPM: process.platform === 'win32' ? 'npm.cmd' : 'npm',
-    next: process.platform === 'win32' ? 'next.cmd' : 'next',
-    ng: process.platform === 'win32' ? 'ng.cmd' : 'ng',
+    next: join('node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next'),
+    ng: join('node_modules', '.bin', process.platform === 'win32' ? 'ng.cmd' : 'ng'),
 };
