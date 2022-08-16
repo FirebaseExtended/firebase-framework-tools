@@ -47,7 +47,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     try {
         // Using spawn here, rather than their programatic API because I can't silence it
         // Failures with Next export are expected, we're just trying to do it if we can
-        await spawn(join('node_modules', '.bin', 'next'), ['export', '-o', getHostingPath()], { cwd: getProjectPath() });
+        await spawn('next', ['export', '-o', getHostingPath()], { cwd: getProjectPath() });
     } catch(e) { }
 
     let usingCloudFunctions = !!config.function;
