@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { readFile, mkdir, copyFile, stat, readdir } from 'fs/promises';
-import { dirname, extname, join } from 'path';
+import { basename, dirname, extname, join } from 'path';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes.js';
 import type { NextConfig } from 'next';
 import { copy } from 'fs-extra';
@@ -57,8 +57,16 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     if (exportDetailJson.success) {
         const prerenderManifestJSON = await readFile(getProjectPath(distDir, 'prerender-manifest.json')).then(it => JSON.parse(it.toString()));
         const anyDynamicRouteFallbacks = !!Object.values(prerenderManifestJSON.dynamicRoutes || {}).find((it: any) => it.fallback !== false );
-        const filesInAPIPath = await readdir(getProjectPath('pages', 'api'));
-        if (!anyDynamicRouteFallbacks && filesInAPIPath.length === 0) {
+        const pagesManifestJSON = await readFile(getProjectPath(distDir, 'server', 'pages-manifest.json')).then(it => JSON.parse(it.toString()));
+        const prerenderedRoutes = Object.keys(prerenderManifestJSON.routes);
+        const dynamicRoutes = Object.keys(prerenderManifestJSON.dynamicRoutes);
+        const unrenderedPages = Object.keys(pagesManifestJSON).filter(it =>!(
+            ['/_app', '/_error', '/_document', '/404'].includes(it) ||
+            prerenderedRoutes.includes(it) ||
+            dynamicRoutes.includes(it)
+        ));
+        // TODO log these as a reason why Cloud Functions are needed
+        if (!anyDynamicRouteFallbacks && unrenderedPages.length === 0) {
             usingCloudFunctions = false;
         }
     } else {
