@@ -1,4 +1,4 @@
-import { spawn } from '../utils.js';
+import { Commands, spawn } from '../utils.js';
 import { existsSync } from 'fs';
 import { copyFile, rm, stat, writeFile, access, readFile } from 'fs/promises';
 import { basename, join, relative } from 'path';
@@ -22,11 +22,12 @@ const dynamicImport = async (getProjectPath: PathFactory) => {
     if (!fileExists('package.json')) throw "We can't detirmine the web framework in use. TODO link";
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
+    console.log(packageJson.directories?.serve);
     if (packageJson.directories?.serve) import('./express/index.js');
     if (fileExists('next.config.js')) return import('./next.js/index.js');
     if (fileExists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
     if (fileExists('angular.json')) return import('./angular/index.js');
-    throw "We can't detirmine the web framework in use. TODO link";
+    throw new Error("We can't detirmine the web framework in use. TODO link");
 };
 
 type EmulatorInfo = { name: string, host: string, port: number };
@@ -71,7 +72,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
                 const stats = await stat(path);
                 console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
                 if (stats.isDirectory()) {
-                    const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });
+                    const result = spawnSync(Commands.NPM, ['pack', relative(functionsDist, path)], { cwd: functionsDist });
                     if (!result.stdout) continue;
                     const filename = result.stdout.toString().trim();
                     packageJson.dependencies[name] = `file:${filename}`;
@@ -90,7 +91,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
                     const stats = await stat(path);
                     console.log(`Packing file-system dependency on ${path} for Cloud Functions`);
                     if (stats.isDirectory()) {
-                        const result = spawnSync('npm', ['pack', relative(functionsDist, path)], { cwd: functionsDist });
+                        const result = spawnSync(Commands.NPM, ['pack', relative(functionsDist, path)], { cwd: functionsDist });
                         if (!result.stdout) continue;
                         const filename = result.stdout.toString().trim();
                         packageJson.overrides[name] = `file:${filename}`;
@@ -117,7 +118,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
         await copyFile(getProjectPath('package-lock.json'), join(functionsDist, 'package-lock.json')).catch(() => {});
 
-        await spawn('npm', ['i', '--only', 'production', '--no-audit'], { cwd: functionsDist }, (stdoutChunk: any) => {
+        await spawn(Commands.NPM, ['i', '--only', 'production', '--no-audit'], { cwd: functionsDist }, (stdoutChunk: any) => {
             console.log(stdoutChunk.toString());
         }, (errChunk: any) => {
             console.error(errChunk.toString());

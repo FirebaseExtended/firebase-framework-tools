@@ -8,7 +8,7 @@ import { pathToFileURL } from 'url';
 // Used by the build process, don't shake
 const _pathToFileUrl = pathToFileURL;
 
-import { DeployConfig, findDependency, PathFactory, spawn } from '../../utils.js';
+import { Commands, DeployConfig, findDependency, PathFactory, spawn } from '../../utils.js';
 
 class MyError extends Error {
     constructor(reason: string) {
@@ -119,7 +119,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         // TODO there is a bug here. Spawn for now.
         // await scheduleTarget(prerenderTarget);
         await spawn(
-            'ng',
+            Commands.ng,
             ['run', targetStringFromTarget(prerenderTarget)],
             { cwd: getProjectPath() },
             // TODO log to firebase-tools

@@ -16,7 +16,7 @@ import { readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { copy } from 'fs-extra';
 
-import { DeployConfig, PathFactory, exec, spawn } from '../../utils.js';
+import { DeployConfig, PathFactory, exec, spawn, Commands } from '../../utils.js';
 import { pathToFileURL } from 'url';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
@@ -26,7 +26,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     if (packageJson.scripts?.build) {
         // TODO add to the firebaseTools logs
-        await spawn('npm', ['run', 'build'], { cwd: getProjectPath() }, (stdoutChunk: any) => {
+        await spawn(Commands.NPM, ['run', 'build'], { cwd: getProjectPath() }, (stdoutChunk: any) => {
             console.log(stdoutChunk.toString());
         }, (errChunk: any) => {
             console.error(errChunk.toString());

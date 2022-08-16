@@ -72,3 +72,9 @@ export const findDependency = (name: string, cwd=process.cwd()) => {
     }
     return search(name, json.dependencies);
 };
+
+export const Commands = {
+    NPM: process.platform === 'win32' ? 'npm.cmd' : 'npm',
+    next: process.platform === 'win32' ? 'next.cmd' : 'next',
+    ng: process.platform === 'win32' ? 'ng.cmd' : 'ng',
+};
