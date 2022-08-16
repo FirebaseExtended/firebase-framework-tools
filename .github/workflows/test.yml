@@ -62,6 +62,10 @@ jobs:
             framework: nuxt
           - node: 18
             framework: nuxt3
+          # JSON serialization problem
+          - node: 16
+            framework: nuxt
+            os: windows-latest
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
