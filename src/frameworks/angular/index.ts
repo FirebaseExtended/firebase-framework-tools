@@ -167,5 +167,5 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
 
     // TODO add immutable header on static assets
 
-    return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], framework: 'express', packageJson, bootstrapScript };
+    return { usingCloudFunctions, rewrites: [], redirects: [], headers: [], framework: 'angular', packageJson, bootstrapScript };
 };

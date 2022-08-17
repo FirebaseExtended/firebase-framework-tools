@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { exec as execCallback, spawn as spawnCallback, ExecOptions, SpawnOptionsWithoutStdio, spawnSync } from 'child_process';
+import type Webpack from 'webpack';
 import { join } from 'path';
 
 export const exec = (command: string, options: ExecOptions={}) => new Promise((resolve, reject) =>
@@ -79,3 +80,11 @@ export const Commands = {
     next: join('node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next'),
     ng: join('node_modules', '.bin', process.platform === 'win32' ? 'ng.cmd' : 'ng'),
 };
+
+export const webpackDefinePluginFactory = (webpack: typeof Webpack) => new webpack.DefinePlugin({
+    'globalThis.__FRAMEWORKS_APP_OPTIONS__': JSON.stringify(true),
+    ...(process.env.FIREBASE_AUTH_EMULATOR_HOST ? {'globalThis.__AUTH_EMULATOR_HOST__': process.env.FIREBASE_AUTH_EMULATOR_HOST} : {}),
+    ...(process.env.FIREBASE_DATABASE_EMULATOR_HOST ? {'globalThis.__DATABASE_EMULATOR_HOST__': process.env.FIREBASE_DATABASE_EMULATOR_HOST} : {}),
+    ...(process.env.FIRESTORE_EMULATOR_HOST ? {'globalThis.__FIRESTORE_EMULATOR_HOST__': process.env.FIRESTORE_EMULATOR_HOST} : {}),
+    ...(process.env.FIREBASE_STORAGE_EMULATOR_HOST ? {'globalThis.__STORAGE_EMULATOR_HOST__': process.env.FIREBASE_STORAGE_EMULATOR_HOST} : {}),
+});

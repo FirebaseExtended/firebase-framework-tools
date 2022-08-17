@@ -45,10 +45,27 @@ export const injectConfig = async (dist: string, framework: string, options: any
     emulators.forEach(({port, host, name}) => {
         configScript += `window.__${name.toUpperCase()}_EMULATOR_HOST__="${host}:${port}";`;
     });
-    await replaceInFile({
-        files: join(hostingDist, '**', '*.html'),
-        from: '<head>',
-        to: `<head><script>${configScript}</script>`,
+    // TODO this is very fragile, how can we make this better?
+    //      webpack plugin? this is only needed for client side
+    if (framework === 'angular') await replaceInFile({
+        files: join(hostingDist, 'main.*.js'),
+        from: /^"use strict";/,
+        to: `"use strict";${configScript}`,
+    });
+    if (framework === 'next.js') await replaceInFile({
+        files: join(hostingDist, '_next', 'static', 'chunks', 'main-*.js'),
+        from: /^/,
+        to: configScript,
+    });
+    if (framework === 'nuxt') await replaceInFile({
+        files: join(hostingDist, '_nuxt', '*.js'),
+        from: /^\!function/,
+        to: `${configScript}!function`,
+    });
+    if (framework === 'nuxt3') await replaceInFile({
+        files: join(hostingDist, '_nuxt', 'entry.*.mjs'),
+        from: /^/,
+        to: configScript,
     });
 }
 
@@ -154,5 +171,5 @@ exports.ssr = onRequest((req, res) => server.then(({handle}) => handle(req, res)
             requiredAPIs: []
         }, null, 2));
     }
-    return { usingCloudFunctions, rewrites, redirects, headers, usesFirebaseConfig };
+    return { usingCloudFunctions, framework, rewrites, redirects, headers, usesFirebaseConfig };
 };
