@@ -44,6 +44,8 @@ export const injectConfig = async (dist: string, framework: string, options: any
     if (ssr) configScript += 'window.__FRAMEWORKS_SYNC_CLIENT_AUTH__=true;';
     emulators.forEach(({port, host, name}) => {
         configScript += `window.__${name.toUpperCase()}_EMULATOR_HOST__="${host}:${port}";`;
+        // I don't know what this is about, seems Firestore is mangling symbols... why they'd do that for globals I do not know
+        if (name === 'firestore') configScript += `window.__PRIVATE____FIRESTORE_EMULATOR_HOST__="${host}:${port}";`;
     });
     // TODO this is very fragile, how can we make this better?
     //      webpack plugin? this is only needed for client side
