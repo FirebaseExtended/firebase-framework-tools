@@ -12,29 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { readFile, mkdir, copyFile, stat, readdir } from 'fs/promises';
-import { basename, dirname, extname, join } from 'path';
+import { readFile, mkdir, copyFile, stat } from 'fs/promises';
+import { dirname, extname, join } from 'path';
 import type { Header, Rewrite, Redirect } from 'next/dist/lib/load-custom-routes.js';
 import type { NextConfig } from 'next';
 import { copy } from 'fs-extra';
 import { pathToFileURL } from 'url';
 
 import { Commands, DeployConfig, PathFactory, spawn } from '../../utils.js';
+import { existsSync } from 'fs';
 
 export const build = async (config: DeployConfig | Required<DeployConfig>, getProjectPath: PathFactory) => {
 
     const { default: { default: nextBuild } } = await import('next/dist/build/index.js');
 
-    let nextConfig: NextConfig;
-    try {
-        const { default: { default: loadConfig } } = await import('next/dist/server/config.js');
-        const { PHASE_PRODUCTION_BUILD } = await import('next/constants.js');
-        nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, getProjectPath(), null);
-    } catch(e) {
-        // Must be Next 11, just import it
-        nextConfig = await import(pathToFileURL(getProjectPath('next.config.js')).toString());
-    }
+    let nextConfig: NextConfig|undefined = undefined;
 
+    if (existsSync(getProjectPath('next.config.js'))) {
+
+        try {
+            const { default: { default: loadConfig } } = await import('next/dist/server/config.js');
+            const { PHASE_PRODUCTION_BUILD } = await import('next/constants.js');
+            nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, getProjectPath(), null);
+        } catch(e) { }
+
+        // Try just importing it, incase of Next 11
+        try {
+            nextConfig = await import(pathToFileURL(getProjectPath('next.config.js')).toString());
+        } catch(e) { }
+
+        if (!nextConfig) throw new Error('Unable to load next.config.js.');
+
+    } else {
+
+        nextConfig = {};
+
+    }
 
     // SEMVER these defaults are only needed for Next 11
     const { distDir='.next', basePath='' } = nextConfig;
@@ -42,7 +55,10 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
     const getHostingPath = (...args: string[]) => deployPath('hosting', ...basePath.split('/'), ...args);
 
-    await nextBuild(getProjectPath(), null, false, false, true);
+    await nextBuild(getProjectPath(), null, false, false, true).catch(e => {
+        console.error(e.message);
+        throw e;
+    });
 
     try {
         // Using spawn here, rather than their programatic API because I can't silence it
