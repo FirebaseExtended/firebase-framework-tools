@@ -51,7 +51,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
         if (apps.length === 1) project = apps[0];
     }
 
-    if (!project) throw new MyError('Unable to detirmine the application to deploy. Use the NG_DELPOY_PROJECT enivornment varaible or `ng deploy` via @angular/fire.');
+    if (!project) throw new MyError('Unable to determine the application to deploy. Use the NG_DELPOY_PROJECT enivornment varaible or `ng deploy` via @angular/fire.');
 
     const workspaceProject = workspace.projects.get(project);
     if (!workspaceProject) throw new MyError(`No project ${project} found.`);

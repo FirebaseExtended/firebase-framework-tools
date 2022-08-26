@@ -16,7 +16,7 @@ import { spawnSync } from 'child_process';
 
 const NODE_VERSION = parseInt(process.versions.node, 10).toString();
 
-const UNKNOWN_FRAMEWORK = new Error("We can't detirmine the web framework in use. TODO link");
+const UNKNOWN_FRAMEWORK = new Error("We can't determine the web framework in use. TODO link");
 
 // TODO move this entirely to firebase-tools
 const dynamicImport = async (getProjectPath: PathFactory) => {
@@ -28,6 +28,7 @@ const dynamicImport = async (getProjectPath: PathFactory) => {
     if (fileExists('next.config.js')) return import('./next.js/index.js');
     if (fileExists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
     if (fileExists('angular.json')) return import('./angular/index.js');
+    if (fileExists('vite.config.js')) return import('./vite/index.js');
     throw UNKNOWN_FRAMEWORK;
 };
 
