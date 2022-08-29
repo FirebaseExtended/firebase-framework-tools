@@ -24,7 +24,7 @@ const LOCAL_NODE_MODULES = [
     // Nuxt3
     '@nuxt/kit/dist/index.mjs',
     // Vite
-    'vite'
+    'vite/dist/node/index.js'
 ];
 
 const main = async () => {
