@@ -53,7 +53,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         node: [ "16", "18" ]
-        framework: [ "next", "angular", "custom", "nuxt", "nuxt3" ]
+        framework: [ "next", "angular", "custom", "nuxt", "nuxt3", "vite" ]
         exclude:
           # Engine failures for Node 18
           - node: 18
