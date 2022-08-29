@@ -25,10 +25,10 @@ const dynamicImport = async (getProjectPath: PathFactory) => {
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
     if (packageJson.directories?.serve) return import('./express/index.js');
-    if (fileExists('next.config.js') || findDependency('next', getProjectPath(), 0)) return import('./next.js/index.js');
+    if (fileExists('next.config.js') || findDependency('next', { cwd: getProjectPath(), depth: 0, omitDev: false })) return import('./next.js/index.js');
     if (fileExists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
     if (fileExists('angular.json')) return import('./angular/index.js');
-    if (fileExists('vite.config.js')) return import('./vite/index.js');
+    if (fileExists('vite.config.js') || findDependency('vite', { cwd: getProjectPath(), depth: 0, omitDev: false })) return import('./vite/index.js');
     throw UNKNOWN_FRAMEWORK;
 };
 
@@ -77,7 +77,7 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
     await rm(config.dist, { recursive: true, force: true });
     const results = await command.build(config, getProjectPath);
     const { usingCloudFunctions, packageJson, framework, bootstrapScript, rewrites, redirects, headers } = results;
-    const usesFirebaseConfig = !!findDependency('@firebase/app', getProjectPath());
+    const usesFirebaseConfig = !!findDependency('@firebase/app', { cwd: getProjectPath() });
     if (usingCloudFunctions) {
         packageJson.main = 'server.js';
         delete packageJson.devDependencies;
