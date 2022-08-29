@@ -1,5 +1,5 @@
 import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { copy } from 'fs-extra';
 import { DeployConfig, PathFactory } from '../../utils.js';
 import { pathToFileURL } from 'url';
@@ -16,16 +16,21 @@ export const build = async (config: DeployConfig | Required<DeployConfig>, getPr
   const configFile = getProjectPath('vite.config.js');
   // TODO: Figure out dot-env
   const viteConfig = await resolveConfig({ configFile }, 'build');
+  const viteOutDir = viteConfig.build.outDir;
+  const viteDistPath = resolve(root, getProjectPath(viteOutDir));
+
   const deployPath = (...args: string[]) => config.dist ? join(config.dist, ...args) : getProjectPath('.deploy', ...args);
+  const getHostingPath = (...args: string[]) => deployPath('hosting', ...args);
+  const hostingPath = resolve(root, getHostingPath());
 
   await viteBuild({
     root,
     configFile,
   });
 
-  await copy(viteConfig.build.outDir, deployPath('hosting'));
+  await copy(viteDistPath, hostingPath);
 
-  return { 
+  return {
     usingCloudFunctions: false, 
     framework: 'vite', 
     rewrites: [], 
