@@ -25,7 +25,7 @@ const dynamicImport = async (getProjectPath: PathFactory) => {
     const packageJsonBuffer = await readFile(getProjectPath('package.json'));
     const packageJson = JSON.parse(packageJsonBuffer.toString());
     if (packageJson.directories?.serve) return import('./express/index.js');
-    if (fileExists('next.config.js')) return import('./next.js/index.js');
+    if (fileExists('next.config.js') || findDependency('next', getProjectPath(), 0)) return import('./next.js/index.js');
     if (fileExists('nuxt.config.js', 'nuxt.config.ts')) return import('./nuxt/index.js');
     if (fileExists('angular.json')) return import('./angular/index.js');
     throw UNKNOWN_FRAMEWORK;

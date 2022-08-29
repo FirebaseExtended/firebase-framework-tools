@@ -60,8 +60,8 @@ export type DeployConfig = {
 
 export type PathFactory = (...args: string[]) => string;
 
-export const findDependency = (name: string, cwd=process.cwd()) => {
-    const result = spawnSync(Commands.NPM, ['list', name, '--json', '--omit', 'dev'], { cwd });
+export const findDependency = (name: string, cwd=process.cwd(), depth?: number) => {
+    const result = spawnSync(Commands.NPM, ['list', name, '--json', '--omit', 'dev', ...(depth === undefined ? [] : ['--depth', depth.toString(10)])], { cwd });
     if (!result.stdout) return undefined;
     const json = JSON.parse(result.stdout.toString());
     const search = (searchingFor: string, dependencies={}): any => {
