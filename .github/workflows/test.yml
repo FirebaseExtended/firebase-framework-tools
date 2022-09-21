@@ -95,9 +95,11 @@ jobs:
         uses: actions/download-artifact@v2
       - name: Relocate Artifacts
         run: mv firebase-frameworks-${{ github.run_id }} dist
+      - name: Install firebase-tools
+        run: npm i -g https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3
       - name: Test
         run: |
-          firebase --open-sesame frameworkawareness
+          node_modules/.bin/firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -132,11 +134,13 @@ jobs:
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
+      - name: Install firebase-tools
+        run: npm i -g firebase-tools
       - name: Build
         run: npm run build
       - name: Test
         run: |
-          firebase --open-sesame frameworkawareness
+          node_modules/.bin/firebase --open-sesame frameworkawareness
           npm run test
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
