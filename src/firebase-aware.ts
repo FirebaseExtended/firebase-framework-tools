@@ -2,7 +2,9 @@ import type { Request } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
 import { initializeApp as initializeAdminApp } from 'firebase-admin/app';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
+// @ts-ignore
 import { initializeApp, deleteApp, FirebaseApp } from 'firebase/app';
+// @ts-ignore
 import { getAuth, signInWithCustomToken } from 'firebase/auth';
 import cookie from 'cookie';
 import LRU from 'lru-cache';
