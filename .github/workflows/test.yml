@@ -97,8 +97,7 @@ jobs:
         run: mv firebase-frameworks-${{ github.run_id }} dist
       - name: Test
         run: |
-          npm i -g firebase-tools
-          node --loader ts-node/esm ./tools/dev.ts
+          npm i -g https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3
           firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:

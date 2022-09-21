@@ -5,6 +5,6 @@ import { pathToFileURL } from 'url';
 const nuxt = import(`${pathToFileURL(process.cwd())}/index.mjs`);
 
 export const handle = async (req: Request, res: Response) => {
-    const { handle } = await nuxt;
-    handle(req, res);
+    const { handler } = await nuxt;
+    handler(req, res);
 };

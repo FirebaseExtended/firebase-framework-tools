@@ -1,9 +1,3 @@
-export const FIREBASE_ADMIN_VERSION = '__FIREBASE_ADMIN_VERSION__';
-export const FIREBASE_FUNCTIONS_VERSION = '__FIREBASE_FUNCTIONS_VERSION__';
-export const COOKIE_VERSION = '__COOKIE_VERSION__';
-export const LRU_CACHE_VERSION = '__LRU_CACHE_VERSION__';
-export const FIREBASE_FRAMEWORKS_VERSION = '__FIREBASE_FRAMEWORKS_VERSION__';
-export const DEFAULT_REGION = 'us-central1';
 export const LRU_MAX_INSTANCES = 100;
 export const LRU_TTL = 1_000 * 60 * 5;
 export const COOKIE_MAX_AGE = 60 * 60 * 24 * 5 * 1_000;

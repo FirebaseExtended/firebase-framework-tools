@@ -1,6 +1,6 @@
 import { parse } from 'url';
 import { default as next } from 'next';
-import type { Request } from '../../server/index.js';
+import type { Request } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
 
 const nextApp = next({
@@ -11,11 +11,7 @@ const nextApp = next({
 const nextAppPrepare = nextApp.prepare();
 
 export const handle = async (req: Request, res: Response) => {
-    const fauxHost = 'http://firebase-frameworks';
-    const url = new URL(`${fauxHost}${req.url}`);
-    url.searchParams.delete('__firebaseAppName');
-    if (req.firebaseApp) url.searchParams.set('__firebaseAppName', req.firebaseApp.name);
-    const parsedUrl = parse(url.toString().slice(fauxHost.length), true);
+    const parsedUrl = parse(req.url, true);
     await nextAppPrepare;
     nextApp.getRequestHandler()(req, res, parsedUrl);
 };
