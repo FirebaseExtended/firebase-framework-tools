@@ -85,7 +85,9 @@ jobs:
             ${{ runner.os }}-${{ matrix.node }}-
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: |
+          npm ci
+          npm i -g https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3
       - name: Firebase emulator cache
         uses: actions/cache@v2
         with:
@@ -97,7 +99,6 @@ jobs:
         run: mv firebase-frameworks-${{ github.run_id }} dist
       - name: Test
         run: |
-          npm i -g https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3
           firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:
@@ -132,12 +133,13 @@ jobs:
             ${{ runner.os }}-${{ matrix.node }}-
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: |
+          npm ci
+          npm i -g https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3
       - name: Build
         run: npm run build
       - name: Test
         run: |
-          npm i -g https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3
           firebase --open-sesame frameworkawareness
           npm run test
         env:
