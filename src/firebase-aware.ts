@@ -1,11 +1,11 @@
-import { Request as FunctionsRequest } from 'firebase-functions/v2/https';
+import type { Request } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
 import { initializeApp as initializeAdminApp } from 'firebase-admin/app';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
 // @ts-ignore
 import { initializeApp, deleteApp, FirebaseApp } from 'firebase/app';
 // @ts-ignore
-import { getAuth, signInWithCustomToken, User } from 'firebase/auth';
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
 import cookie from 'cookie';
 import LRU from 'lru-cache';
 
@@ -14,14 +14,10 @@ import {
     ID_TOKEN_MAX_AGE,
     LRU_MAX_INSTANCES,
     LRU_TTL
-} from '../constants.js';
-
-const FRAMEWORKS_APP_OPTIONS = process.env.FRAMEWORKS_APP_OPTIONS && JSON.parse(process.env.FRAMEWORKS_APP_OPTIONS);
+} from './constants.js';
 
 const adminApp = initializeAdminApp();
 const adminAuth = getAdminAuth(adminApp);
-
-export type Request = FunctionsRequest & { firebaseApp?: FirebaseApp, currentUser?: User|null };
 
 const firebaseAppsLRU = new LRU<string, FirebaseApp>({
     max: LRU_MAX_INSTANCES,
@@ -55,8 +51,7 @@ const mintCookie = async (req: Request, res: Response) => {
     }
 };
 
-const handleAuth = async (req: Request) => {
-    if (!FRAMEWORKS_APP_OPTIONS) return;
+const handleAuth = async (req: Request, res: Response) => {
     const cookies = cookie.parse(req.headers.cookie || '');
     const { __session } = cookies;
     if (!__session) return;
@@ -69,7 +64,8 @@ const handleAuth = async (req: Request) => {
         if (isRevoked) return;
         const random = Math.random().toString(36).split('.')[1];
         const appName = `authenticated-context:${uid}:${random}`;
-        app = initializeApp(FRAMEWORKS_APP_OPTIONS, appName);
+        // Force JS SDK autoinit with the undefined
+        app = initializeApp(undefined as any, appName);
         firebaseAppsLRU.set(uid, app);
     }
     const auth = getAuth(app);
@@ -79,15 +75,15 @@ const handleAuth = async (req: Request) => {
         if (!customToken) return;
         await signInWithCustomToken(auth, customToken);
     }
-    req.firebaseApp = app;
-    req.currentUser = auth.currentUser;
+    res.locals.firebaseApp = app;
+    res.locals.currentUser = auth.currentUser;
 };
 
 export const handleFactory = (frameworkHandle: (req: Request, res: Response) => void) => async (req: Request, res: Response) => {
     if (req.url === '/__session') {
         await mintCookie(req, res);
     } else {
-        await handleAuth(req);
+        await handleAuth(req, res);
         frameworkHandle(req, res);
     }
 };

@@ -53,7 +53,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         node: [ "16", "18" ]
-        framework: [ "next", "angular", "custom", "nuxt", "nuxt3" ]
+        framework: [ "next", "angular", "custom", "nuxt", "nuxt3", "vite" ]
         exclude:
           # Engine failures for Node 18
           - node: 18
@@ -97,9 +97,7 @@ jobs:
         run: mv firebase-frameworks-${{ github.run_id }} dist
       - name: Test
         run: |
-          npm i -g firebase-tools
-          node --loader ts-node/esm ./tools/dev.ts
-          firebase --open-sesame frameworkawareness
+          node_modules/.bin/firebase --open-sesame frameworkawareness
           npm run test:${{ matrix.framework }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -137,7 +135,9 @@ jobs:
       - name: Build
         run: npm run build
       - name: Test
-        run: npm run test
+        run: |
+          node_modules/.bin/firebase --open-sesame frameworkawareness
+          npm run test
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 

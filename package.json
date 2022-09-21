@@ -1,6 +1,6 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "main": "dist/index.js",
   "repository": "FirebaseExtended/firebase-framework-tools",
@@ -19,20 +19,22 @@
     "angular",
     "nuxt",
     "nuxt3",
-    "ssr"
+    "ssr",
+    "vite"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "rimraf dist && tsc && node --loader ts-node/esm ./tools/build.ts",
-    "dev": "npm run build && node --loader ts-node/esm ./tools/dev.ts",
-    "test": "npm i -g firebase-tools && firebase --open-sesame frameworkawareness && npm run dev && npm run test:angular && npm run test:next && npm run test:nuxt && npm run test:nuxt3 && npm run test:custom",
+    "build": "rimraf dist && tsc",
+    "test": "npm run test:angular && npm run test:next && npm run test:nuxt && npm run test:nuxt3 && npm run test:custom",
     "e2e:build-next": "rimraf e2e/next-test && cd e2e && npx create-next-app next-test --use-npm --ts && cd next-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
+    "e2e:build-vite": "rimraf e2e/vite-test && cd e2e && npx create-vite vite-test --template vue && cd vite-test && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-nuxt": "rimraf e2e/nuxt-test && cd e2e && npx create-nuxt-app nuxt-test --answers '$(cat ../tools/create-nuxt-answers.json)' && cd nuxt-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-nuxt3": "rimraf e2e/nuxt3-test && cd e2e && npx nuxi init nuxt3-test && cd nuxt3-test && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-angular": "rimraf e2e/angular-test && cd e2e && npm i -g @angular/cli && ng new angular-test --defaults --skip-git && cd angular-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-custom": "rimraf e2e/custom/lib && rimraf e2e/custom/.firebase && cd e2e/custom && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "clean:build": "rimraf dist",
     "test:angular": "npm run e2e:build-angular && node --loader ts-node/esm ./tools/test-angular.ts",
+    "test:vite": "npm run e2e:build-vite && node --loader ts-node/esm ./tools/test-vite.ts",
     "test:next": "npm run e2e:build-next && node --loader ts-node/esm ./tools/test-next.ts",
     "test:nuxt": "npm run e2e:build-nuxt && node --loader ts-node/esm ./tools/test-nuxt.ts",
     "test:nuxt3": "npm run e2e:build-nuxt3 && node --loader ts-node/esm ./tools/test-nuxt3.ts",
@@ -41,25 +43,6 @@
   "exports": {
     ".": {
       "node": "./dist/index.js",
-      "default": null
-    },
-    "./tools": {
-      "node": {
-        "import": "./dist/tools.js",
-        "require": "./dist/tools.cjs"
-      },
-      "default": null
-    },
-    "./frameworks/*/server": {
-      "node": "./dist/frameworks/*/server.js",
-      "default": null
-    },
-    "./server": {
-      "node": "./dist/server/index.js",
-      "default": null
-    },
-    "./server/firebase-aware": {
-      "node": "./dist/server/firebase-aware.js",
       "default": null
     }
   },
@@ -71,11 +54,18 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "fs-extra": "^10.1.0",
-    "jsonc-parser": "^3.0.0",
-    "replace-in-file": "^6.3.2",
-    "semver": "^7.3.7",
-    "tslib": "^2.3.1"
+    "tslib": "^2.3.1",
+    "lru-cache": "^7.14.0",
+    "cookie": "^0.5.0"
+  },
+  "peerDependencies": {
+    "firebase": "^9.9.0",
+    "firebase-functions": "^3.23.0"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.1303.3",
@@ -87,18 +77,17 @@
     "@types/lru-cache": "^7.6.1",
     "@types/node": "^16.11.12",
     "@types/semver": "^7.3.9",
-    "cookie": "^0.5.0",
     "firebase": "^9.9.0",
-    "firebase-admin": "^11.0.0",
-    "firebase-functions": "^3.22.0",
+    "firebase-functions": "^3.23.0",
+    "firebase-tools": "https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3",
     "inquirer": "^8.2.0",
-    "lru-cache": "^7.8.1",
     "next": "^12.0.7",
     "nuxt": "^2.15.8",
     "nuxt3": "^3.0.0-rc.6-27635653.88f4525",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4",
+    "vite": "^2.9.15",
     "webpack": "^5.74.0"
   }
 }
