@@ -34,7 +34,7 @@ This repository is maintained by Googlers but is not a supported Firebase produc
 This is an experimental addon to the Firebase CLI to add web framework support, to enable it call the following:
 
 ```shell
-firebase --open-sesame frameworkawareness
+firebase experiments:enable webframeworks
 ```
 
 # Deploy Next.js
@@ -104,7 +104,7 @@ Easily deploy your Angular application to Firebase and serve dynamic content to 
 ## What you'll need before you begin
 
 ### Prerequisites
-- Firebase CLI version 10.9.1 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
+- Firebase CLI version 11.13.0 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
 - (optional) Billing enabled on your Firebase Project (if you plan to use SSR)
 
 ### Initialize Firebase
