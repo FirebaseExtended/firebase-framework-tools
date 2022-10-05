@@ -1,4 +1,4 @@
-# Firebase CLI framework-awareness
+# Firebase CLI & Web Frameworks
 
 ## Frameworks
 
