@@ -45,7 +45,7 @@ framework.
 This repository is maintained by Googlers but is not a supported Firebase product. Issues here are answered by
 maintainers and other community members on GitHub on a best-effort basis.
 
-# Enable framework-awareness
+## Enable framework-awareness
 
 This is an experimental addon to the Firebase CLI to add web framework support, to enable it call the following:
 
@@ -53,29 +53,27 @@ This is an experimental addon to the Firebase CLI to add web framework support, 
 firebase experiments:enable webframeworks
 ```
 
-# Prerequisites
+## Prerequisites
 
 - Firebase CLI version 10.9.1 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
 
-### Serve locally
+## Serve locally
 
 You can test your integration locally by following these steps:
 
 1. Run `firebase serve` from the terminal. This should build your Angular app and serve it using the Firebase CLI.
 2. Open your web app at the local URL returned by the CLI (usually http://localhost:5000)
 
-### Deploy your app to Firebase Hosting
+## Deploy your app to Firebase Hosting
 
 When you're ready to share your changes with the world, deploy your Angular app to your live site:
 
 1. Run `firebase deploy` from the terminal.
 2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you did setup one)
 
-## Guide: "Integrate Angular"
+## "Integrate Angular"
 
 Easily deploy your Angular application to Firebase and serve dynamic content to your users.
-
-## What you'll need before you begin
 
 ### Prerequisites
 
@@ -112,7 +110,7 @@ Change your hosting config in `firebase.json` to have a `source` option, rather 
 }
 ```
 
-## Serve static content
+### Serve static content
 
 After initializing Firebase, you can serve static content with the standard deployment command:
 
@@ -157,7 +155,7 @@ your angular.json and adding more routes:
 Firebase will also respect guessRoutes or a routes.txt file in the hosting root, if you need to customize further.
 See [Angular’s prerendering guide](https://angular.io/guide/prerendering) for more information on those options.
 
-### Optional: add a Server Module
+### Optional: add a server module
 
 ### Deploy
 
@@ -228,14 +226,14 @@ export const FIREBASE_ADMIN = new InjectionToken<app.App>('firebase-admin');
 
 ```
 
-### Serve fully dynamic content with SSR—Server Side Rendering
+## Serve fully dynamic content with SSR—Server Side Rendering
 
-#### Optional: integrate with Firebase Authentication
+### Optional: integrate with Firebase Authentication
 
 The web framework-aware Firebase deployment tooling automatically keeps client and server state in sync using cookies. The Express `res.locals` object will optionally contain an authenticated Firebase App instance (`firebaseApp`) and the currently signed in user (`currentUser`). This can be injected into your module via the REQUEST token (exported from @nguniversal/express-engine/tokens).
 
 
-## Guide: "Integrate Next.js"
+## Integrate Next.js
 
 Using the Firebase CLI, you can deploy your next.js Web apps to Firebase and serve them with Firebase Hosting.  The CLI respects your next.js settings and translates them to Firebase settings with zero or minimal extra configuration on your part. If your app includes dynamic server-side logic, the CLI deploys that logic to Cloud Functions for Firebase.
 
@@ -315,7 +313,7 @@ The web framework-aware Firebase deployment tooling will automatically keep clie
   const firebaseApp = getApp(useRouter().query.__firebaseAppName);
 ```
 
-## Guide: “Integrate other frameworks with Express.js”
+## Integrate other frameworks with Express.js
 
 With some additional configuration, you can build on the basic CLI functionality to extend integration support to Frameworks other than Angular and next.js.
 
