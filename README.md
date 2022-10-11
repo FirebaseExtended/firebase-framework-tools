@@ -25,7 +25,7 @@
 
 ## Overview
 
-Firebase Hosting integrates with popular modern Web frameworks including Angular and Next.js. Using Firebase Hosting and
+Firebase Hosting integrates with popular modern web frameworks including Angular and Next.js. Using Firebase Hosting and
 Cloud Functions for Firebase with these frameworks, you can develop apps and microservices in your preferred framework
 environment, and then deploy them in a managed, secure server environment. Support during this early preview includes
 the following functionality:
@@ -34,7 +34,7 @@ the following functionality:
 * Deploy Web apps that use pre-rendering / Static Site Generation (SSG)
 * Deploy Web apps that use server-side Rendering (SSR)—full server rendering on demand
 
-Firebase provides this functionality through the Firebase CLI. While initializing Hosting on the command line, you
+Firebase provides this functionality through the Firebase CLI. When initializing Hosting on the command line, you
 provide information about your new or existing Web project, and the CLI sets up the right resources for your chosen Web
 framework.
 
@@ -42,12 +42,12 @@ framework.
 
 ![Status: Experimental](https://img.shields.io/badge/Status-Experimental-blue)
 
-This repository is maintained by Googlers but is not a supported Firebase product. Issues here are answered by
+This repository is maintained by Google but is not a supported Firebase product. Issues here are answered by
 maintainers and other community members on GitHub on a best-effort basis.
 
 ## Enable framework-awareness
 
-This is an experimental addon to the Firebase CLI to add web framework support, to enable it call the following:
+An experimental add-on to the Firebase CLI provides web framework support. To enable it, call the following:
 
 ```shell
 firebase experiments:enable webframeworks
@@ -61,17 +61,17 @@ firebase experiments:enable webframeworks
 
 You can test your integration locally by following these steps:
 
-1. Run `firebase serve` from the terminal. This should build your Angular app and serve it using the Firebase CLI.
-2. Open your web app at the local URL returned by the CLI (usually http://localhost:5000)
+1. Run `firebase serve` from the terminal. This should build your app and serve it using the Firebase CLI.
+2. Open your web app at the local URL returned by the CLI (usually http://localhost:5000).
 
 ## Deploy your app to Firebase Hosting
 
-When you're ready to share your changes with the world, deploy your Angular app to your live site:
+When you're ready to share your changes with the world, deploy your app to your live site:
 
 1. Run `firebase deploy` from the terminal.
-2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you did setup one)
+2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you set one up)
 
-## "Integrate Angular"
+## Integrate Angular
 
 Easily deploy your Angular application to Firebase and serve dynamic content to your users.
 
@@ -88,14 +88,14 @@ or modify `firebase.json` for an existing project.
 
 #### Initialize a new project
 
-1. Run the initialization command from the CLI: ``
+1. Run the initialization command from the CLI:
 
 ```shell
 firebase init hosting
 ```
 
-1. Choose your hosting source directory; this could be an existing Angular App
-1. Choose "Dynamic web hosting with web framework"
+1. Choose your hosting source directory; this could be an existing Angular app.
+1. Choose "Dynamic web hosting with web framework."
 1. Choose Angular.
 
 #### Initialize an existing project
@@ -118,7 +118,7 @@ After initializing Firebase, you can serve static content with the standard depl
 firebase deploy
 ```
 
-## Pre-render dynamic content
+### Pre-render dynamic content
 
 To prerender dynamic content in Angular, you need to set up Angular Universal. The Firebase CLI expects Express Engine:
 
@@ -128,10 +128,10 @@ ng add @nguniversal/express-engine
 
 [See the Angular Universal guide for more information.](https://angular.io/guide/universal)
 
-### Add prerender URLs
+#### Add prerender URLs
 
-By default, only the root directory will be prerendered, you can add additional routes by locating the prerender step in
-your angular.json and adding more routes:
+By default, only the root directory will be prerendered. You can add additional routes by locating the prerender step in
+`angular.json` and adding more routes:
 
 ```json
 {
@@ -152,12 +152,12 @@ your angular.json and adding more routes:
 }
 ```
 
-Firebase will also respect guessRoutes or a routes.txt file in the hosting root, if you need to customize further.
+Firebase also respects `guessRoutes` or a `routes.txt` file in the hosting root, if you need to customize further.
 See [Angular’s prerendering guide](https://angular.io/guide/prerendering) for more information on those options.
 
-### Optional: add a server module
+#### Optional: add a server module
 
-### Deploy
+#### Deploy
 
 When you deploy with `firebase deploy`, Firebase builds your browser bundle, your server bundle, and prerenders the
 application. These elements are deployed to Hosting and Cloud Functions.
@@ -167,8 +167,8 @@ application. These elements are deployed to Hosting and Cloud Functions.
 The Firebase CLI assumes that you have server, build, and prerender steps in your schematics with a production
 configuration.
 
-If you want to tailor the CLI's assumptions, configure ng deploy and alter the configuration in your angular.json. For
-example, you could disable SSR and serve pre-rendered content exclusively by removing serverTarget:
+If you want to tailor the CLI's assumptions, configure ng deploy and alter the configuration in `angular.json`. For
+example, you could disable SSR and serve pre-rendered content exclusively by removing `serverTarget`:
 
 ```json
 {
@@ -185,7 +185,7 @@ example, you could disable SSR and serve pre-rendered content exclusively by rem
 
 ### Optional: integrate with the Firebase JS SDK
 
-When including Firebase JS SDK methods in both server and client bundles, guard against runtime errors by checking isSupported() before using the product. [Not all products are supported in all environments.](https://firebase.google.com/docs/web/environments-js-sdk#other_environments)
+When including Firebase JS SDK methods in both server and client bundles, guard against runtime errors by checking `isSupported()` before using the product. [Not all products are supported in all environments.](https://firebase.google.com/docs/web/environments-js-sdk#other_environments)
 
 Hint: consider using AngularFire, which does this for you automatically.
 
@@ -226,22 +226,22 @@ export const FIREBASE_ADMIN = new InjectionToken<app.App>('firebase-admin');
 
 ```
 
-## Serve fully dynamic content with SSR—Server Side Rendering
+### Serve fully dynamic content with SSR
 
-### Optional: integrate with Firebase Authentication
+#### Optional: integrate with Firebase Authentication
 
 The web framework-aware Firebase deployment tooling automatically keeps client and server state in sync using cookies. The Express `res.locals` object will optionally contain an authenticated Firebase App instance (`firebaseApp`) and the currently signed in user (`currentUser`). This can be injected into your module via the REQUEST token (exported from @nguniversal/express-engine/tokens).
 
 
 ## Integrate Next.js
 
-Using the Firebase CLI, you can deploy your next.js Web apps to Firebase and serve them with Firebase Hosting.  The CLI respects your next.js settings and translates them to Firebase settings with zero or minimal extra configuration on your part. If your app includes dynamic server-side logic, the CLI deploys that logic to Cloud Functions for Firebase.
+Using the Firebase CLI, you can deploy your Next.js Web apps to Firebase and serve them with Firebase Hosting.  The CLI respects your Next.js settings and translates them to Firebase settings with zero or minimal extra configuration on your part. If your app includes dynamic server-side logic, the CLI deploys that logic to Cloud Functions for Firebase.
 
 Note: Apps with dynamic server-side logic must provide a billing instrument during Cloud Functions setup. Also note that all frameworks-based functionality provided by the Firebase CLI is currently has experimental status, and may change in backward-incompatible ways.
 
 ### Before you begin
 
-Before you get started deploying your next.js app to Firebase, first review the following requirements and options:
+Before you get started deploying your Next.js app to Firebase, first review the following requirements and options:
 
 - All projects must use firebase-tools 10.8 or higher 
 - If your project requires SSR, you must provide a billing instrument 
@@ -273,9 +273,9 @@ You can [view your deployed app](https://firebase.google.com/docs/hosting/test-p
 
 The Firebase CLI will detect usage of [getStaticProps](https://nextjs.org/docs/basic-features/data-fetching/get-static-props) and [getStaticPaths](https://nextjs.org/docs/basic-features/data-fetching/get-static-paths).
 
-#### Optional: integrate with Firebase JS SD
+#### Optional: integrate with Firebase JS SDK
 
-When including Firebase JS SDK methods in both server and client bundles, guard against runtime errors by checking isSupported() before using the product. [Not all products are supported in all environments.](https://firebase.google.com/docs/web/environments-js-sdk#other_environments)
+When including Firebase JS SDK methods in both server and client bundles, guard against runtime errors by checking `isSupported()` before using the product. [Not all products are supported in all environments.](https://firebase.google.com/docs/web/environments-js-sdk#other_environments)
 
 Tip: consider using ReactFire, which does this for you automatically.
 
@@ -287,7 +287,7 @@ Admin SDK bundles will fail if included in your browser build;  refer to them on
 
 The Firebase CLI will detect usage of [getServerSideProps](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props).
 
-### Configure Hosting behavior with next.config.js
+### Configure Hosting behavior with `next.config.js`
 
 #### Image Optimization
 
@@ -297,7 +297,7 @@ Note: Because of this, Image Optimization and Hosting Preview Channels don’t i
 
 #### Redirects, Rewrites, and Headers
 
-Firebase CLI will respect [redirects](https://nextjs.org/docs/api-reference/next.config.js/redirects), [rewrites](https://nextjs.org/docs/api-reference/next.config.js/rewrites), and [headers](https://nextjs.org/docs/api-reference/next.config.js/headers) in your next.config.js, converting them to their respective equivalent Firebase Hosting configuration at deploy time.
+Firebase CLI respects [redirects](https://nextjs.org/docs/api-reference/next.config.js/redirects), [rewrites](https://nextjs.org/docs/api-reference/next.config.js/rewrites), and [headers](https://nextjs.org/docs/api-reference/next.config.js/headers) in `next.config.js`, converting them to their respective equivalent Firebase Hosting configuration at deploy time.
 
 If a Next.js redirect, rewrite, or header cannot be converted to an equivalent Firebase Hosting header, it falls back and builds a Cloud Function—even if you aren’t using Image Optimization or SSR.
 
@@ -306,7 +306,7 @@ If a Next.js redirect, rewrite, or header cannot be converted to an equivalent F
 The web framework-aware Firebase deployment tooling will automatically keep client and server state in sync using cookies. There are some methods provided for accessing the authentication context in SSR:
 
 * The Express `res.locals` object will optionally contain an authenticated Firebase App instance (`firebaseApp`) and the currently signed in user (`currentUser`).  This can be accessed in `getServerSideProps`.
-* The authenticated Firebase App name is provided on the route query  (__firebaseAppName), this allows for manual integration while in context:
+* The authenticated Firebase App name is provided on the route query  (`__firebaseAppName`). This allows for manual integration while in context:
 
 ```typescript
   // get the authenticated Firebase App
@@ -315,7 +315,7 @@ The web framework-aware Firebase deployment tooling will automatically keep clie
 
 ## Integrate other frameworks with Express.js
 
-With some additional configuration, you can build on the basic CLI functionality to extend integration support to Frameworks other than Angular and next.js.
+With some additional configuration, you can build on the basic CLI functionality to extend integration support to Frameworks other than Angular and Next.js.
 
 ### What you’ll need before you begin
 
@@ -330,10 +330,6 @@ To get started, you'll need to initialize Firebase for your framework project. U
 or modify `firebase.json` for an existing project.
 
 #### Initialize a new project
-
-Run the initialization command from the CLI:
-```shell firebase init hosting
-```
 
 1. Run the initialization command from the CLI:
 ```shell
@@ -360,7 +356,7 @@ Change your hosting config in firebase.json to have a `source` option, rather th
 
 #### Configure
 
-In order to know how to deploy your application,The Firebase CLI needs to be able to both build your app and known where your tooling places the assets destined for Hosting. This is accomplished with the NPM build script and CJS directories directive in your package.json.
+In order to know how to deploy your application, the Firebase CLI needs to be able to both build your app and know where your tooling places the assets destined for Hosting. This is accomplished with the NPM build script and CJS directories directive in `package.json`.
 
 Given the following package.json:
 
@@ -377,7 +373,7 @@ Given the following package.json:
 }
 ```
 
-Firebase CLI only calls your build script, so you’ll need to ensure that your build script is exhaustive.
+The Firebase CLI only calls your build script, so you’ll need to ensure that your build script is exhaustive.
 
 Hint: you can add additional steps using &&. If you have a lot of steps consider a shell script or tooling like [npm-run-all](https://www.npmjs.com/package/npm-run-all) or [wireit](https://www.npmjs.com/package/wireit).
 
@@ -394,9 +390,9 @@ Hint: you can add additional steps using &&. If you have a lot of steps consider
 }
 ```
 
-If your framework doesn’t support pre-rendering out-of-box, consider using a tool like [Rendertron](https://github.com/GoogleChrome/rendertron). Rendertron will allow you to make headless Chrome requests against a local instance of your app, so you can save the resulting HTML to be served on Hosting.
+If your framework doesn’t support pre-rendering out of the box, consider using a tool like [Rendertron](https://github.com/GoogleChrome/rendertron). Rendertron will allow you to make headless Chrome requests against a local instance of your app, so you can save the resulting HTML to be served on Hosting.
 
-Finally, different frameworks and build tools store their artifacts in different places. Use directories.serve to tell the CLI where your build script is outputting the resulting artifacts:
+Finally, different frameworks and build tools store their artifacts in different places. Use `directories.serve` to tell the CLI where your build script is outputting the resulting artifacts:
 
 ```json
 {
@@ -422,11 +418,11 @@ firebase deploy
 
 Your application should now be configured as an SPA and deployed to Firebase Hosting.
 
-#### Serve Dynamic Content
+### Serve Dynamic Content
 
-To serve up your Express app on Cloud Functions, ensure that your Express app (or express-style url handler) is exported in such a way that Firebase can find it after your library has been NPM packed.
+To serve up your Express app on Cloud Functions, ensure that your Express app (or express-style URL handler) is exported in such a way that Firebase can find it after your library has been NPM packed.
 
-To accomplish this, ensure that your files directive includes everything needed for the server and your main entry-point is setup correctly in your package.json:
+To accomplish this, ensure that your files directive includes everything needed for the server and your main entry point is set up correctly in `package.json`:
 
 ```json
 {
@@ -446,7 +442,7 @@ To accomplish this, ensure that your files directive includes everything needed 
 }
 ```
 
-Export your express app from a function named app:
+Export your express app from a function named `app`:
 
 ```js
 // server.js
@@ -457,7 +453,7 @@ export function app() {
 }
 ```
 
-Or if you’d rather export an express-style URL handler, name it handle:
+Or if you’d rather export an express-style URL handler, name it `handle`:
 
 ```js
 export function handle(req, res) {
@@ -472,22 +468,10 @@ firebase deploy
 ```
 
 Your application should now deploy your static content to Firebase Hosting and fall back to your Express app hosted on Cloud Functions.
-Optional: integrate with Firebase Authentication
-The web framework aware Firebase deploy tooling will automatically keep client & server state in sync using cookies. To access the authentication context, the Express `res.locals` object optionally contains an authenticated Firebase App instance (`firebaseApp`) and the currently signed in User (`currentUser`).
 
-### Serve locally
+### Optional: integrate with Firebase Authentication
 
-You can test your integration locally by following these steps:
-
-1. Run `firebase serve` from the terminal. This should build your Next.js app and serve it using the Firebase CLI.
-2. Open your web app at the local URL returned by the CLI (usually http://localhost:5000)
-
-### Deploy your app to Firebase Hosting
-
-When you're ready to share your changes with the world, deploy your Next.js app to your live site:
-
-1. Run `firebase deploy` from the terminal.
-2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you did setup one)
+The web framework-aware Firebase deploy tooling will automatically keep client and server state in sync using cookies. To access the authentication context, the Express `res.locals` object optionally contains an authenticated Firebase App instance (`firebaseApp`) and the currently signed in User (`currentUser`).
 
 ### Common Configurations
 
