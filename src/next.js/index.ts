@@ -6,7 +6,6 @@ import type { Response } from 'express';
 const nextApp = next({
     dev: false,
     dir: process.cwd(),
-    minimalMode: true,
 });
 const nextAppPrepare = nextApp.prepare();
 

@@ -97,7 +97,7 @@ jobs:
         run: mv firebase-frameworks-${{ github.run_id }} dist
       - name: Test
         run: |
-          node_modules/.bin/firebase --open-sesame frameworkawareness
+          node_modules/.bin/firebase experiments:enable webframeworks
           npm run test:${{ matrix.framework }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -136,7 +136,7 @@ jobs:
         run: npm run build
       - name: Test
         run: |
-          node_modules/.bin/firebase --open-sesame frameworkawareness
+          node_modules/.bin/firebase experiments:enable webframeworks
           npm run test
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

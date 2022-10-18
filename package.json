@@ -1,6 +1,6 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "main": "dist/index.js",
   "repository": "FirebaseExtended/firebase-framework-tools",
@@ -54,9 +54,9 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "tslib": "^2.3.1",
+    "cookie": "^0.5.0",
     "lru-cache": "^7.14.0",
-    "cookie": "^0.5.0"
+    "tslib": "^2.3.1"
   },
   "peerDependencies": {
     "firebase": "^9.9.0",
@@ -79,7 +79,7 @@
     "@types/semver": "^7.3.9",
     "firebase": "^9.9.0",
     "firebase-functions": "^3.23.0",
-    "firebase-tools": "https://firebasestorage.googleapis.com/v0/b/nextjs-demo-73e34.appspot.com/o/firebase-tools-11.2.2.tgz?alt=media&token=f35f6457-8a2e-4240-8a66-b6bc805f06f3",
+    "firebase-tools": "^11.14.4",
     "inquirer": "^8.2.0",
     "next": "^12.0.7",
     "nuxt": "^2.15.8",
