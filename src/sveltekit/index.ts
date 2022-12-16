@@ -1,21 +1,63 @@
 import { pathToFileURL } from 'url'
+import { installPolyfills } from '@sveltejs/kit/node/polyfills'
 import type { Request } from 'firebase-functions/v2/https'
 import type { Response } from 'express'
+import type { IncomingHttpHeaders } from 'http'
 
 const kitPromise = import(`${pathToFileURL(process.cwd())}/index.js`)
 const manifestPromise = import(`${pathToFileURL(process.cwd())}/manifest.js`)
 
+// Request, Response, fetch, etc.
+installPolyfills()
+
 export const handle = async (req: Request, res: Response) => {
-  // TODO cache setup?
-  const { Server } = await kitPromise
-  const { manifest } = await manifestPromise
+  const [{ Server }, { manifest }] = await Promise.all([
+    kitPromise,
+    manifestPromise
+  ])
+
   const server = new Server(manifest)
   await server.init({ env: process.env })
-
-  // TODO translate Firebase request into Web Standard Request
-  const rendered = server.respond(req)
+  const rendered = await server.respond(toSvelteKitRequest(req))
   const body = await rendered.text()
+
+  if (!rendered) {
+    return res.writeHead(404, 'Not Found').end()
+  }
+
   return res
     .writeHead(rendered.status, Object.fromEntries(rendered.headers))
     .end(body)
+}
+
+// https://github.com/jthegedus/svelte-adapter-firebase/blob/main/src/files/firebase-to-svelte-kit.js
+function toSvelteKitRequest(request: Request) {
+  // Firebase sometimes omits the protocol used. Default to http.
+  const protocol = request.headers['x-forwarded-proto'] || 'http'
+  // Firebase forwards the request to sveltekit, use the forwarded host.
+  const host = `${protocol}://${request.headers['x-forwarded-host']}`
+  const {
+    href,
+    pathname,
+    searchParams: searchParameters
+  } = new URL(request.url || '', host)
+  return new Request(href, {
+    method: request.method,
+    headers: toSvelteKitHeaders(request.headers),
+    body: request.rawBody ? request.rawBody : null,
+    host,
+    path: pathname,
+    query: searchParameters
+  })
+}
+
+function toSvelteKitHeaders(headers: IncomingHttpHeaders) {
+  const finalHeaders: Record<string, string> = {}
+
+  // Assume string | string[] types for all values
+  for (const [key, value] of Object.entries(headers)) {
+    finalHeaders[key] = Array.isArray(value) ? value.join(',') : value
+  }
+
+  return finalHeaders
 }

@@ -71,6 +71,7 @@
     "@angular-devkit/architect": "^0.1303.3",
     "@angular-devkit/core": "^13.3.3",
     "@nuxt/types": "^2.15.8",
+    "@sveltejs/kit": "^1.0.1",
     "@types/cookie": "^0.5.1",
     "@types/fs-extra": "^9.0.13",
     "@types/inquirer": "^8.1.3",
