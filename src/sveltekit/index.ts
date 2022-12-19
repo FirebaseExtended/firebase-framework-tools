@@ -19,12 +19,12 @@ export const handle = async (req: Request, res: Response) => {
   const server = new Server(manifest)
   await server.init({ env: process.env })
   const rendered = await server.respond(toSvelteKitRequest(req))
-  const body = await rendered.text()
 
   if (!rendered) {
     return res.writeHead(404, 'Not Found').end()
   }
 
+  const body = await rendered.text()
   return res
     .writeHead(rendered.status, Object.fromEntries(rendered.headers))
     .end(body)
