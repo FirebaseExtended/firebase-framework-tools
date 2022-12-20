@@ -36,18 +36,12 @@ function toSvelteKitRequest(request: Request) {
   const protocol = request.headers['x-forwarded-proto'] || 'http'
   // Firebase forwards the request to sveltekit, use the forwarded host.
   const host = `${protocol}://${request.headers['x-forwarded-host']}`
-  const {
-    href,
-    pathname,
-    searchParams: searchParameters
-  } = new URL(request.url || '', host)
+
+  const { href } = new URL(request.url || '', host)
   return new Request(href, {
     method: request.method,
     headers: toSvelteKitHeaders(request.headers),
-    body: request.rawBody ? request.rawBody : null,
-    host,
-    path: pathname,
-    query: searchParameters
+    body: request.rawBody ? request.rawBody : null
   })
 }
 
