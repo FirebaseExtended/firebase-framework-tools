@@ -10,14 +10,14 @@ const manifestPromise = import(`${pathToFileURL(process.cwd())}/manifest.js`)
 // Request, Response, fetch, etc.
 installPolyfills()
 
-export const handle = async (req: Request, res: Response) => {
-  const [{ Server }, { manifest }] = await Promise.all([
-    kitPromise,
-    manifestPromise
-  ])
+const [{ Server }, { manifest }] = await Promise.all([
+  kitPromise,
+  manifestPromise
+])
+const server = new Server(manifest)
+await server.init({ env: process.env })
 
-  const server = new Server(manifest)
-  await server.init({ env: process.env })
+export const handle = async (req: Request, res: Response) => {
   const rendered = await server.respond(toSvelteKitRequest(req))
 
   if (!rendered) {
