@@ -7,8 +7,8 @@
         <tr><td></td><th colspan="3"><sub><sup>Built-in frameworks</sub></sup></th><td></td></tr>
         <tr>
             <th></th>
-            <th><a href="#deploy-nextjs">Next.js</a></th>
-            <th><a href="#deploy-angular">Angular</a></th>
+            <th><a href="#integrate-nextjs">Next.js</a></th>
+            <th><a href="#integrate-angular">Angular</a></th>
             <th>Nuxt</th>
             <th>Custom</th>
         </tr>
