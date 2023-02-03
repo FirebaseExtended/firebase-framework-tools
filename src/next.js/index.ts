@@ -16,23 +16,28 @@ const nextAppsLRU = new LRU<string, NextServer>({
 });
 
 export const handle = async (req: Request, res: Response) => {
-    const { hostname, protocol, url } = req;
-    const port = protocol === 'https' ? 443 : 80;
-    const key = [hostname, port].join(':');
-    // I wish there was a better way to do this, but it seems like this is the
-    // way to go. Should investigate more if we can get hostname/port to be
-    // dynamic for middleware. 
-    let nextApp = nextAppsLRU.get(key);
-    if (!nextApp) {
-        nextApp = next({
-            dev: false,
-            dir: process.cwd(),
-            hostname,
-            port
-        });
-        nextAppsLRU.set(key, nextApp);
-    }
-    await nextApp.prepare();
-    const parsedUrl = parse(url, true);
-    nextApp.getRequestHandler()(req, res, parsedUrl);
+  const { hostname, protocol, url } = req;
+  const port = protocol === "https" ? 443 : 80;
+  const key = [hostname, port].join(":");
+  // I wish there was a better way to do this, but it seems like this is the
+  // way to go. Should investigate more if we can get hostname/port to be
+  // dynamic for middleware.
+  const isDevMode = process.env.FRAMEWORKS_DEV_MODE === "true";
+  let nextApp = !isDevMode ? nextAppsLRU.get(key) : null;
+  if (!nextApp) {
+    nextApp = next({
+      dev: isDevMode,
+      // TODO use dynamic directory name (set an environment variable with folder name?)
+      dir: isDevMode ? process.cwd() + "/../../../hosting" : process.cwd(),
+      hostname,
+      port,
+    });
+    nextAppsLRU.set(key, nextApp);
+  }
+  // TODO delete this
+  console.log("nextApp.options", nextApp?.options);
+
+  await nextApp.prepare();
+  const parsedUrl = parse(url, true);
+  nextApp.getRequestHandler()(req, res, parsedUrl);
 };
