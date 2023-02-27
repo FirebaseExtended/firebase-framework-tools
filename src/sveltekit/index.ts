@@ -1,8 +1,9 @@
-import { pathToFileURL } from 'url'
-import { installPolyfills } from '@sveltejs/kit/node/polyfills'
-import type { Request } from 'firebase-functions/v2/https'
-import type { Response } from 'express'
-import type { IncomingHttpHeaders } from 'http'
+import { pathToFileURL } from 'url';
+import { } from "@sveltejs/kit";
+import { installPolyfills } from '@sveltejs/kit/node/polyfills';
+import type { Request } from 'firebase-functions/v2/https';
+import type { Response } from 'express';
+import type { IncomingHttpHeaders } from 'http';
 
 const kitPromise = import(`${pathToFileURL(process.cwd())}/index.js`)
 const manifestPromise = import(`${pathToFileURL(process.cwd())}/manifest.js`)
@@ -51,7 +52,9 @@ function toSvelteKitHeaders(headers: IncomingHttpHeaders) {
 
   // Assume string | string[] types for all values
   for (const [key, value] of Object.entries(headers)) {
-    finalHeaders[key] = Array.isArray(value) ? value.join(',') : value
+    if (value) {
+      finalHeaders[key] = Array.isArray(value) ? value.join(',') : value;
+    }
   }
 
   return finalHeaders
