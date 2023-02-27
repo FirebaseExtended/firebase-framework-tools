@@ -3,6 +3,7 @@ type Server = typeof import('./angular/index.js') |
     typeof import('./next.js/index.js') |
     typeof import('./nuxt/index.js') |
     typeof import('./nuxt3/index.js') |
+    typeof import('./sveltekit/index.js')|
     typeof import('./_devMode/index.js') |
     typeof import('./angular/firebase-aware.js') |
     typeof import('./express/firebase-aware.js') |
