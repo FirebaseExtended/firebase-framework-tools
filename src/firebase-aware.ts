@@ -18,7 +18,7 @@ import {
 
 const ADMIN_APP_NAME = "firebase-frameworks";
 const adminApp = getApps().find(it => it.name === ADMIN_APP_NAME) ||
-    initializeAdminApp(undefined, "firebase-frameworks");
+    initializeAdminApp(undefined, ADMIN_APP_NAME);
 const adminAuth = getAdminAuth(adminApp);
 
 const firebaseAppsLRU = new LRU<string, FirebaseApp>({
