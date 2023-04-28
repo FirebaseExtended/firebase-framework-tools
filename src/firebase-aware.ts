@@ -1,6 +1,6 @@
 import type { Request } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
-import { initializeApp as initializeAdminApp } from 'firebase-admin/app';
+import { initializeApp as initializeAdminApp, getApps } from 'firebase-admin/app';
 import { getAuth as getAdminAuth } from 'firebase-admin/auth';
 // @ts-ignore
 import { initializeApp, deleteApp, FirebaseApp } from 'firebase/app';
@@ -16,7 +16,9 @@ import {
     LRU_TTL
 } from './constants.js';
 
-const adminApp = initializeAdminApp();
+const ADMIN_APP_NAME = "firebase-frameworks";
+const adminApp = getApps().find(it => it.name === ADMIN_APP_NAME) ||
+    initializeAdminApp(undefined, "firebase-frameworks");
 const adminAuth = getAdminAuth(adminApp);
 
 const firebaseAppsLRU = new LRU<string, FirebaseApp>({

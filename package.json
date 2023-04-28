@@ -1,6 +1,6 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "main": "dist/index.js",
   "repository": "FirebaseExtended/firebase-framework-tools",
@@ -60,7 +60,8 @@
   },
   "peerDependencies": {
     "firebase": "^9.9.0",
-    "firebase-functions": "^3.23.0"
+    "firebase-admin": "^11.0.1",
+    "firebase-functions": "^3.23.0 || ^4.3.0"
   },
   "peerDependenciesMeta": {
     "firebase": {
@@ -79,7 +80,8 @@
     "@types/node": "^16.11.12",
     "@types/semver": "^7.3.9",
     "firebase": "^9.9.0",
-    "firebase-functions": "^3.23.0",
+    "firebase-admin": "^11.0.1",
+    "firebase-functions": "^4.3.1",
     "firebase-tools": "^11.14.4",
     "inquirer": "^8.2.0",
     "next": "^12.0.7",
