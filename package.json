@@ -1,6 +1,6 @@
 {
   "name": "firebase-frameworks",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "main": "dist/index.js",
   "repository": "FirebaseExtended/firebase-framework-tools",
@@ -43,6 +43,10 @@
   "exports": {
     ".": {
       "node": "./dist/index.js",
+      "default": null
+    },
+    "./i18n": {
+      "node": "./dist/i18n.js",
       "default": null
     }
   },
