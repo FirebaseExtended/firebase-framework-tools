@@ -1,4 +1,4 @@
-import { Request } from "firebase-functions/v2/https";
+import type { Request } from "firebase-functions/v2/https";
 
 export function getPreferredLocale(req: Request, locales: string[], defaultLocale: string): string {
   const country = req.headers["x-country-code"] || ""

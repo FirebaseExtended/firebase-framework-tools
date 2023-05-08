@@ -64,8 +64,7 @@
   },
   "peerDependencies": {
     "firebase": "^9.9.0",
-    "firebase-admin": "^11.0.1",
-    "firebase-functions": "^3.23.0 || ^4.3.0"
+    "firebase-admin": "^11.0.1"
   },
   "peerDependenciesMeta": {
     "firebase": {
@@ -73,9 +72,8 @@
     }
   },
   "devDependencies": {
-    "@angular-devkit/architect": "^0.1303.3",
-    "@angular-devkit/core": "^13.3.3",
-    "@nuxt/types": "^2.15.8",
+    "@angular-devkit/architect": "^0.1600.0",
+    "@angular-devkit/core": "^16.0.0",
     "@sveltejs/kit": "^1.0.1",
     "@types/cookie": "^0.5.1",
     "@types/fs-extra": "^9.0.13",
@@ -88,9 +86,9 @@
     "firebase-functions": "^4.3.1",
     "firebase-tools": "^11.14.4",
     "inquirer": "^8.2.0",
-    "next": "^12.0.7",
+    "next": "^13.4.0",
     "nuxt": "^2.15.8",
-    "nuxt3": "^3.0.0-rc.6-27635653.88f4525",
+    "nuxt3": "npm:nuxt@^3.4.3",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4",
