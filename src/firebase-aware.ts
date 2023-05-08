@@ -33,7 +33,7 @@ const mintCookie = async (req: Request, res: Response) => {
     const idToken = req.header('Authorization')?.split('Bearer ')?.[1];
     const verifiedIdToken = idToken ? await adminAuth.verifyIdToken(idToken) : null;
     if (verifiedIdToken) {
-        if (new Date().getTime() / 1_000 - (verifiedIdToken.auth_time || verifiedIdToken.iat) > ID_TOKEN_MAX_AGE) {
+        if (new Date().getTime() / 1_000 - verifiedIdToken.iat > ID_TOKEN_MAX_AGE) {
             res.status(301).end();
         } else {
             const cookie = await adminAuth.createSessionCookie(idToken!, { expiresIn: COOKIE_MAX_AGE }).catch((e: any) => {
