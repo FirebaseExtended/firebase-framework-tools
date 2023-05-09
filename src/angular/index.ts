@@ -15,8 +15,8 @@ export const handle = async (req: Request, res: Response) => {
         const locale = req.query.locale || "";
         if (typeof locale !== "string") return res.sendStatus(404);
         if (!LOCALE_FORMATS.some(it => locale.match(it))) return res.sendStatus(404);
-        const serveFrom = `./dist/hosting/browser/${locale}`;
-        const normalizedPath = normalize(join(serveFrom, src));
+        const serveFrom = "./dist/hosting/browser";
+        const normalizedPath = normalize(join(serveFrom, locale, src));
         if (relative(serveFrom, normalizedPath).startsWith("..")) return res.sendStatus(404);
         const { default: sharp} = await import("sharp");
         const width = typeof req.query.width === "string" ? parseInt(req.query.width) : undefined;
