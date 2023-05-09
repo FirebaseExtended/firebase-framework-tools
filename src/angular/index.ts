@@ -15,7 +15,7 @@ export const handle = async (req: Request, res: Response) => {
         if (
             typeof src !== "string" ||
             typeof locale !== "string" ||
-            !LOCALE_FORMATS.some(it => locale.match(it)) ||
+            !!locale && !LOCALE_FORMATS.some(it => locale.match(it)) ||
             !NG_BROWSER_OUTPUT_PATH
         ) return res.sendStatus(404);
         const normalizedPath = normalize(join(NG_BROWSER_OUTPUT_PATH, locale, src));
