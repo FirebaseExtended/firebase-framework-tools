@@ -7,17 +7,19 @@ import { createReadStream } from 'fs';
 import { mediaTypes } from '@hapi/accept';
 
 const LOCALE_FORMATS = [/^ALL_[a-z]+$/, /^[a-z]+_ALL$/, /^[a-z]+(_[a-z]+)?$/];
+const NG_BROWSER_OUTPUT_PATH = process.env.__NG_BROWSER_OUTPUT_PATH__
 
 export const handle = async (req: Request, res: Response) => {
     if (basename(req.path) === '__image__') {
-        const src = req.query.src;
-        if (typeof src !== "string") return res.sendStatus(404);
-        const locale = req.query.locale || "";
-        if (typeof locale !== "string") return res.sendStatus(404);
-        if (!LOCALE_FORMATS.some(it => locale.match(it))) return res.sendStatus(404);
-        const serveFrom = `./${process.env.__NG_BROWSER_OUTPUT_PATH__}`;
-        const normalizedPath = normalize(join(serveFrom, locale, src));
-        if (relative(serveFrom, normalizedPath).startsWith("..")) return res.sendStatus(404);
+        const { src, locale="" } = req.query;
+        if (
+            typeof src !== "string" ||
+            typeof locale !== "string" ||
+            !LOCALE_FORMATS.some(it => locale.match(it)) ||
+            !NG_BROWSER_OUTPUT_PATH
+        ) return res.sendStatus(404);
+        const normalizedPath = normalize(join(NG_BROWSER_OUTPUT_PATH, locale, src));
+        if (relative(NG_BROWSER_OUTPUT_PATH, normalizedPath).startsWith("..")) return res.sendStatus(404);
         const { default: sharp} = await import("sharp");
         const width = typeof req.query.width === "string" ? parseInt(req.query.width) : undefined;
         const accepts = mediaTypes(req.headers.accept);
