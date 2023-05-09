@@ -6,12 +6,15 @@ import { basename, join, normalize, relative } from 'path';
 import { createReadStream } from 'fs';
 import { mediaTypes } from '@hapi/accept';
 
+const LOCALE_FORMATS = [/^ALL_[a-z]+$/, /^[a-z]+_ALL$/, /^[a-z]+(_[a-z]+)?$/];
+
 export const handle = async (req: Request, res: Response) => {
     if (basename(req.path) === '__image__') {
         const src = req.query.src;
         if (typeof src !== "string") return res.sendStatus(404);
-        let locale = req.query.locale || "";
+        const locale = req.query.locale || "";
         if (typeof locale !== "string") return res.sendStatus(404);
+        if (!LOCALE_FORMATS.some(it => locale.match(it))) return res.sendStatus(404);
         const serveFrom = `./dist/hosting/browser/${locale}`;
         const normalizedPath = normalize(join(serveFrom, src));
         if (relative(serveFrom, normalizedPath).startsWith("..")) return res.sendStatus(404);
