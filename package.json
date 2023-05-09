@@ -58,16 +58,21 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@hapi/accept": "^6.0.1",
     "cookie": "^0.5.0",
     "lru-cache": "^7.14.0",
     "tslib": "^2.3.1"
   },
   "peerDependencies": {
     "firebase": "^9.9.0",
-    "firebase-admin": "^11.0.1"
+    "firebase-admin": "^11.0.1",
+    "sharp": "^0.32.1"
   },
   "peerDependenciesMeta": {
     "firebase": {
+      "optional": true
+    },
+    "sharp": {
       "optional": true
     }
   },
@@ -90,6 +95,7 @@
     "nuxt": "^2.15.8",
     "nuxt3": "npm:nuxt@^3.4.3",
     "rimraf": "^3.0.2",
+    "sharp": "^0.32.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4",
     "vite": "^4.1.4",
