@@ -30,6 +30,8 @@ Firebase provides this functionality through the Firebase CLI. When initializing
 provide information about your new or existing Web project, and the CLI sets up the right resources for your chosen Web
 framework.
 
+We'd love to learn from you. [Express your interest in helping us shape the future of Firebase Hosting here.](https://goo.gle/41enW5X)
+
 ## Status
 
 ![Status: Experimental](https://img.shields.io/badge/Status-Experimental-blue)
