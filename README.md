@@ -49,6 +49,16 @@ firebase experiments:enable webframeworks
 
 - Firebase CLI version 10.9.1 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
 
+
+## Initialize Firebase Hosting
+
+When you initialize Firebase Hosting it should automatically detect known Web Frameworks, if one isn't discovered
+you'll be given a list of supported frameworks to start with.
+
+```shell
+firebase init hosting
+```
+
 ## Serve locally
 
 You can test your integration locally by following these steps:
