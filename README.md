@@ -61,6 +61,25 @@ you'll be given a list of supported frameworks to start with.
 firebase init hosting
 ```
 
+You should see the "source" option in your `firebase.json` rather than the traditional "public". This points to the
+root directory of your application's source code, relative to your `firebase.json`.
+
+```json
+{
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
+  }
+}
+```
+
 ## Serve locally
 
 You can test your integration locally by following these steps:
@@ -72,8 +91,33 @@ You can test your integration locally by following these steps:
 
 When you're ready to share your changes with the world, deploy your app to your live site:
 
-1. Run `firebase deploy` from the terminal.
-2. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you set one up)
+1. Run `firebase deploy` from the terminal. This will build your application, detirmine if a backend is needed, and if so build and deploy a Cloud Function for you.
+3. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you set one up)
+
+## Configuring your backend
+
+In your `firebase.json` you can alter the configuration of the code-generated Cloud Function by editing the "frameworksBackend"
+option. "frameworksBackend" takes the same options as [firebase-functions/v2/https.httpsOptions](https://firebase.google.com/docs/reference/functions/2nd-gen/node/firebase-functions.https.httpsoptions)
+though JSON-serializable. E.g,
+
+
+```json
+{
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "region": "us-central1",
+      "minInstances": 1,
+      "maxInstances": 10
+    }
+  }
+}
+```
 
 # Contributors
 
