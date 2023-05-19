@@ -113,7 +113,7 @@ though JSON-serializable. E.g,
     "frameworksBackend": {
       "region": "us-central1",
       "minInstances": 1,
-      "maxInstances: 10
+      "maxInstances": 10
     }
   }
 }
