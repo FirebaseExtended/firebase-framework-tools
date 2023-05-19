@@ -91,7 +91,7 @@ You can test your integration locally by following these steps:
 
 When you're ready to share your changes with the world, deploy your app to your live site:
 
-1. Run `firebase deploy` from the terminal. This will build your application, detirmine if a backend is needed, and if so build and deploy a Cloud Function for you.
+1. Run `firebase deploy` from the terminal. This will build your application, determine if a backend is needed, and if so build and deploy a Cloud Function for you.
 3. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you set one up)
 
 ## Configuring your backend
