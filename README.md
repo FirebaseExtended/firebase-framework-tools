@@ -39,6 +39,8 @@ We'd love to learn from you. [Express your interest in helping us shape the futu
 This repository is maintained by Google but is not a supported Firebase product. Issues here are answered by
 maintainers and other community members on GitHub on a best-effort basis.
 
+[Please open issues related to Web Frameworks support in Firease CLI in the firebase-tools repository](https://github.com/firebase/firebase-tools/issues/new/choose).
+
 ## Enable framework-awareness
 
 An experimental add-on to the Firebase CLI provides web framework support. To enable it, call the following:
