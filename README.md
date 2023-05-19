@@ -9,7 +9,7 @@
 | [Express](https://firebase.google.com/docs/hosting/frameworks/express) | **Early preview** | |
 | Flask | **Early preview** | Coming soon... |
 | Django | Experimental | Coming soon... |
-| Flutter | Experimental | |
+| [Flutter](https://firebase.google.com/docs/hosting/frameworks/flutter) | Experimental | |
 | Nuxt | Experimental | |
 | Astro | Experimental | |
 | SvelteKit | Experimental | |
