@@ -15,8 +15,10 @@ type Server = typeof import('./angular/index.js') |
 import type { Request } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
 
+import { isUsingFirebaseJsSdk } from './utils.js'
+
 const dirname = process.env.__FIREBASE_FRAMEWORKS_ENTRY__;
-const usingFirebaseJsSdk = !!process.env.__FIREBASE_DEFAULTS__;
+const usingFirebaseJsSdk = await isUsingFirebaseJsSdk();
 const basename = usingFirebaseJsSdk ? 'firebase-aware' : 'index';
 
 // .env isn't parsed for Cloud Functions discovery during deploy, handle undefined
