@@ -1,12 +1,10 @@
 import type { Request } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
+import { pathToFileURL } from 'url';
 
-// @ts-ignore
-import { loadNuxt } from 'nuxt';
-
-const nuxt = loadNuxt('start');
+const nuxt = import(`${pathToFileURL(process.cwd())}/index.mjs`);
 
 export const handle = async (req: Request, res: Response) => {
-    const { render } = await nuxt;
-    render(req, res);
+    const { handler } = await nuxt;
+    handler(req, res);
 };

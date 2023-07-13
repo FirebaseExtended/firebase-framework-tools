@@ -53,18 +53,18 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         node: [ "16", "18" ]
-        framework: [ "next", "angular", "custom", "nuxt", "nuxt3", "vite" ]
+        framework: [ "next", "angular", "custom", "nuxt2", "nuxt", "vite" ]
         exclude:
           # Engine failures for Node 18
           - node: 18
             framework: next
           - node: 18
-            framework: nuxt
+            framework: nuxt2
           - node: 18
-            framework: nuxt3
+            framework: nuxt
           # JSON serialization problem
           - node: 16
-            framework: nuxt
+            framework: nuxt2
             os: windows-latest
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
