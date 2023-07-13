@@ -24,15 +24,16 @@ export const handle = async (req: Request, res: Response) => {
   // dynamic for middleware.
   let nextApp = nextAppsLRU.get(key);
   if (!nextApp) {
+    // @ts-expect-error
     nextApp = next({
       dev: false,
       dir: process.cwd(),
       hostname: "0.0.0.0",
       port,
     });
-    nextAppsLRU.set(key, nextApp);
+    nextAppsLRU.set(key, nextApp!);
   }
-  await nextApp.prepare();
+  await nextApp!.prepare();
   const parsedUrl = parse(url, true);
-  nextApp.getRequestHandler()(req, res, parsedUrl);
+  nextApp!.getRequestHandler()(req, res, parsedUrl);
 };
