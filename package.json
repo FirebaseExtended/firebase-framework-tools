@@ -89,7 +89,7 @@
     "firebase": "^9.9.0",
     "firebase-admin": "^11.0.1",
     "firebase-functions": "^4.3.1",
-    "firebase-tools": "^11.14.4",
+    "firebase-tools": "^12",
     "inquirer": "^8.2.0",
     "next": "13.4.7",
     "nuxt": "^2.15.8",
