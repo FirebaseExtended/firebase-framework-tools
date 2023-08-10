@@ -52,9 +52,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ["16", "18"] # TODO: "20"
-        framework: ["angular", "custom", "vite"]
-        # TODO: fix: "next", "nuxt", "nuxt3"; add "astro", "nitro", "sveltekit"
+        node: ["16", "18", "20"]
+        framework: ["next", "angular", "custom", "vite"]
+        # TODO: fix: "nuxt", "nuxt3"; add "astro", "nitro", "sveltekit"
         exclude:
           # Engine failures for Node 18
           - node: 18
@@ -132,7 +132,7 @@ jobs:
             ${{ runner.os }}-${{ matrix.node }}-
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm i
       - name: Build
         run: npm run build
       # We already have a test matrix for running each e2e test suite
@@ -154,8 +154,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish (NPM)
-    needs: ["build"]
-    # needs: ['build', 'test']
+    needs: ["test"]
     if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
     steps:
       - name: Checkout
@@ -164,7 +163,6 @@ jobs:
         uses: actions/setup-node@v2-beta
         with:
           node-version: "16"
-          # registry-url: 'https://wombat-dressing-room.appspot.com'
           registry-url: "https://registry.npmjs.org"
       - name: "Download Artifacts"
         uses: actions/download-artifact@v2
@@ -175,5 +173,4 @@ jobs:
           chmod +x ./dist/publish.sh
           ./dist/publish.sh
         env:
-          # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_NPM_TOKEN }}
