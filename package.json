@@ -28,7 +28,7 @@
     "test": "npm run test:angular && npm run test:next && npm run test:nuxt2 && npm run test:nuxt && npm run test:custom",
     "e2e:build-next": "rimraf e2e/next-test && cd e2e && npx create-next-app next-test --use-npm --ts --eslint && cd next-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-vite": "rimraf e2e/vite-test && cd e2e && npx create-vite vite-test --template vue && cd vite-test && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
-    "e2e:build-nuxt2": "rimraf e2e/nuxt2-test && cd e2e && npx create-nuxt-app nuxt2-test --answers '$(cat ../tools/create-nuxt-answers.json)' && cd nuxt2-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
+    "e2e:build-nuxt2": "rimraf e2e/nuxt2-test && cd e2e && npx create-nuxt-app nuxt2-test --answers '{\"name\":\"foo\",\"language\":\"ts\",\"pm\":\"npm\",\"ui\":\"none\",\"features\":[],\"linter\":[],\"test\":\"none\",\"mode\":\"universal\",\"target\":\"static\",\"devTools\":[]}' && cd nuxt2-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-nuxt": "rimraf e2e/nuxt-test && cd e2e && npx nuxi init nuxt-test && cd nuxt-test && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-angular": "rimraf e2e/angular-test && cd e2e && npm i -g @angular/cli && ng new angular-test --defaults --skip-git && cd angular-test && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",
     "e2e:build-custom": "rimraf e2e/custom/lib && rimraf e2e/custom/.firebase && cd e2e/custom && npm i && cp ../../tools/firebase.json . && cp ../../tools/.firebaserc .",

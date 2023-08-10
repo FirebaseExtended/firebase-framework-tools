@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths-ignore:
-      - "**/*.md"
+      - '**/*.md'
   pull_request:
     branches:
-      - "**"
+      - '**'
   release:
     types:
       - published
@@ -25,7 +25,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2-beta
         with:
-          node-version: "16"
+          node-version: '16'
       - name: node_modules cache
         uses: actions/cache@v2
         id: node_modules_cache
@@ -39,7 +39,7 @@ jobs:
         run: npm ci
       - name: Build
         run: ./tools/prepare.sh
-      - name: "Upload Artifact"
+      - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         with:
           name: firebase-frameworks-${{ github.run_id }}
@@ -52,15 +52,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ["16", "18"] # TODO: "20"
-        framework: ["angular", "custom", "vite", "nuxt"]
-        # TODO: fix: "next", nuxt2 ; add "astro", "nitro", "sveltekit"
+        node: ['16', '18'] # TODO: "20"
+        framework: ['angular', 'custom', 'vite', 'nuxt', 'nuxt2']
+        # TODO: fix: "next" ; add "astro", "nitro", "sveltekit"
         exclude:
           # Engine failures for Node 18
           - node: 18
             framework: next
-          # - node: 18
-          #   framework: nuxt2
+          - node: 18
+            framework: nuxt2
           - node: 18
             framework: nuxt
           # JSON serialization problem
@@ -109,7 +109,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: ["16"] # lots of engine failures with Node 18, skip for now
+        node: ['16'] # lots of engine failures with Node 18, skip for now
         exclude:
           # we build with this combination, safely skip
           - os: ubuntu-latest
@@ -154,7 +154,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish (NPM)
-    needs: ["build"]
+    needs: ['build']
     # needs: ['build', 'test']
     if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
     steps:
@@ -163,10 +163,10 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2-beta
         with:
-          node-version: "16"
+          node-version: '16'
           # registry-url: 'https://wombat-dressing-room.appspot.com'
-          registry-url: "https://registry.npmjs.org"
-      - name: "Download Artifacts"
+          registry-url: 'https://registry.npmjs.org'
+      - name: 'Download Artifacts'
         uses: actions/download-artifact@v2
       - name: Relocate Artifacts
         run: mv firebase-frameworks-${{ github.run_id }} dist
