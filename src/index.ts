@@ -1,15 +1,15 @@
 type Server = typeof import('./angular/index.js') |
     typeof import('./express/index.js') |
     typeof import('./next.js/index.js') |
+    typeof import('./nuxt2/index.js') |
     typeof import('./nuxt/index.js') |
-    typeof import('./nuxt3/index.js') |
     typeof import('./sveltekit/index.js')|
     typeof import('./_devMode/index.js') |
     typeof import('./angular/firebase-aware.js') |
     typeof import('./express/firebase-aware.js') |
     typeof import('./next.js/firebase-aware.js') |
+    typeof import('./nuxt2/firebase-aware.js') |
     typeof import('./nuxt/firebase-aware.js') |
-    typeof import('./nuxt3/firebase-aware.js') |
     typeof import('./_devMode/firebase-aware.js');
 
 import type { Request } from 'firebase-functions/v2/https';
