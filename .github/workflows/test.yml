@@ -53,20 +53,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         node: ["16", "18", "20"]
-        framework: ["next", "angular", "custom", "vite"]
-        # TODO: fix: "nuxt", "nuxt3"; add "astro", "nitro", "sveltekit"
+        framework: ["next", "angular", "custom", "vite", "nuxt"]
+        # TODO: fix: "nuxt2"; add "astro", "nitro", "sveltekit"
         exclude:
           # Engine failures for Node 18
           - node: 18
             framework: next
           - node: 18
             framework: nuxt
-          - node: 18
-            framework: nuxt3
-          # JSON serialization problem
-          - node: 16
-            framework: nuxt
-            os: windows-latest
       fail-fast: false
     name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
