@@ -1,5 +1,5 @@
 import { parse } from "url";
-import { default as next } from "next";
+import next from "next";
 import type { Request } from "firebase-functions/v2/https";
 import type { Response } from "express";
 import LRU from "lru-cache";
@@ -24,7 +24,7 @@ export const handle = async (req: Request, res: Response) => {
   // dynamic for middleware.
   let nextApp = nextAppsLRU.get(key);
   if (!nextApp) {
-    nextApp = next({
+    nextApp = next.default({
       dev: false,
       dir: process.cwd(),
       hostname: "0.0.0.0",
