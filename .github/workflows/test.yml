@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - monorepo
     paths-ignore:
       - "**/*.md"
   pull_request:
