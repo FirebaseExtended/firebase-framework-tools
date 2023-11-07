@@ -22,30 +22,31 @@ jobs:
     name: Build
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup node
-        uses: actions/setup-node@v2-beta
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
+          check-latest: false
       - name: node_modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: node_modules_cache
         with:
           path: ./node_modules
-          key: ${{ runner.os }}-16-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-18-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-16-
+            ${{ runner.os }}-18-
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Build
         run: ./tools/prepare.sh
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: firebase-frameworks-${{ github.run_id }}
-          path: dist
+          path: packages/*/dist/
           retention-days: 1
+          if-no-files-found: ignore
 
   test:
     runs-on: ${{ matrix.os }}
@@ -53,32 +54,20 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node: [ "16", "18" ]
-        framework: [ "next", "angular", "custom", "nuxt", "nuxt3", "vite" ]
-        exclude:
-          # Engine failures for Node 18
-          - node: 18
-            framework: next
-          - node: 18
-            framework: nuxt
-          - node: 18
-            framework: nuxt3
-          # JSON serialization problem
-          - node: 16
-            framework: nuxt
-            os: windows-latest
+        node: [ "16", "18", "20" ]
       fail-fast: false
-    name: Test ${{ matrix.framework }} on Node ${{ matrix.node }} (${{ matrix.os }})
+    name: Test Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup node
-        uses: actions/setup-node@v2-beta
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
       - name: node_modules cache
         id: node_modules_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('package-lock.json') }}
@@ -88,18 +77,21 @@ jobs:
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Firebase emulator cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/firebase/emulators
           key: firebase_emulators
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
+        path: dist
       - name: Relocate Artifacts
-        run: mv firebase-frameworks-${{ github.run_id }} dist
+        run: |
+          find dist/*
+          rsync -a dist/ packages
       - name: Test
         run: |
           node_modules/.bin/firebase experiments:enable webframeworks
-          npm run test:${{ matrix.framework }}
+          npm run test
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
@@ -117,13 +109,13 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup node
-        uses: actions/setup-node@v2-beta
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
       - name: node_modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: node_modules_cache
         with:
           path: ./node_modules

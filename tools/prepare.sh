@@ -20,7 +20,5 @@ npm run build:changed &&
         fi;
         npm --prefix $workspace --no-git-tag-version --allow-same-version -f version $OVERRIDE_VERSION &&
         echo "npm publish $workspace --tag $NPM_TAG" > $workspace/dist/publish.sh &&
-        chmod +x $workspace/dist/publish.sh &&
-        cd dist &&
-        npm pack ../$workspace
+        chmod +x $workspace/dist/publish.sh
     done
