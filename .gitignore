@@ -1,12 +1,14 @@
-node_modules
-/.vscode/
 /packages/*/dist/
-/firebase-frameworks-*.tgz
+/examples/
+/dist
+
+# NPM
+node_modules
+
+# misc
+.vscode
 *.log
 .DS_Store
-/examples/
-/e2e/
-/firebase-tools/
-firebase-tools-*.tgz
-/package/
-/dist
+
+# firebase
+.firebase
