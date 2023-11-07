@@ -1,6 +1,6 @@
 node_modules
 /.vscode/
-/dist/
+/packages/*/dist/
 /firebase-frameworks-*.tgz
 *.log
 .DS_Store
@@ -9,3 +9,4 @@ node_modules
 /firebase-tools/
 firebase-tools-*.tgz
 /package/
+/dist
