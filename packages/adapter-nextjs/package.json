@@ -1,0 +1,49 @@
+{
+    "name": "@apphosting/adapter-nextjs",
+    "version": "14.0.0",
+    "main": "dist/index.js",
+    "description": "Experimental addon to the Firebase CLI to add web framework support",
+    "repository": "FirebaseExtended/firebase-framework-tools",
+    "bin": {
+        "apphosting-adapter-nextjs-build": "dist/bin/build.js",
+        "apphosting-adapter-nextjs-create": "dist/bin/create.js"
+    },
+    "author": {
+        "name": "Firebase",
+        "url": "https://firebase.google.com/"
+    },
+    "bugs": {
+        "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
+    },
+    "type": "module",
+    "sideEffects": false,
+    "scripts": {
+        "build": "rimraf dist && tsc && chmod +x ./dist/bin/*",
+        "test": "node --loader ts-node/esm ./src/test.ts"
+    },
+    "exports": {
+        ".": {
+            "node": "./dist/index.js",
+            "default": null
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "license": "Apache-2.0",
+    "dependencies": {
+        "create-next-app": "^14.0.0"
+    },
+    "peerDependencies": {
+        "next": "^14.0.0"
+    },
+    "peerDependenciesMeta": {
+        "next": {
+            "optional": true
+        }
+    },
+    "devDependencies": {
+        "next": "^14.0.0",
+        "ts-node": "^10.9.1"
+    }
+}

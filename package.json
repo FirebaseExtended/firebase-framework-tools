@@ -4,7 +4,7 @@
   "scripts": {
     "build": "lerna run build",
     "build:changed": "lerna run build --since",
-    "test": "lerna run test",
+    "test": "lerna run test --verbose",
     "test:changed": "learna run test --since"
   },
   "workspaces": [
