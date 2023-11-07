@@ -54,7 +54,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node: [ "16", "18", "20" ]
+        node: [ "18", "20" ]
       fail-fast: false
     name: Test Node ${{ matrix.node }} (${{ matrix.os }})
     steps:
@@ -86,11 +86,7 @@ jobs:
       - name: Rsync Artifacts
         run: rsync -a artifact/ packages
       - name: Test
-        run: |
-          node_modules/.bin/firebase experiments:enable webframeworks
-          npm run test
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: npm run test
 
   contribute:
     runs-on: ${{ matrix.os }}
@@ -125,11 +121,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Test
-        run: |
-          node_modules/.bin/firebase experiments:enable webframeworks
-          npm run test
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: npm run test
 
   # Break the branch protection test into a seperate step, so we can manage the matrix more easily
   test_and_contribute:
@@ -151,7 +143,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
           check-latest: falase
           # registry-url: 'https://wombat-dressing-room.appspot.com'
           registry-url: 'https://registry.npmjs.org'
