@@ -83,7 +83,8 @@ jobs:
           key: firebase_emulators
       - name: Download Artifacts
         uses: actions/download-artifact@v3
-        path: dist
+        with:
+          path: dist
       - name: Relocate Artifacts
         run: |
           find dist/*
