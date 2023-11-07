@@ -83,12 +83,8 @@ jobs:
           key: firebase_emulators
       - name: Download Artifacts
         uses: actions/download-artifact@v3
-        with:
-          path: dist
-      - name: Relocate Artifacts
-        run: |
-          find dist/*
-          rsync -a dist/ packages
+      - name: Rsync Artifacts
+        run: rsync -a artifact/ packages
       - name: Test
         run: |
           node_modules/.bin/firebase experiments:enable webframeworks
@@ -102,11 +98,11 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
-        node: [ "16" ] # lots of engine failures with Node 18, skip for now
+        node: [ "16", "18", "20" ]
         exclude:
-          # we build with this combination, safely skip
+          # we build and test with this combination, safely skip
           - os: ubuntu-latest
-            node: 16
+            node: 18
       fail-fast: false
     steps:
       - name: Checkout
