@@ -16,5 +16,5 @@ for (const lerna of lernaList) {
     const cwd = lerna.location;
     execSync(`npm --no-git-tag-version --allow-same-version -f version ${version}`, { cwd });
     const tag = packageFromRef ? (version.includes('-') ? 'next' : 'latest') : 'canary';
-    execSync(`npm publish . --tag ${tag}`, { cwd });
+    execSync(`npm publish --tag ${tag} --access public`, { cwd });
 }
