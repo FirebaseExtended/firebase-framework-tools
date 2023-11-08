@@ -30,13 +30,8 @@ for (const lerna of lernaList) {
     const tag = packageFromRef ? (version.includes('-') ? 'next' : 'latest') : 'canary';
     const packageJsonPath = join(lerna.location, 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
-    const registry = wombatDressingRoomTokens.get(lerna.name) && `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`;
     packageJson.version = version;
-    packageJson.publishConfig = {
-        registry,
-        access: 'public',
-        tag
-    };
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
-    execSync(`npm publish`, { cwd });
+    const registry = wombatDressingRoomTokens.get(lerna.name) ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns` : 'https://registry.npmjs.org';
+    execSync(`npm publish --registry ${registry} --access public --tag ${tag}`, { cwd });
 }
