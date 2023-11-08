@@ -15,7 +15,7 @@ const authTokens = new Map([
     ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
 ]);
 
-authTokens.forEach((pkg, token) => {
+authTokens.forEach((token, pkg) => {
     writeFileSync('.npmrc', `//wombat-dressing-room.appspot.com/${pkg}/:_authToken=${token}\n`, { flag: 'a+' });
 });
 
