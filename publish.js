@@ -16,8 +16,6 @@ const wombatDressingRoomTokens = new Map([
     // ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
 ]);
 
-if (process.env.NPM_TOKEN) writeFileSync('.npmrc', `//registry.npmjs.org/:_authToken=${process.env.NPM_TOKEN}`, { flag: 'a+' });
-
 wombatDressingRoomTokens.forEach((token, pkg) => {
     writeFileSync('.npmrc', `//wombat-dressing-room.appspot.com/${pkg}/:_authToken=${token}\n`, { flag: 'a+' });
 });
