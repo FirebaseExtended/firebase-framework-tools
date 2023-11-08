@@ -5,6 +5,7 @@
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": "FirebaseExtended/firebase-framework-tools",
     "publishConfig": {
+        "registry": "https://wombat-dressing-room.appspot.com/@apphosting/adapter-nextjs/_ns",
         "access": "public"
     },
     "bin": {
