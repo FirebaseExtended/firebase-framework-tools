@@ -10,12 +10,14 @@ const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 const lernaList= JSON.parse(execSync(`lerna list --json ${packageFromRef ? '' : '--since'}`).toString());
 if (packageFromRef && !lernaList.find(it => it.name === packageFromRef)) throw `Lerna didn't find ${packageFromRef} in this workspace`;
 
-const authTokens = new Map([
+const wombatDressingRoomTokens = new Map([
     ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
     ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
 ]);
 
-authTokens.forEach((token, pkg) => {
+if (process.env.NPM_TOKEN) writeFileSync('.npmrc', `//registry.npmjs.org/:_authToken=${process.env.NPM_TOKEN}`, { flag: 'a+' });
+
+wombatDressingRoomTokens.forEach((token, pkg) => {
     writeFileSync('.npmrc', `//wombat-dressing-room.appspot.com/${pkg}/:_authToken=${token}\n`, { flag: 'a+' });
 });
 
@@ -28,9 +30,10 @@ for (const lerna of lernaList) {
     const tag = packageFromRef ? (version.includes('-') ? 'next' : 'latest') : 'canary';
     const packageJsonPath = join(lerna.location, 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
+    const registry = wombatDressingRoomTokens.get(lerna.name) && `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`;
     packageJson.version = version;
     packageJson.publishConfig = {
-        registry: `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`,
+        registry,
         access: 'public',
         tag
     };
