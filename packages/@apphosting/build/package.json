@@ -34,6 +34,7 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
+        "colorette": "^2.0.20",
         "commander": "^11.1.0",
         "semver": "^7.5.4"
     },

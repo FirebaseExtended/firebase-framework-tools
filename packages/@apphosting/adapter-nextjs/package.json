@@ -35,7 +35,6 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "create-next-app": "~14.0.0"
     },
     "peerDependencies": {
         "next": "~14.0.0"

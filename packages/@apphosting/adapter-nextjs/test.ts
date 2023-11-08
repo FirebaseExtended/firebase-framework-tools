@@ -6,18 +6,17 @@ import { join, dirname } from "path";
 import { parse } from "semver";
 import { dir as tempDir } from "tmp";
 import { fileURLToPath } from "url";
+import { CREATE_NEXT_APP_VERSION } from "./src/bin/create.js";
 
 const packageJson = JSON.parse((await readFile("package.json")).toString());
 
-// TODO compare against latest & tags
 const version = parse(packageJson.version);
 if (!version) throw "couldn't parse package.json version";
 
-const createNextAppVersionRange = packageJson.dependencies["create-next-app"];
 const nextVersionRange = packageJson.peerDependencies["next"];
 
 const expectedRange = `~${version.major}.${version.minor}.0`;
-if (expectedRange !== createNextAppVersionRange)
+if (expectedRange !== CREATE_NEXT_APP_VERSION)
   throw new Error(`expected create-next-app version requirement to equal ${expectedRange}`);
 if (expectedRange !== nextVersionRange)
   throw new Error(`expected next version requirement to equal ${expectedRange}`);
