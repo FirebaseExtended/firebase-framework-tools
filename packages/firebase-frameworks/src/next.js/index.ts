@@ -27,7 +27,7 @@ export const handle = async (req: Request, res: Response) => {
         nextApp = next({
             dev: false,
             dir: process.cwd(),
-            hostname,
+            hostname: '0.0.0.0',
             port
         });
         nextAppsLRU.set(key, nextApp);
