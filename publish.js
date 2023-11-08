@@ -8,6 +8,11 @@ const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 const lernaList= JSON.parse(execSync(`lerna list --json ${packageFromRef ? '' : '--since'}`).toString());
 if (packageFromRef && !lernaList.find(it => it.name === packageFromRef)) throw `Lerna didn't find ${packageFromRef} in this workspace`;
 
+const npmTokens = new Map([
+    ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
+    ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
+]);
+
 for (const lerna of lernaList) {
     if (lerna.private) continue;
     if (packageFromRef && packageFromRef !== lerna.name) continue;
@@ -16,5 +21,7 @@ for (const lerna of lernaList) {
     const cwd = lerna.location;
     execSync(`npm --no-git-tag-version --allow-same-version -f version ${version}`, { cwd });
     const tag = packageFromRef ? (version.includes('-') ? 'next' : 'latest') : 'canary';
-    execSync(`npm publish --tag ${tag} --access public`, { cwd });
+    const NODE_AUTH_TOKEN = npmTokens.get(lerna.name);
+    if (!NODE_AUTH_TOKEN) throw `Could not find NPM token for ${lerna.name}`;
+    execSync(`npm publish --tag ${tag} --access public`, { cwd, env: { NODE_AUTH_TOKEN } });
 }
