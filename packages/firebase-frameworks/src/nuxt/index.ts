@@ -1,7 +1,7 @@
 import type { Request } from "firebase-functions/v2/https";
 import type { Response } from "express";
 
-// @ts-ignore
+// @ts-expect-error
 import { loadNuxt } from "nuxt";
 
 const nuxt = loadNuxt("start");

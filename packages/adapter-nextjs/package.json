@@ -46,8 +46,10 @@
         }
     },
     "devDependencies": {
+        "@types/tmp": "^0.2.6",
         "next": "~14.0.0",
         "semver": "^7.5.4",
+        "tmp": "^0.2.1",
         "ts-node": "^10.9.1"
     }
 }
