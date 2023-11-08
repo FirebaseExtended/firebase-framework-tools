@@ -23,5 +23,5 @@ for (const lerna of lernaList) {
     const tag = packageFromRef ? (version.includes('-') ? 'next' : 'latest') : 'canary';
     const NPM_TOKEN = npmTokens.get(lerna.name);
     if (!NPM_TOKEN) throw `Could not find NPM token for ${lerna.name}`;
-    execSync(`npm publish --registry https://wombat-dressing-room.appspot.com --tag ${tag}`, { cwd, env: { NPM_TOKEN } });
+    execSync(`npm publish --registry https://wombat-dressing-room.appspot.com --tag ${tag}`, { cwd, env: { ...process.env, NPM_TOKEN } });
 }
