@@ -2,13 +2,11 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "build": "lerna run build",
-    "build:changed": "lerna run build --since",
-    "test": "lerna run test --verbose --no-bail",
-    "test:changed": "lerna run test --since --no-bail",
-    "publish": "./publish.js",
-    "lint": "eslint packages/*",
-    "lint:fix": "eslint packages/* --fix"
+    "build": "./scripts/build.js",
+    "test": "./scripts/test.js",
+    "publish": "./scripts/publish.js",
+    "lint": "eslint packages/* scripts/*",
+    "lint:fix": "eslint packages/* scripts/* --fix"
   },
   "workspaces": [
     "packages/*"
