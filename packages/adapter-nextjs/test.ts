@@ -22,21 +22,25 @@ if (expectedRange !== createNextAppVersionRange)
 if (expectedRange !== nextVersionRange)
   throw new Error(`expected next version requirement to equal ${expectedRange}`);
 
-tempDir((err, cwd, cleanup) => {
-  if (err) throw err;
-  const projectDir = join(cwd, "e2e");
-  const root = dirname(fileURLToPath(import.meta.url));
-  execSync(`npx -y -p ${root} apphosting-adapter-nextjs-create ${projectDir}`, {
-    cwd,
-    stdio: "inherit",
+if (parseInt(process.versions.node) >= 18) {
+
+  tempDir((err, cwd, cleanup) => {
+    if (err) throw err;
+    const projectDir = join(cwd, "e2e");
+    const root = dirname(fileURLToPath(import.meta.url));
+    execSync(`npx -y -p ${root} apphosting-adapter-nextjs-create ${projectDir}`, {
+      cwd,
+      stdio: "inherit",
+    });
+    execSync(`npx -y -p ${root} apphosting-adapter-nextjs-build`, {
+      cwd: projectDir,
+      stdio: "inherit",
+    });
+    if (!existsSync(join(projectDir, ".next"))) throw new Error(`next app wasn't build`);
+    if (!process.env.GITHUB_ACTION) {
+      execSync(`rm -rf e2e`, { cwd });
+      cleanup();
+    }
   });
-  execSync(`npx -y -p ${root} apphosting-adapter-nextjs-build`, {
-    cwd: projectDir,
-    stdio: "inherit",
-  });
-  if (!existsSync(join(projectDir, ".next"))) throw new Error(`next app wasn't build`);
-  if (!process.env.GITHUB_ACTION) {
-    execSync(`rm -rf e2e`, { cwd });
-    cleanup();
-  }
-});
+
+}
