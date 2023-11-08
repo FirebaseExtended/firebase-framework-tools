@@ -11,8 +11,8 @@ const lernaList= JSON.parse(execSync(`lerna list --json ${packageFromRef ? '' : 
 if (packageFromRef && !lernaList.find(it => it.name === packageFromRef)) throw `Lerna didn't find ${packageFromRef} in this workspace`;
 
 const wombatDressingRoomTokens = new Map([
-    ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
     // Disabling this until I can get wombat access to this org
+    // ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
     // ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
 ]);
 

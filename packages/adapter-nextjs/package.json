@@ -3,7 +3,10 @@
     "version": "14.0.0",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
-    "repository": "FirebaseExtended/firebase-framework-tools",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
+    },
     "bin": {
         "apphosting-adapter-nextjs-build": "dist/bin/build.js",
         "apphosting-adapter-nextjs-create": "dist/bin/create.js"
