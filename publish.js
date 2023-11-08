@@ -15,6 +15,10 @@ const authTokens = new Map([
     ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
 ]);
 
+authTokens.forEach((pkg, token) => {
+    writeFileSync('.npmrc', `//wombat-dressing-room.appspot.com/${pkg}/:_authToken=${token}\n`, { flag: 'a+' });
+});
+
 for (const lerna of lernaList) {
     if (lerna.private) continue;
     if (packageFromRef && packageFromRef !== lerna.name) continue;
@@ -31,8 +35,5 @@ for (const lerna of lernaList) {
         tag
     };
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
-    const authToken = authTokens.get(lerna.name);
-    if (!authToken) throw `Unable to find NPM token for ${lerna.name}`;
-    writeFileSync('.npmrc', `//wombat-dressing-room.appspot.com/${lerna.name}/_ns:_authToken=${authToken}\n`, { flag: 'a+' });
     execSync(`npm publish`, { cwd });
 }
