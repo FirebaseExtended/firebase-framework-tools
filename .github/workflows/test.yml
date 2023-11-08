@@ -20,7 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main  # TODO use GITHUB_REF
+          ref: github.base_ref
+        if: github.base_ref
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -61,9 +62,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main # TODO use GITHUB_REF
-      - name: Checkout
-        uses: actions/checkout@v4
+          ref: github.base_ref
+        if: github.base_ref
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Setup node
