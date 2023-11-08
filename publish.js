@@ -3,7 +3,7 @@ const { execSync } = require("child_process");
 const { writeFileSync, readFileSync } = require("fs");
 const { join, basename } = require("path");
 
-const [, packageFromRef, versionFromRef] = /^refs\/tags\/(.+)-v(\d*\.\d(\.\d)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
+const [, packageFromRef, versionFromRef] = /^refs\/tags\/(.+)-v(\d\d*\.\d\d*(\.\d\d*)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
