@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - monorepo
     paths-ignore:
       - "**/*.md"
   pull_request:
@@ -97,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Publish (NPM)
     needs: ['build', 'test']
-    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/monorepo' || github.event_name == 'release' }}
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
     permissions:
       id-token: write
     steps:
