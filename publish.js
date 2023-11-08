@@ -12,7 +12,8 @@ if (packageFromRef && !lernaList.find(it => it.name === packageFromRef)) throw `
 
 const wombatDressingRoomTokens = new Map([
     ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
-    ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
+    // Disabling this until I can get wombat access to this org
+    // ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
 ]);
 
 if (process.env.NPM_TOKEN) writeFileSync('.npmrc', `//registry.npmjs.org/:_authToken=${process.env.NPM_TOKEN}`, { flag: 'a+' });
