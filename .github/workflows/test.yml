@@ -24,16 +24,16 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 20
           check-latest: false
       - name: node_modules cache
         uses: actions/cache@v3
         id: node_modules_cache
         with:
           path: ./node_modules
-          key: ${{ runner.os }}-18-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-20-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-18-
+            ${{ runner.os }}-20-
       - name: Install deps
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
@@ -51,7 +51,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        node: [ "18", "20" ]
+        node: [ 18, 20 ]
       fail-fast: false
     name: Test Node ${{ matrix.node }}
     steps:
@@ -106,7 +106,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 20
           check-latest: false
           registry-url: 'https://registry.npmjs.org'
       - name: 'Download Artifacts'
