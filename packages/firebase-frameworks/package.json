@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "repository": "FirebaseExtended/firebase-framework-tools",
   "publishConfig": {
-    "registry": "https://wombat-dressing-room.appspot.com",
     "access": "public"
   },
   "author": {
