@@ -5,8 +5,10 @@ const { basename } = require("path");
 const [, packageFromRef, versionFromRef, , prerelease] =
   /^refs\/tags\/(.+)-v(\d\d*\.\d\d*(\.\d\d*)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
 
+const since = process.env.GITHUB_ACTION ? `--since ${process.env.GITHUB_BASE_REF || "HEAD^1"}` : "";
+
 const lernaList = JSON.parse(
-  execSync(`lerna list --json ${packageFromRef ? "" : "--since"}`, {
+  execSync(`lerna list --json ${packageFromRef ? "" : since}`, {
     stdio: ["ignore", "pipe", "ignore"],
   }).toString(),
 );
