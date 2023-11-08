@@ -21,7 +21,7 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-        "build": "rimraf dist && tsc && chmod +x ./dist/bin/*",
+        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
         "test": "node --loader ts-node/esm ./test.ts"
     },
     "exports": {
