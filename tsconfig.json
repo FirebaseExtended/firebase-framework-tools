@@ -8,5 +8,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "declaration": true,
+    "paths": {
+      "firebase-frameworks": ["./packages/firebase-frameworks"],
+      "@apphosting/adapter-nextjs": ["./packages/adapter-nextjs"]
+    }
   }
 }

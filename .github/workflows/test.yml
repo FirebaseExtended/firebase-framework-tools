@@ -22,8 +22,7 @@ jobs:
         with:
           ref: ${{ github.base_ref }}
         if: ${{ github.base_ref }}
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Setup node
