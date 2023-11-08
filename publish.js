@@ -11,8 +11,8 @@ const lernaList= JSON.parse(execSync(`lerna list --json ${packageFromRef ? '' : 
 if (packageFromRef && !lernaList.find(it => it.name === packageFromRef)) throw `Lerna didn't find ${packageFromRef} in this workspace`;
 
 if (process.env.GITHUB_ACTION) {
-    writeFileSync('~/.npmrc', `//wombat-dressing-room.appspot.com/firebase-frameworks/_ns:_authToken=:_authToken=${process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN}
-//wombat-dressing-room.appspot.com/@apphosting/adapter-nextjs/_ns:_authToken=:_authToken=${process.env.ADAPTER_NEXTJS_NPM_TOKEN}`);
+    writeFileSync('.npmrc', `//wombat-dressing-room.appspot.com/firebase-frameworks/_ns:_authToken=:_authToken=${process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN}
+//wombat-dressing-room.appspot.com/@apphosting/adapter-nextjs/_ns:_authToken=:_authToken=${process.env.ADAPTER_NEXTJS_NPM_TOKEN}`, { });
 }
 
 for (const lerna of lernaList) {
