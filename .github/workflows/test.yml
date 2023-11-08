@@ -106,8 +106,6 @@ jobs:
         with:
           node-version: '18'
           check-latest: false
-          registry-url: 'https://wombat-dressing-room.appspot.com'
-          # registry-url: 'https://registry.npmjs.org'
       - name: 'Download Artifacts'
         uses: actions/download-artifact@v3
       - name: Rsync Artifacts
@@ -117,5 +115,4 @@ jobs:
         env:
           ADAPTER_NEXTJS_NPM_TOKEN: ${{ secrets.ADAPTER_NEXTJS_NPM_TOKEN }}
           FIREBASE_FRAMEWORKS_NPM_TOKEN: ${{ secrets.FIREBASE_FRAMEWORKS_NPM_TOKEN }}
-          # NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           # NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_NPM_TOKEN }}

@@ -4,6 +4,10 @@
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": "FirebaseExtended/firebase-framework-tools",
+    "publishConfig": {
+        "registry": "https://wombat-dressing-room.appspot.com",
+        "access": "public"
+    },
     "bin": {
         "apphosting-adapter-nextjs-build": "dist/bin/build.js",
         "apphosting-adapter-nextjs-create": "dist/bin/create.js"

@@ -21,7 +21,7 @@ for (const lerna of lernaList) {
     const cwd = lerna.location;
     execSync(`npm --no-git-tag-version --allow-same-version -f version ${version}`, { cwd });
     const tag = packageFromRef ? (version.includes('-') ? 'next' : 'latest') : 'canary';
-    const NODE_AUTH_TOKEN = npmTokens.get(lerna.name);
-    if (!NODE_AUTH_TOKEN) throw `Could not find NPM token for ${lerna.name}`;
-    execSync(`npm publish --tag ${tag} --access public`, { cwd, env: { NODE_AUTH_TOKEN } });
+    const NPM_TOKEN = npmTokens.get(lerna.name);
+    if (GITHUB_ACTION && !NPM_TOKEN) throw `Could not find NPM token for ${lerna.name}`;
+    execSync(`npm publish --tag ${tag}`, { cwd, env: { NPM_TOKEN } });
 }
