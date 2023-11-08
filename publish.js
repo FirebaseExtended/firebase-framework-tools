@@ -3,7 +3,7 @@ const { execSync } = require("child_process");
 const { writeFileSync, readFileSync } = require("fs");
 const { join, basename } = require("path");
 
-const [, packageFromRef, versionFromRef] = /^refs\/tags\/(.+)-v(\d\d*\.\d\d*(\.\d\d*)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
+const [, packageFromRef, versionFromRef,, prerelease] = /^refs\/tags\/(.+)-v(\d\d*\.\d\d*(\.\d\d*)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
@@ -30,7 +30,7 @@ for (const lerna of lernaList) {
     }
     const version = versionFromRef || `${lerna.version}-canary.${shortSHA}`;
     const cwd = lerna.location;
-    const tag = versionFromRef ? (version.includes('-') ? 'next' : 'latest') : 'canary';
+    const tag = versionFromRef ? (prerelease ? 'next' : 'latest') : 'canary';
     const packageJsonPath = join(lerna.location, 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
     packageJson.version = version;
