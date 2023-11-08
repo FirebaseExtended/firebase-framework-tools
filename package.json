@@ -4,13 +4,15 @@
   "scripts": {
     "build": "lerna run build",
     "build:changed": "lerna run build --since",
-    "test": "lerna run test --verbose",
-    "test:changed": "learna run test --since"
+    "test": "lerna run test --verbose --no-bail",
+    "test:changed": "learna run test --since --no-bail",
+    "publish": "node --loader ts-node/esm ./publish.ts"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
-    "lerna": "^7.4.0"
+    "lerna": "^7.4.0",
+    "ts-node": "^10.9.1"
   }
 }
