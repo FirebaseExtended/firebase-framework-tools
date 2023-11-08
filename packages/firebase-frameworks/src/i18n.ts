@@ -1,12 +1,12 @@
 import type { Request } from "firebase-functions/v2/https";
 
 export function getPreferredLocale(req: Request, locales: string[], defaultLocale: string): string {
-  const country = req.headers["x-country-code"] || ""
+  const country = req.headers["x-country-code"] || "";
   const languages = languagesByPreference(req.headers["accept-language"]);
   const localesByHostingOOO: string[] = [];
   if (country) {
     for (const language of languages) {
-        localesByHostingOOO.push(`${language}_${country}`);
+      localesByHostingOOO.push(`${language}_${country}`);
     }
     localesByHostingOOO.push(`ALL_${country}`);
   }
@@ -14,10 +14,10 @@ export function getPreferredLocale(req: Request, locales: string[], defaultLocal
     localesByHostingOOO.push(`${language}_ALL`);
     localesByHostingOOO.push(`${language}`);
   }
-  return localesByHostingOOO.find(it => locales.includes(it)) || defaultLocale;
+  return localesByHostingOOO.find((it) => locales.includes(it)) || defaultLocale;
 }
 
-function languagesByPreference(acceptLanguage: string|undefined): string[] {
+function languagesByPreference(acceptLanguage: string | undefined): string[] {
   if (!acceptLanguage) {
     return [];
   }

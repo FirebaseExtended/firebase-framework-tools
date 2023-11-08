@@ -6,12 +6,21 @@
     "build:changed": "lerna run build --since",
     "test": "lerna run test --verbose --no-bail",
     "test:changed": "lerna run test --since --no-bail",
-    "publish": "./publish.js"
+    "publish": "./publish.js",
+    "lint": "eslint packages/*",
+    "lint:fix": "eslint packages/* --fix"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
-    "lerna": "^7.4.0"
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "eslint": "^8.53.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-jsdoc": "^46.8.2",
+    "eslint-plugin-prettier": "^5.0.1",
+    "lerna": "^7.4.0",
+    "prettier": "^3.0.3"
   }
 }
