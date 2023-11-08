@@ -81,9 +81,7 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v3
       - name: Rsync Artifacts
-        run: |
-          rsync -a artifact/ packages
-          find packages/*/dist/*
+        run: rsync -a artifact/ packages
       - name: Test
         run: npm run test:changed
 

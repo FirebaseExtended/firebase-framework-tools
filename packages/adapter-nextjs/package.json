@@ -5,7 +5,7 @@
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": "FirebaseExtended/firebase-framework-tools",
     "bin": {
-        "apphosting-adapter-nextjs": "dist/bin/cli.js",
+        "apphosting-adapter-nextjs-build": "dist/bin/build.js",
         "apphosting-adapter-nextjs-create": "dist/bin/create.js"
     },
     "author": {
@@ -19,7 +19,7 @@
     "sideEffects": false,
     "scripts": {
         "build": "rimraf dist && tsc && chmod +x ./dist/bin/*",
-        "test": "node --loader ts-node/esm ./src/test.ts"
+        "test": "node --loader ts-node/esm ./test.ts"
     },
     "exports": {
         ".": {
