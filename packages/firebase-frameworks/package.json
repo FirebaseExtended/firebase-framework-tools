@@ -3,10 +3,7 @@
   "version": "0.10.3",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "main": "dist/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/FirebaseExtended/firebase-framework-tools.git"
-  },
+  "repository": "FirebaseExtended/firebase-framework-tools",
   "author": {
     "name": "Firebase",
     "url": "https://firebase.google.com/"

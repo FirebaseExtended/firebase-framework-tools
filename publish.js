@@ -32,5 +32,5 @@ for (const lerna of lernaList) {
     packageJson.version = version;
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
     const registry = wombatDressingRoomTokens.get(lerna.name) ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns` : 'https://registry.npmjs.org';
-    execSync(`npm publish --registry ${registry} --access public --tag ${tag}`, { cwd });
+    execSync(`npm publish --registry ${registry} --access public --tag ${tag} --provenance`, { cwd });
 }
