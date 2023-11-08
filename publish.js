@@ -1,18 +1,11 @@
 #! /usr/bin/env node
-import { execSync } from "child_process"
-
-interface LearnaList {
-    name: string;
-    version: string;
-    private: boolean;
-    location: string;
-};
+const { execSync } = require("child_process");
 
 const [,packageToPublish,versionToPublish] = /^refs\/tags\/(.+)\@([^\@]+)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
-const lernaList: LearnaList[] = JSON.parse(execSync(`lerna list --json ${packageToPublish ? '' : '--since'}`).toString());
+const lernaList= JSON.parse(execSync(`lerna list --json ${packageToPublish ? '' : '--since'}`).toString());
 if (packageToPublish && !lernaList.find(it => it.name === packageToPublish)) throw `Lerna didn't find ${packageToPublish} in this workspace`;
 
 for (const lerna of lernaList) {
@@ -22,6 +15,6 @@ for (const lerna of lernaList) {
     const version = versionToPublish || `${lerna.version}-canary.${shortSHA}`;
     execSync(`npm --prefix ${lerna.location} --no-git-tag-version --allow-same-version -f version ${version}`);
     const tag = packageToPublish ? (version.includes('-') ? 'next' : 'latest') : 'canary';
-    execSync(`npm publish ${lerna.location} --tag ${tag}`);
+    console.log(`npm publish ${lerna.location} --tag ${tag}`);
     execSync(`npm --prefix ${lerna.location} --no-git-tag-version --allow-same-version -f version ${lerna.version}`);
 }
