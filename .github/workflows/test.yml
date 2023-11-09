@@ -112,8 +112,9 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+            fetch-depth: 2
       - name: Setup node
         uses: actions/setup-node@v3
         with:
