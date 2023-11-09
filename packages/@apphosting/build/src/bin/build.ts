@@ -16,29 +16,19 @@ program
         throw new Error("Discovery not implemented. Must provide an option to --framework <string>");
     }
     const npmModules = frameworkAliases.get(framework) || [framework];
-    // TODO sanitize the framework name pull the npm dep parser from firebase-tools
+    // TODO this search is naive, make it more robust, add types (zod?)
     const result = JSON.parse(spawnSync("npm", ["ls", ...npmModules, "--json"], { cwd }).stdout.toString());
     const packageName = npmModules.find(pkg => result.dependencies?.[pkg]);
     const version = packageName && semverParse(result.dependencies[packageName].version);
     if (!version) {
         throw new Error(`Couldn't find ${framework}.`);
     }
-    // TODO detirmine the appropriate fallback pattern
-    /*const versionStackRank = [
-        `~${version.major}.${version.minor}.0`,   // major.minor production match
-        `~${version.major}.${version.minor}.0-0`, // major.minor rc match
-        `^${version.major}.0.0 <${version.major}.${version.minor}.0`, // older production match
-        `^${version.major}.${version.minor + 1}.0`,   // newer production match
-    ];*/
     const adapterName = `@apphosting/adapter-${framework}`;
-    // TODO add types here, use @next for now
+    // TODO add types here (zod?), add a search pattern, just using @next for now
     let npmInfo = JSON.parse(spawnSync("npm", ["info", `${adapterName}@next`, "--json"]).stdout.toString());
-    // if (npmInfo.error) npmInfo = JSON.parse(spawnSync("npm", ["info", adapterName, "--json"]).stdout.toString());
     if (npmInfo.error) {
         throw new Error(npmInfo.error.detail)
     }
-    //npmInfo = [].concat(npmInfo);
-    //npmInfo = npmInfo.filter((it:any) => !it.version.includes('-canary.')).sort((a:any,b:any) => new Date(b.time[b.version]).getTime() - new Date(a.time[a.version]).getTime())[0];
     const adapterVersion = semverParse(npmInfo.version);
     if (!adapterVersion) throw new Error(`Unable to parse ${adapterVersion}`);
     // TODO actually write a reasonable error message here & use a generator function
