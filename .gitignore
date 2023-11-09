@@ -9,6 +9,8 @@ node_modules
 .vscode
 *.log
 .DS_Store
+/apphosting-*.tgz
+/firebase-frameworks-*.tgz
 
 # firebase
 .firebase

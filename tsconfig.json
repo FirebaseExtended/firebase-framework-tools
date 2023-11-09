@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
     "noEmit": true,
-    "target": "es2020",
+    "target": "ES2020",
     "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "types": ["node"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "declaration": true,
+    "skipLibCheck": true,
     "paths": {
       "firebase-frameworks": ["./packages/firebase-frameworks"],
       "@apphosting/adapter-nextjs": ["./packages/adapter-nextjs"]

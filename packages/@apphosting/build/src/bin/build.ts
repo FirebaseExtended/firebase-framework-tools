@@ -31,11 +31,14 @@ program
         `^${version.major}.${version.minor + 1}.0`,   // newer production match
     ].join(" || ");
     const adapterName = `@apphosting/adapter-${framework}`;
+    // TODO add types here
     let npmInfo = JSON.parse(spawnSync("npm", ["info", `${adapterName}@"${versionStackRank}"`, "--json"]).stdout.toString());
     if (npmInfo.error) npmInfo = JSON.parse(spawnSync("npm", ["info", adapterName, "--json"]).stdout.toString());
     if (npmInfo.error) {
         throw new Error(npmInfo.error.detail)
     }
+    npmInfo = [].concat(npmInfo);
+    npmInfo = npmInfo.filter((it:any) => !it.version.includes('-canary.')).sort((a:any,b:any) => new Date(b.time[b.version]).getTime() - new Date(a.time[a.version]).getTime())[0];
     const adapterVersion = semverParse(npmInfo.version);
     if (!adapterVersion) throw new Error(`Unable to parse ${adapterVersion}`);
     // TODO actually write a reasonable error message here & use a generator function
