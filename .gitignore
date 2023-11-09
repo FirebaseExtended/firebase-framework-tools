@@ -1,11 +1,16 @@
+/packages/**/*/dist/
+/examples/
+/dist
+
+# NPM
 node_modules
-/.vscode/
-/dist/
-/firebase-frameworks-*.tgz
+
+# misc
+.vscode
 *.log
 .DS_Store
-/examples/
-/e2e/
-/firebase-tools/
-firebase-tools-*.tgz
-/package/
+/apphosting-*.tgz
+/firebase-frameworks-*.tgz
+
+# firebase
+.firebase

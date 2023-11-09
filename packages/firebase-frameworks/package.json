@@ -1,0 +1,80 @@
+{
+  "name": "firebase-frameworks",
+  "version": "0.11.0",
+  "description": "Experimental addon to the Firebase CLI to add web framework support",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
+  },
+  "author": {
+    "name": "Firebase",
+    "url": "https://firebase.google.com/"
+  },
+  "bugs": {
+    "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
+  },
+  "type": "module",
+  "keywords": [
+    "firebase",
+    "firebase-tools",
+    "next.js",
+    "angular",
+    "nuxt",
+    "nuxt3",
+    "ssr",
+    "vite"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc"
+  },
+  "exports": {
+    ".": {
+      "node": "./dist/index.js",
+      "default": null
+    },
+    "./i18n": {
+      "node": "./dist/i18n.js",
+      "default": null
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^16.0.0 || ^18.0.0 || ^20.0.0"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@hapi/accept": "^6.0.1",
+    "cookie": "^0.5.0",
+    "lru-cache": "^7.14.0",
+    "tslib": "^2.3.1"
+  },
+  "peerDependencies": {
+    "firebase": "^9.9.0 || ^10.0.0",
+    "firebase-admin": "^11.0.1",
+    "sharp": "^0.32.1"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    },
+    "sharp": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@sveltejs/kit": "^1.0.1",
+    "@types/cookie": "^0.5.1",
+    "@types/lru-cache": "^7.6.1",
+    "@types/node": "^20.0.0",
+    "firebase": "^10.0.0",
+    "firebase-admin": "^11.0.1",
+    "firebase-functions": "^4.3.1",
+    "next": "~14.0.0",
+    "sharp": "^0.32.1",
+    "ts-node": "^10.9.1"
+  }
+}

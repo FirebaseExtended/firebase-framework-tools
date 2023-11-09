@@ -1,21 +1,18 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "target": "es2020",
+    "noEmit": true,
+    "target": "ES2020",
     "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "types": ["node"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "declaration": true,
-    "skipLibCheck": true
-  },
-  "include": [
-    "src/index.ts",
-    "src/i18n.ts",
-    "src/firebase-aware.ts",
-    "src/*/index.ts",
-    "src/*/firebase-aware.ts",
-    "types/*.d.ts"
-  ]
+    "skipLibCheck": true,
+    "paths": {
+      "firebase-frameworks": ["./packages/firebase-frameworks"],
+      "@apphosting/adapter-nextjs": ["./packages/adapter-nextjs"]
+    }
+  }
 }

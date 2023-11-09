@@ -13,7 +13,7 @@ module.exports = {
   ],
   rules: {
     "jsdoc/newline-after-description": "off",
-    "jsdoc/require-jsdoc": ["warn", { publicOnly: true }],
+    "jsdoc/require-jsdoc": "off",
     "no-restricted-globals": ["error", "name", "length"],
     "prefer-arrow-callback": "error",
     "prettier/prettier": "error",
@@ -116,19 +116,7 @@ module.exports = {
     },
   },
   parser: "@typescript-eslint/parser",
-  // dynamicImport.js is skipped in the tsbuild, we inject it manually since we
-  // don't want Typescript to turn the imports into requires. Ignoring as eslint
-  // is complaining it doesn't belong to a project.
-  // TODO(jamesdaniels): add this to overrides instead
   ignorePatterns: [
-    "src/dynamicImport.js",
-    "scripts/webframeworks-deploy-tests/nextjs/**",
-    "scripts/webframeworks-deploy-tests/angular/**",
-    "scripts/frameworks-tests/vite-project/**",
-    "/src/frameworks/docs/**",
-    // This file is taking a very long time to lint, 2-4m
-    "src/emulator/auth/schema.ts",
-    // TODO(hsubox76): Set up a job to run eslint separately on vscode dir
-    "firebase-vscode/",
+
   ],
 };
