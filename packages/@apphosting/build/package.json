@@ -8,7 +8,7 @@
         "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
     },
     "bin": {
-        "@apphosting/build": "dist/bin/build.js"
+        "build": "dist/bin/build.js"
     },
     "author": {
         "name": "Firebase",
