@@ -24,21 +24,21 @@ program
         throw new Error(`Couldn't find ${framework}.`);
     }
     // TODO detirmine the appropriate fallback pattern
-    const versionStackRank = [
+    /*const versionStackRank = [
         `~${version.major}.${version.minor}.0`,   // major.minor production match
         `~${version.major}.${version.minor}.0-0`, // major.minor rc match
         `^${version.major}.0.0 <${version.major}.${version.minor}.0`, // older production match
         `^${version.major}.${version.minor + 1}.0`,   // newer production match
-    ].join(" || ");
+    ];*/
     const adapterName = `@apphosting/adapter-${framework}`;
-    // TODO add types here
-    let npmInfo = JSON.parse(spawnSync("npm", ["info", `${adapterName}@"${versionStackRank}"`, "--json"]).stdout.toString());
-    if (npmInfo.error) npmInfo = JSON.parse(spawnSync("npm", ["info", adapterName, "--json"]).stdout.toString());
+    // TODO add types here, use @next for now
+    let npmInfo = JSON.parse(spawnSync("npm", ["info", `${adapterName}@next`, "--json"]).stdout.toString());
+    // if (npmInfo.error) npmInfo = JSON.parse(spawnSync("npm", ["info", adapterName, "--json"]).stdout.toString());
     if (npmInfo.error) {
         throw new Error(npmInfo.error.detail)
     }
-    npmInfo = [].concat(npmInfo);
-    npmInfo = npmInfo.filter((it:any) => !it.version.includes('-canary.')).sort((a:any,b:any) => new Date(b.time[b.version]).getTime() - new Date(a.time[a.version]).getTime())[0];
+    //npmInfo = [].concat(npmInfo);
+    //npmInfo = npmInfo.filter((it:any) => !it.version.includes('-canary.')).sort((a:any,b:any) => new Date(b.time[b.version]).getTime() - new Date(a.time[a.version]).getTime())[0];
     const adapterVersion = semverParse(npmInfo.version);
     if (!adapterVersion) throw new Error(`Unable to parse ${adapterVersion}`);
     // TODO actually write a reasonable error message here & use a generator function
