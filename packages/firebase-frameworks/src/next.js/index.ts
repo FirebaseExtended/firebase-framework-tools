@@ -1,6 +1,7 @@
 import { parse } from "url";
 import next from "next";
 import LRU from "lru-cache";
+import { Readable } from "stream";
 
 import type { Request } from "firebase-functions/v2/https";
 import type { Response } from "express";
@@ -37,5 +38,51 @@ export const handle = async (req: Request, res: Response) => {
   }
   await nextApp!.prepare();
   const parsedUrl = parse(url, true);
-  nextApp!.getRequestHandler()(req, res, parsedUrl);
+  // Next.js needs to consume the body from the readable stream of the
+  // incoming request. However, this is not possible in Cloud Functions
+  // because the request was already read and the payload stored in the
+  // `body` property. As a workaround we can proxy all the relevant Readable
+  // methods to a Readable instance of the rawBody instead.
+  if (req.rawBody instanceof Buffer) {
+    const rawBodyReadable = Readable.from(req.rawBody);
+    const reqProxy = new Proxy(req, {
+        get(target, prop) {
+          if (
+            prop === "read" ||
+            prop === "write" ||
+            prop === "pipe" ||
+            prop === "on" ||
+            prop === "closed" ||
+            prop === "setHeader" ||
+            prop === "writable" ||
+            prop === "req" ||
+            prop === "destroy" ||
+            prop === "destroyed" ||
+            prop === "push" ||
+            prop === "emit" ||
+            prop === "domain" ||
+            prop === "writableErrored" ||
+            prop === "readableErrored" ||
+            prop === "_read" ||
+            prop === "_events" ||
+            prop === "_eventsCount" ||
+            prop === "_readableState" ||
+            prop === "_readableState" ||
+            prop === "_writableState" ||
+            prop === "_destroy" ||
+            prop === Symbol.asyncIterator ||
+            prop === Symbol.asyncDispose ||
+            (typeof prop === "symbol" &&
+              prop.toString() === "Symbol(nodejs.stream.writable)")
+          ) {
+            return Reflect.get(rawBodyReadable, prop);
+          } else {
+            return Reflect.get(target, prop);
+          }
+        },
+    });
+    nextApp!.getRequestHandler()(reqProxy, res, parsedUrl);
+  } else {
+    nextApp!.getRequestHandler()(req, res, parsedUrl);
+  }
 };
