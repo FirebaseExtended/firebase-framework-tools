@@ -12,6 +12,8 @@
     "packages/**/*"
   ],
   "devDependencies": {
+    "yaml": "^2.3.4",
+    "@types/mocha": "^10.0.4",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "eslint": "^8.53.0",
     "eslint-config-google": "^0.14.0",
@@ -19,7 +21,12 @@
     "eslint-plugin-jsdoc": "^46.8.2",
     "eslint-plugin-prettier": "^5.0.1",
     "lerna": "^7.4.0",
+    "mocha": "^10.2.0",
     "prettier": "^3.0.3",
-    "typescript": "^5.2.0"
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.2.0",
+    "colorette": "^2.0.20",
+    "commander": "^11.1.0",
+    "@types/commander": "^2.12.2"
   }
 }
