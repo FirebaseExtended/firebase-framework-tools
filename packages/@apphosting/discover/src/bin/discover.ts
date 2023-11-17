@@ -5,8 +5,13 @@ import YarnLockfile from '@yarnpkg/lockfile';
 import { parse as parseYaml } from "yaml";
 import { performance } from "node:perf_hooks";
 
-const FRAMEWORK_DEFINITIONS = [
-  ["nodejs", [
+const PLATFORMS = [
+  ['nodejs', [
+    // TODO support npm-shrinkwrap.json
+    ['npm', ['package-lock.json']],
+    ['yarn', ['yarn.lock']],
+    ['pnpm', ['pnpm-lock.yaml']],
+  ], [
     ["nextjs", { requiredPackages: ["next"], requiredFiles: [], bundles: ["react"] }],
     ["angular", { requiredPackages: ["@angular/core"], requiredFiles: ["angular.json"], bundles: ["vite"] }],
     // TODO support the other file extensions
@@ -19,15 +24,6 @@ const FRAMEWORK_DEFINITIONS = [
     ["react", { requiredPackages: ["react", "react-dom"], requiredFiles: [], bundles: []}],
     ["svelte", { requiredPackages: ["svelte"], requiredFiles: [], bundles: [] }],
     ["sveltekit", { requiredPackages: ["@sveltejs/kit"], requiredFiles: [], bundles: ["svelte", "vite"] }]
-  ]]
-] as const;
-
-// TODO support npm-shrinkwrap.json
-const PACKAGE_MANAGER_LOCKFILES = [
-  ['nodejs', [
-    ['npm', ['package-lock.json']],
-    ['yarn', ['yarn.lock']],
-    ['pnpm', ['pnpm-lock.yaml']],
   ]]
 ] as const;
 
@@ -66,8 +62,7 @@ program
 
     const discoveredFrameworks: Array<{ framework: string, version: string, packageManager: string, platform: string, bundledWith?: string[] }> = [];
 
-    await Promise.all(PACKAGE_MANAGER_LOCKFILES.map(async ([platform, packageManagerLockfiles]) => {
-      const frameworkDefinitions = FRAMEWORK_DEFINITIONS.find(([it]) => it === platform)?.[1] || [];
+    await Promise.all(PLATFORMS.map(async ([platform, packageManagerLockfiles, frameworkDefinitions]) => {
       await Promise.all(packageManagerLockfiles.map(async ([packageManager, possibleLockfiles]) => {
         const possibleLockfilesExist = await Promise.all(possibleLockfiles.map(it => pathExists(join(path, it))));
         const [lockfile] = possibleLockfilesExist.map((exists, index) => exists ? possibleLockfiles[index] : undefined).filter(it => !!it);
@@ -111,7 +106,7 @@ program
     }));
 
     for (const { framework, platform } of discoveredFrameworks) {
-      const definition = FRAMEWORK_DEFINITIONS.find(([id]) => id === platform)![1].find(([id]) => id === framework)![1];
+      const definition = PLATFORMS.find(([id]) => id === platform)![2].find(([id]) => id === framework)![1];
       for (const frameworkToBundle of definition.bundles) {
         const discovery = discoveredFrameworks.find(({framework}) => framework === frameworkToBundle);
         if (discovery) {
