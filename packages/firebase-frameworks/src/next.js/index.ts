@@ -1,12 +1,10 @@
 import { parse } from "url";
-import next from "next";
+import createNextServer from "next";
 import LRU from "lru-cache";
 
 import type { Request } from "firebase-functions/v2/https";
 import type { Response } from "express";
 import type { NextServer } from "next/dist/server/next.js";
-
-const createServer = next.default;
 
 const nextAppsLRU = new LRU<string, NextServer>({
   // TODO tune this
@@ -27,7 +25,9 @@ export const handle = async (req: Request, res: Response) => {
   // dynamic for middleware.
   let nextApp = nextAppsLRU.get(key);
   if (!nextApp) {
-    nextApp = createServer({
+    // @ts-expect-error - Next.js doesn't export the custom server function with proper types
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    nextApp = createNextServer({
       dev: false,
       dir: process.cwd(),
       hostname: "0.0.0.0",
