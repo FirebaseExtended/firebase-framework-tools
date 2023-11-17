@@ -6,24 +6,25 @@ import { parse as parseYaml } from "yaml";
 import { performance } from "node:perf_hooks";
 
 const PLATFORMS = [
+  // [id, packageManagers[], frameworks[]]
   ['nodejs', [
-    // TODO support npm-shrinkwrap.json
-    ['npm', ['package-lock.json']],
+    // [id, lockfiles[]]
+    ['npm', ['package-lock.json', 'npm-shrinkwrap.json']],
     ['yarn', ['yarn.lock']],
     ['pnpm', ['pnpm-lock.yaml']],
   ], [
-    ["nextjs", { requiredPackages: ["next"], requiredFiles: [], bundles: ["react"] }],
-    ["angular", { requiredPackages: ["@angular/core"], requiredFiles: ["angular.json"], bundles: ["vite"] }],
-    // TODO support the other file extensions
-    ["astro", { requiredPackages: ["astro"], requiredFiles: ["astro.config.js", "astro.config.mjs"], bundles: ["lit", "react", "preact", "svelte", "vue", "vite"] }],
-    ["nuxt", { requiredPackages: ["nuxt"], requiredFiles: ["nuxt.config.js"], bundles: ["vue"] }],
-    ["lit", { requiredPackages: ["lit", "lit-element"], requiredFiles: [], bundles: []}],
-    ["vue",  { requiredPackages: ["vue"], requiredFiles: [], bundles: [] }],
-    ["vite", { requiredPackages: ["vite"], requiredFiles: [], bundles: ["vue", "react", "preact", "lit", "svelte"] }],
-    ["preact", { requiredPackages: ["preact"], requiredFiles: [], bundles: [] }],
-    ["react", { requiredPackages: ["react", "react-dom"], requiredFiles: [], bundles: []}],
-    ["svelte", { requiredPackages: ["svelte"], requiredFiles: [], bundles: [] }],
-    ["sveltekit", { requiredPackages: ["@sveltejs/kit"], requiredFiles: [], bundles: ["svelte", "vite"] }]
+    // [id, deps[], files[], bundles[]]
+    ["nextjs", ["next"], [], ["react"]],
+    ["angular", ["@angular/core"], ["angular.json"], ["vite"]],
+    ["astro", ["astro"], ["astro.config.js", "astro.config.mjs", "astro.config.cjs", "astro.config.ts"], ["lit", "react", "preact", "svelte", "vue", "vite"]],
+    ["nuxt", ["nuxt"], ["nuxt.config.js"], ["vue"]],
+    ["lit", ["lit", "lit-element"], [], []],
+    ["vue",  ["vue"], [], []],
+    ["vite", ["vite"], [], ["vue", "react", "preact", "lit", "svelte"]],
+    ["preact", ["preact"], [], []],
+    ["react", ["react", "react-dom"], [], []],
+    ["svelte", ["svelte"], [], []],
+    ["sveltekit", ["@sveltejs/kit"], [], ["svelte", "vite"]]
   ]]
 ] as const;
 
@@ -66,7 +67,8 @@ program
       await Promise.all(packageManagerLockfiles.map(async ([packageManager, possibleLockfiles]) => {
         const possibleLockfilesExist = await Promise.all(possibleLockfiles.map(it => pathExists(join(path, it))));
         const [lockfile] = possibleLockfilesExist.map((exists, index) => exists ? possibleLockfiles[index] : undefined).filter(it => !!it);
-        if (!lockfile) return;
+
+        // TODO support npm-shrinkwrap.json
         let packages = new Map<string,string>();
         if (lockfile === "package-lock.json") {
           const packageJSON = await readJson(join(path, lockfile));
@@ -94,7 +96,7 @@ program
           }));
         }
   
-        for (const [framework, { requiredPackages, requiredFiles=[] }] of frameworkDefinitions) {
+        for (const [framework, requiredPackages, requiredFiles=[] ] of frameworkDefinitions) {
           const requiredPackagePresent = requiredPackages.some(it => packages.has(it));
           if (!requiredPackagePresent) continue;
           const requiredFileExist = requiredFiles.length === 0 || (await Promise.all(requiredFiles.map(it => pathExists(join(path, it))))).some(it => it);
@@ -106,9 +108,10 @@ program
     }));
 
     for (const { framework, platform } of discoveredFrameworks) {
-      const definition = PLATFORMS.find(([id]) => id === platform)![2].find(([id]) => id === framework)![1];
-      for (const frameworkToBundle of definition.bundles) {
-        const discovery = discoveredFrameworks.find(({framework}) => framework === frameworkToBundle);
+      const [,,defitions] = PLATFORMS.find(([id]) => id === platform) || [,,[]];
+      const [,,,bundles] = defitions.find(([id]) => id === framework) || [,,,[]];
+      for (const bundle of bundles) {
+        const discovery = discoveredFrameworks.find(({framework}) => framework === bundle);
         if (discovery) {
           discovery.bundledWith ||= [];
           discovery.bundledWith.push(framework);
