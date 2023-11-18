@@ -4,12 +4,13 @@ import fsExtra from "fs-extra";
 import YarnLockfile from '@yarnpkg/lockfile';
 import { parse as parseYaml } from "yaml";
 import { performance } from "node:perf_hooks";
+import * as toml from "toml";
 
-const PLATFORMS = [
-  // [id, packageManagers[], frameworks[]]
-  ['nodejs', [
+export const PLATFORMS = [
+  // [id, files[], defaultPackageManger, packageManagers[], frameworks[]]
+  ['nodejs', ['package.json'], 'npm', [
     // [id, lockfiles[]]
-    ['npm', ['package-lock.json', 'npm-shrinkwrap.json']],
+    ['npm', ['npm-shrinkwrap.json', 'package-lock.json']],
     ['yarn', ['yarn.lock']],
     ['pnpm', ['pnpm-lock.yaml']],
   ], [
@@ -25,8 +26,26 @@ const PLATFORMS = [
     ["react", ["react", "react-dom"], [], []],
     ["svelte", ["svelte"], [], []],
     ["sveltekit", ["@sveltejs/kit"], [], ["svelte", "vite"]]
+  ]],
+  ['python', [], 'pip', [
+    // [id, lockfiles[]]
+    ['pip', []],
+    ['pipenv', ["Pipfile.lock"]],
+    ['poetry', ['poetry.lock']]
+  ], [
+    // [id, deps[], files[], bundles[]]
+    ["flask", ["flask"], [], []],
+    ["django", ["django"], [], []],
   ]]
 ] as const;
+
+type DiscoveredFramework = {
+  framework: typeof PLATFORMS[number][4][number][0],
+  version: string,
+  packageManager: typeof PLATFORMS[number][3][number][0],
+  platform: typeof PLATFORMS[number][0],
+  bundledWith?: Array<typeof PLATFORMS[number][4][number][0]>
+};
 
 program
   .option('--github-token <string>')
@@ -61,55 +80,91 @@ program
       },
     } : fsExtra;
 
-    const discoveredFrameworks: Array<{ framework: string, version: string, packageManager: string, platform: string, bundledWith?: string[] }> = [];
+    const discoveredFrameworks: Array<DiscoveredFramework> = [];
 
-    await Promise.all(PLATFORMS.map(async ([platform, packageManagerLockfiles, frameworkDefinitions]) => {
-      await Promise.all(packageManagerLockfiles.map(async ([packageManager, possibleLockfiles]) => {
-        const possibleLockfilesExist = await Promise.all(possibleLockfiles.map(it => pathExists(join(path, it))));
-        const [lockfile] = possibleLockfilesExist.map((exists, index) => exists ? possibleLockfiles[index] : undefined).filter(it => !!it);
+    await Promise.all(PLATFORMS.map(async ([platform, files, defaultPackageManager, packageManagers, frameworkDefinitions]) => {
+      const filesExist = await Promise.all(files.map(it => pathExists(join(path, it))));
+      if (files.length && !filesExist.some(it => it)) return;
+      const discoverFrameworks = (fallback=false) => {
+        return async ([packageManager, possibleLockfiles]: typeof packageManagers[number]) => {
+          const possibleLockfilesExist = await Promise.all(possibleLockfiles.map(it => pathExists(join(path, it))));
+          const [lockfile] = possibleLockfilesExist.map((exists, index) => exists ? possibleLockfiles[index] : undefined).filter(it => !!it);
+          if (!lockfile && !fallback) return false;
 
-        // TODO support npm-shrinkwrap.json
-        let packages = new Map<string,string>();
-        if (lockfile === "package-lock.json") {
-          const packageJSON = await readJson(join(path, lockfile));
-          packages = new Map(Object.keys(packageJSON.packages).map(pkg => {
-            const name = pkg.replace(/^node_modules\//, "");
-            const version: string = packageJSON.packages[pkg].version;
-            return [name, version];
-          }));
-        } else if (lockfile === "yarn.lock") {
-          const file = await readFile(join(path, lockfile));
-          const yarnLock = YarnLockfile.parse(file.toString());
-          if (yarnLock.type !== "success") throw new Error(`unable to read ${lockfile}`);
-          packages = new Map(Object.keys(yarnLock.object).map(pkg => {
-            const parts = pkg.split("@");
-            const version = parts.pop()!;
-            return [parts.join("@"), version];
-          }));
-        } else if (lockfile === "pnpm-lock.yaml") {
-          const file = await readFile(join(path, lockfile));
-          const pnpmLock = parseYaml(file.toString());
-          packages = new Map(Object.keys(pnpmLock.packages).map(pkg => {
-            const parts = pkg.replace(/^\//, "").split("(")[0].split("@");
-            const version = parts.pop()!;
-            return [parts.join("@"), version];
-          }));
+          let packages = new Map<string,string>();
+          if (platform === "nodejs") {
+            // TODO support npm-shrinkwrap.json
+            // TODO handle workspaces
+            if (lockfile === "package-lock.json" || lockfile === "npm-shrinkwrap.json") {
+              const packageJSON = await readJson(join(path, lockfile));
+              packages = new Map(Object.keys(packageJSON.packages).map(pkg => {
+                const name = pkg.replace(/^node_modules\//, "");
+                const version: string = packageJSON.packages[pkg].version;
+                return [name, version];
+              }));
+            } else if (lockfile === "yarn.lock") {
+              const file = await readFile(join(path, lockfile));
+              const yarnLock = YarnLockfile.parse(file.toString());
+              if (yarnLock.type !== "success") throw new Error(`unable to read ${lockfile}`);
+              packages = new Map(Object.keys(yarnLock.object).map(pkg => {
+                const parts = pkg.split("@");
+                const version = parts.pop()!;
+                return [parts.join("@"), version];
+              }));
+            } else if (lockfile === "pnpm-lock.yaml") {
+              const file = await readFile(join(path, lockfile));
+              const pnpmLock = parseYaml(file.toString());
+              packages = new Map(Object.keys(pnpmLock.packages).map(pkg => {
+                const parts = pkg.replace(/^\//, "").split("(")[0].split("@");
+                const version = parts.pop()!;
+                return [parts.join("@"), version];
+              }));
+            }
+          } else if (platform === "python") {
+            if (packageManager === "pip") {
+              const requirementsFile = "requirements.txt";
+              const requirementsFileExists = await pathExists(join(path, requirementsFile));
+              if (!requirementsFileExists) return false;
+              const file = await readFile(join(path, requirementsFile));
+              packages = new Map(file.toString().split("\n").map(it => {
+                return [it.trim().replace("-", "_").toLowerCase(), "*"];
+              }));
+            } else if (lockfile === "Pipfile.lock") {
+              const pipfileLock = await readJson(join(path, lockfile));
+              // TODO include develop too?
+              packages = new Map(Object.keys(pipfileLock.default).map(name => {
+                // TODO convert to Node semver?
+                const version = pipfileLock.default[name].version.split('==')[1];
+                return [name, version];
+              }));
+            } else if (lockfile === "poetry.lock") {
+              const poetryLock = await readFile(join(path, lockfile));
+              packages = new Map(toml.parse(poetryLock.toString()).package?.map((it: any) => [it.name, it.version]));
+            }
+          }
+
+          for (const [framework, requiredPackages, requiredFiles=[] ] of frameworkDefinitions) {
+            const requiredPackagePresent = requiredPackages.some(it => packages.has(it));
+            if (!requiredPackagePresent) continue;
+            const requiredFileExist = requiredFiles.length === 0 || (await Promise.all(requiredFiles.map(it => pathExists(join(path, it))))).some(it => it);
+            if (!requiredFileExist) continue;
+            const [packageName] = requiredPackages;
+            if (packageName) discoveredFrameworks.push({framework, version: packages.get(packageName)!, packageManager, platform });
+          };
+
+          return !!lockfile;
         }
-  
-        for (const [framework, requiredPackages, requiredFiles=[] ] of frameworkDefinitions) {
-          const requiredPackagePresent = requiredPackages.some(it => packages.has(it));
-          if (!requiredPackagePresent) continue;
-          const requiredFileExist = requiredFiles.length === 0 || (await Promise.all(requiredFiles.map(it => pathExists(join(path, it))))).some(it => it);
-          if (!requiredFileExist) continue;
-          const [packageName] = requiredPackages;
-          if (packageName) discoveredFrameworks.push({framework, version: packages.get(packageName)!, packageManager, platform });
-        };
-      }));
+      };
+      const packageManagerResults = await Promise.all(packageManagers.map(discoverFrameworks(false)));
+      if (!packageManagerResults.some(it => it)) {
+        const fallback = packageManagers.find(([id]) => id === defaultPackageManager);
+        if (fallback) await discoverFrameworks(true)(fallback);
+      }
     }));
 
     for (const { framework, platform } of discoveredFrameworks) {
-      const [,,defitions] = PLATFORMS.find(([id]) => id === platform) || [,,[]];
-      const [,,,bundles] = defitions.find(([id]) => id === framework) || [,,,[]];
+      const [,,,,defitions] = PLATFORMS.find(([id]) => id === platform)!;
+      const [,,,bundles] = defitions.find(([id]) => id === framework)!;
       for (const bundle of bundles) {
         const discovery = discoveredFrameworks.find(({framework}) => framework === bundle);
         if (discovery) {

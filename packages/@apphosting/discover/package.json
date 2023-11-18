@@ -39,7 +39,8 @@
         "commander": "*",
         "fs-extra": "*",
         "npm-pick-manifest": "^9.0.0",
-        "ts-node": "*"
+        "ts-node": "*",
+        "toml": "^3.0.0"
     },
     "devDependencies": {
         "@types/commander": "*",
