@@ -57,7 +57,7 @@ const generateBundleYaml = async () => {
         runCommand: `node ${serverFilePath}`,
         neededDirs: [appHostingOutputDirectory],
         staticAssets: [appHostingStaticDirectory, appHostingPublicDirectory],
-    }))
+    }));
 }
 
 // move the standalone directory, the static directory and the public directory to apphosting output directory
