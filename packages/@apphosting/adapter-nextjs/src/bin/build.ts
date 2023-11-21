@@ -37,7 +37,7 @@ function build(cwd: string) {
     spawnSync("npm run", ["build"], {cwd, shell: true, stdio: "inherit"}); 
   }
 
-// move public directory to the public directory in apphosting output directory
+// move public directory to apphosting output public directory
 const movePublicDirectory = async () => {
     const publicDirectoryExists = await exists(appHostingPublicDirectory);
     if (!publicDirectoryExists) return;
