@@ -34,7 +34,7 @@ await mkdirp(appHostingStaticDirectory);
 
 // Run build command
 function build(cwd: string) {
-    spawnSync("npm run", ["build"], {cwd, shell: true, stdio: "inherit"}); 
+    spawnSync("npm", ["run", "build"], {cwd, shell: true, stdio: "inherit"}); 
   }
 
 // move public directory to apphosting output public directory
