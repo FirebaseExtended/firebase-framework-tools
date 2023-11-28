@@ -2,7 +2,7 @@
 import { spawnSync } from "child_process";
 import { loadConfig, readRoutesManifest } from "../utils.js";
 
-import { join } from "path";
+import { join, relative } from "path";
 import fsExtra from "fs-extra";
 import { stringify as yamlStringify } from "yaml";
 
@@ -21,8 +21,8 @@ const {distDir} = await loadConfig(cwd);
 const manifest = await readRoutesManifest(join(cwd, distDir));
 
 const appHostingOutputDirectory = join(cwd, ".apphosting");
-const appHostingStaticDirectory = join(appHostingOutputDirectory,"_next", "static");
 const appHostingPublicDirectory = join(appHostingOutputDirectory, "public");
+const nextStaticAssetsDestination = join(appHostingPublicDirectory, manifest.basePath, "_next", "static");
 const outputBundlePath = join(appHostingOutputDirectory, "bundle.yaml");
 const serverFilePath = join(appHostingOutputDirectory, "server.js");
 
@@ -30,18 +30,19 @@ const standaloneDirectory = join(cwd, distDir, "standalone");
 const staticDirectory = join(cwd, distDir, "static");
 const publicDirectory = join(cwd, "public");
 
-await mkdirp(appHostingStaticDirectory);
+await mkdirp(nextStaticAssetsDestination);
 
 // Run build command
 function build(cwd: string) {
     spawnSync("npm", ["run", "build"], {cwd, shell: true, stdio: "inherit"}); 
-  }
+}
 
 // move public directory to apphosting output public directory
 const movePublicDirectory = async () => {
-    const publicDirectoryExists = await exists(appHostingPublicDirectory);
+    const publicDirectoryExists = await exists(publicDirectory);
     if (!publicDirectoryExists) return;
-    await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
+    await move(publicDirectory, join(appHostingPublicDirectory, manifest.basePath), { overwrite: true });
+    await move(staticDirectory, nextStaticAssetsDestination, { overwrite: true })
 };
   
 // generate bundle.yaml
@@ -54,17 +55,16 @@ const generateBundleYaml = async () => {
         headers, 
         redirects, 
         rewrites,
-        runCommand: `node ${serverFilePath}`,
-        neededDirs: [appHostingOutputDirectory],
-        staticAssets: [appHostingStaticDirectory, appHostingPublicDirectory],
+        runCommand: `node ${relative(appHostingOutputDirectory, serverFilePath)}`,
+        neededDirs: ["."],
+        staticAssets: [relative(appHostingOutputDirectory, appHostingPublicDirectory)],
     }));
 }
 
 // move the standalone directory, the static directory and the public directory to apphosting output directory
 // as well as generating bundle.yaml
+await move(standaloneDirectory, appHostingOutputDirectory, { overwrite: true });
 await Promise.all([
-    move(standaloneDirectory, appHostingOutputDirectory, { overwrite: true }), 
-    move(staticDirectory, appHostingStaticDirectory, { overwrite: true }), 
     movePublicDirectory(),
     generateBundleYaml(),
 ]);
