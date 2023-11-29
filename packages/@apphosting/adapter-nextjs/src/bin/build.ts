@@ -17,20 +17,18 @@ process.env.NEXT_TELEMETRY_DISABLED = "1";
 
 build(cwd);
 
-const {distDir} = await loadConfig(cwd);
+const { distDir } = await loadConfig(cwd);
 const manifest = await readRoutesManifest(join(cwd, distDir));
 
 const appHostingOutputDirectory = join(cwd, ".apphosting");
+const appHostingStaticDirectory = join(appHostingOutputDirectory, ".next", "static");
 const appHostingPublicDirectory = join(appHostingOutputDirectory, "public");
-const nextStaticAssetsDestination = join(appHostingPublicDirectory, manifest.basePath, "_next", "static");
 const outputBundlePath = join(appHostingOutputDirectory, "bundle.yaml");
 const serverFilePath = join(appHostingOutputDirectory, "server.js");
 
 const standaloneDirectory = join(cwd, distDir, "standalone");
 const staticDirectory = join(cwd, distDir, "static");
 const publicDirectory = join(cwd, "public");
-
-await mkdirp(nextStaticAssetsDestination);
 
 // Run build command
 function build(cwd: string) {
@@ -41,8 +39,7 @@ function build(cwd: string) {
 const movePublicDirectory = async () => {
     const publicDirectoryExists = await exists(publicDirectory);
     if (!publicDirectoryExists) return;
-    await move(publicDirectory, join(appHostingPublicDirectory, manifest.basePath), { overwrite: true });
-    await move(staticDirectory, nextStaticAssetsDestination, { overwrite: true })
+    await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
 };
   
 // generate bundle.yaml
@@ -65,6 +62,7 @@ const generateBundleYaml = async () => {
 // as well as generating bundle.yaml
 await move(standaloneDirectory, appHostingOutputDirectory, { overwrite: true });
 await Promise.all([
+    await move(staticDirectory, appHostingStaticDirectory, { overwrite: true }),
     movePublicDirectory(),
     generateBundleYaml(),
 ]);
