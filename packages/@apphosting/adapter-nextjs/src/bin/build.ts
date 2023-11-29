@@ -2,18 +2,18 @@
 import { spawnSync } from "child_process";
 import { loadConfig, readRoutesManifest } from "../utils.js";
 
-import { join, relative, dirname, normalize } from "path";
+import { join, relative, normalize } from "path";
 import fsExtra from "fs-extra";
 import { stringify as yamlStringify } from "yaml";
 
 // unable to use shorthand imports on fsExtra since fsExtra is CJS
-const { move, exists, writeFile, mkdirp } = fsExtra;
+const { move, exists, writeFile } = fsExtra;
 const cwd = process.cwd();
 
 // Set standalone mode
-process.env.NEXT_PRIVATE_STANDALONE = "true"; 
+process.env.NEXT_PRIVATE_STANDALONE = "true";
 // Opt-out sending telemetry to Vercel
-process.env.NEXT_TELEMETRY_DISABLED = "1"; 
+process.env.NEXT_TELEMETRY_DISABLED = "1";
 
 build(cwd);
 
@@ -32,7 +32,7 @@ const publicDirectory = join(cwd, "public");
 
 // Run build command
 function build(cwd: string) {
-    spawnSync("npm", ["run", "build"], {cwd, shell: true, stdio: "inherit"}); 
+    spawnSync("npm", ["run", "build"], {cwd, shell: true, stdio: "inherit"});
 }
 
 // move public directory to apphosting output public directory
@@ -41,21 +41,20 @@ const movePublicDirectory = async () => {
     if (!publicDirectoryExists) return;
     await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
 };
-  
+
 // generate bundle.yaml
 const generateBundleYaml = async () => {
     const headers = manifest.headers.map(it => ({...it, regex: undefined}));
     const redirects = manifest.redirects.filter(it => !it.internal).map(it => ({...it, regex: undefined}));
     const beforeFileRewrites = Array.isArray(manifest.rewrites) ? manifest.rewrites : manifest.rewrites?.beforeFiles || [];
     const rewrites = beforeFileRewrites.map(it => ({...it, regex: undefined}));
-    const outputBundleDirectory = dirname(outputBundlePath);
     await writeFile(outputBundlePath, yamlStringify({
-        headers, 
-        redirects, 
+        headers,
+        redirects,
         rewrites,
-        runCommand: `node ${normalize(relative(outputBundleDirectory, serverFilePath))}`,
-        neededDirs: [normalize(relative(outputBundleDirectory, appHostingOutputDirectory))],
-        staticAssets: [normalize(relative(outputBundleDirectory, appHostingPublicDirectory))],
+        runCommand: `node ${normalize(relative(cwd, serverFilePath))}`,
+        neededDirs: [normalize(relative(cwd, appHostingOutputDirectory))],
+        staticAssets: [normalize(relative(cwd, appHostingPublicDirectory))],
     }));
 }
 
