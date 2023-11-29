@@ -63,7 +63,7 @@ const generateBundleYaml = async () => {
 // as well as generating bundle.yaml
 await move(standaloneDirectory, appHostingOutputDirectory, { overwrite: true });
 await Promise.all([
-    await move(staticDirectory, appHostingStaticDirectory, { overwrite: true }),
+    move(staticDirectory, appHostingStaticDirectory, { overwrite: true }),
     movePublicDirectory(),
     generateBundleYaml(),
 ]);
