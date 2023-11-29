@@ -2,7 +2,7 @@
 import { spawnSync } from "child_process";
 import { loadConfig, readRoutesManifest } from "../utils.js";
 
-import { join, relative } from "path";
+import { join, relative, dirname, normalize } from "path";
 import fsExtra from "fs-extra";
 import { stringify as yamlStringify } from "yaml";
 
@@ -48,13 +48,14 @@ const generateBundleYaml = async () => {
     const redirects = manifest.redirects.filter(it => !it.internal).map(it => ({...it, regex: undefined}));
     const beforeFileRewrites = Array.isArray(manifest.rewrites) ? manifest.rewrites : manifest.rewrites?.beforeFiles || [];
     const rewrites = beforeFileRewrites.map(it => ({...it, regex: undefined}));
+    const outputBundleDirectory = dirname(outputBundlePath);
     await writeFile(outputBundlePath, yamlStringify({
         headers, 
         redirects, 
         rewrites,
-        runCommand: `node ${relative(appHostingOutputDirectory, serverFilePath)}`,
-        neededDirs: ["."],
-        staticAssets: [relative(appHostingOutputDirectory, appHostingPublicDirectory)],
+        runCommand: `node ${normalize(relative(outputBundleDirectory, serverFilePath))}`,
+        neededDirs: [normalize(relative(outputBundleDirectory, appHostingOutputDirectory))],
+        staticAssets: [normalize(relative(outputBundleDirectory, appHostingPublicDirectory))],
     }));
 }
 
