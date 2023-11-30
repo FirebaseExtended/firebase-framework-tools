@@ -5,6 +5,8 @@ import LRU from "lru-cache";
 import type { Request } from "firebase-functions/v2/https";
 import type { Response } from "express";
 import type { NextServer } from "next/dist/server/next.js";
+import { IncomingMessage } from "http";
+import { Socket } from "net";
 
 const nextAppsLRU = new LRU<string, NextServer>({
   // TODO tune this
@@ -37,5 +39,20 @@ export const handle = async (req: Request, res: Response) => {
   }
   await nextApp!.prepare();
   const parsedUrl = parse(url, true);
-  nextApp!.getRequestHandler()(req, res, parsedUrl);
+  const socket = new Socket();
+  const message = new IncomingMessage(socket);
+  message.push(req.rawBody);
+  message.push(null);
+  message.headers = req.headers;
+  message.headersDistinct = req.headersDistinct;
+  message.httpVersion = req.httpVersion;
+  message.httpVersionMajor = req.httpVersionMajor;
+  message.httpVersionMinor = req.httpVersionMinor;
+  message.method = req.method;
+  message.rawHeaders = req.rawHeaders;
+  message.rawTrailers = req.rawTrailers;
+  message.trailers = req.trailers;
+  message.trailersDistinct = req.trailersDistinct;
+  message.url = req.url;
+  await nextApp!.getRequestHandler()(message, res, parsedUrl);
 };
