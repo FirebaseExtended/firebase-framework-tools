@@ -12,23 +12,24 @@ export async function isUsingFirebaseJsSdk() {
   }
 }
 
-export function getProxyRequest(req: Request): IncomingMessage {
-  const proxyRequest = new IncomingMessage(new Socket());
+export function incomingMessageFromExpress(req: Request): IncomingMessage {
+  const socket = new Socket();
+  const incomingMessage = new IncomingMessage(socket);
 
-  proxyRequest.push(req.rawBody);
-  proxyRequest.push(null);
+  incomingMessage.push(req.rawBody);
+  incomingMessage.push(null);
 
-  proxyRequest.headers = req.headers;
-  proxyRequest.headersDistinct = req.headersDistinct;
-  proxyRequest.httpVersion = req.httpVersion;
-  proxyRequest.httpVersionMajor = req.httpVersionMajor;
-  proxyRequest.httpVersionMinor = req.httpVersionMinor;
-  proxyRequest.method = req.method;
-  proxyRequest.rawHeaders = req.rawHeaders;
-  proxyRequest.rawTrailers = req.rawTrailers;
-  proxyRequest.trailers = req.trailers;
-  proxyRequest.trailersDistinct = req.trailersDistinct;
-  proxyRequest.url = req.url;
+  incomingMessage.headers = req.headers;
+  incomingMessage.headersDistinct = req.headersDistinct;
+  incomingMessage.httpVersion = req.httpVersion;
+  incomingMessage.httpVersionMajor = req.httpVersionMajor;
+  incomingMessage.httpVersionMinor = req.httpVersionMinor;
+  incomingMessage.method = req.method;
+  incomingMessage.rawHeaders = req.rawHeaders;
+  incomingMessage.rawTrailers = req.rawTrailers;
+  incomingMessage.trailers = req.trailers;
+  incomingMessage.trailersDistinct = req.trailersDistinct;
+  incomingMessage.url = req.url;
 
-  return proxyRequest;
+  return incomingMessage;
 }
