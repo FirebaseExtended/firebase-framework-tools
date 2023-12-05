@@ -11,11 +11,11 @@ import { incomingMessageFromExpress } from "../utils.js";
 const nextApp: NextServer = createNextServer({
   dev: false,
   dir: process.cwd(),
-  hostname: "0.0.0.0",
+  hostname: "localhost",
   port: 443,
 });
 
-export const handle = async (req: Request, res: Response) => {
+export const handle = async (req: Request, res: Response): Promise<void> => {
   await nextApp.prepare();
   const parsedUrl = parse(req.url, true);
   const incomingMessage = incomingMessageFromExpress(req);
