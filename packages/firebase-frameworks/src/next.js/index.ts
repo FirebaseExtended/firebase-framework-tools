@@ -12,7 +12,7 @@ const nextApp: NextServer = createNextServer({
   dev: false,
   dir: process.cwd(),
   hostname: "localhost",
-  port: 443,
+  port: 8080,
 });
 
 export const handle = async (req: Request, res: Response): Promise<void> => {
