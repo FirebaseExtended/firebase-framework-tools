@@ -11,7 +11,7 @@ import { incomingMessageFromExpress } from "../utils.js";
 const nextApp: NextServer = createNextServer({
   dev: false,
   dir: process.cwd(),
-  hostname: "localhost",
+  hostname: "0.0.0.0",
   port: 8080,
 });
 
