@@ -35,16 +35,16 @@
     "dependencies": {
         "@npmcli/arborist": "^7.2.1",
         "@yarnpkg/lockfile": "^1.1.0",
-        "colorette": "*",
-        "commander": "*",
-        "fs-extra": "*",
+        "colorette": "^2.0.20",
+        "commander": "^11.1.0",
+        "fs-extra": "^11.1.1",
         "npm-pick-manifest": "^9.0.0",
-        "ts-node": "*",
+        "ts-node": "^10.9.1",
         "toml": "^3.0.0"
     },
     "devDependencies": {
         "@types/commander": "*",
-        "@types/npmcli__arborist": "^5.6.5",
-        "@types/yarnpkg__lockfile": "^1.1.9"
+        "@types/npmcli__arborist": "*",
+        "@types/yarnpkg__lockfile": "*"
     }
 }

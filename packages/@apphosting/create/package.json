@@ -37,7 +37,7 @@
         "semver": "^7.5.4"
     },
     "devDependencies": {
-        "@types/commander": "^2.12.2",
-        "ts-node": "^10.9.1"
+        "@types/commander": "*",
+        "ts-node": "*"
     }
 }

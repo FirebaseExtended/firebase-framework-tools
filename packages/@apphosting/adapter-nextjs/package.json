@@ -40,10 +40,10 @@
     "license": "Apache-2.0",
     "dependencies": {
         "fs-extra": "^11.1.1",
-        "yaml": "*"
+        "yaml": "^2.3.4"
     },
     "peerDependencies": {
-        "next": "~14.0.0 || ~14.0.0-0"
+        "next": "~14.0.0"
     },
     "peerDependenciesMeta": {
         "next": {
@@ -51,11 +51,11 @@
         }
     },
     "devDependencies": {
-        "@types/fs-extra": "^11.0.4",
-        "@types/tmp": "^0.2.6",
+        "@types/fs-extra": "*",
+        "@types/tmp": "*",
         "next": "~14.0.0",
-        "semver": "^7.5.4",
-        "tmp": "^0.2.1",
-        "ts-node": "^10.9.1"
+        "semver": "*",
+        "tmp": "*",
+        "ts-node": "*"
     }
 }
