@@ -5,35 +5,16 @@ import { parse as semverParse } from "semver";
 import { yellow, bgRed, bold } from "colorette";
 // @ts-expect-error TODO add interface
 import pickManifest from "npm-pick-manifest";
-
-import type { SpawnOptionsWithoutStdio } from "child_process";
-
-const spawnPromise = (command: string, args: readonly string[], options?: SpawnOptionsWithoutStdio) => new Promise<Buffer>((resolve, reject) => {
-  const process = spawn(command, args, options);
-  const buffers: Buffer[] = [];
-  process.stdout.on('data', (it: Buffer) => buffers.push(it));
-  process.stderr.on('data', (it: Buffer) => console.error(it.toString().trim()));
-  process.on("exit", code => {
-      if (code === 0) return resolve(Buffer.concat(buffers));
-      reject();
-  });
-});
+import { discover } from "@apphosting/discover";
 
 program
-  .option('--framework <string>')
-  .argument('<directory>', "path to the project's root directory")
-  .action(async (cwd, options: { framework?: string, permitPrerelease?: boolean }) => {
+  .option("--framework <string>")
+  .argument("<directory>", "path to the project's root directory")
+  .action(async (cwd, options: { framework?: string; permitPrerelease?: boolean }) => {
     const { framework: expectedFramework } = options;
 
-    // TODO look at sharing code with the discovery module, rather than npx
-    const discoveryReturnValue = await spawnPromise(
-      "npx",
-      ["-y", "-p", "@apphosting/discover", "discover", cwd],
-      { shell: true },
-    );
-    // TODO type
-    const discoveryResults = JSON.parse(discoveryReturnValue.toString());
-    const nonBundledFrameworks = discoveryResults.discovered.filter((it: any) => !it.bundledWith);
+    const discoveryResults = await discover(cwd);
+    const nonBundledFrameworks = discoveryResults.filter((it) => !it.bundledWith);
     if (nonBundledFrameworks.length === 0) throw new Error("Did not discover any frameworks.");
     if (nonBundledFrameworks.length > 1) throw new Error("Found conflicting frameworks.");
     if (expectedFramework && nonBundledFrameworks[0].framework !== expectedFramework) {
