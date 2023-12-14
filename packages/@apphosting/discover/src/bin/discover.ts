@@ -175,7 +175,7 @@ program
     }
 
     process.stdout.write(Buffer.from(JSON.stringify({ discovered: discoveredFrameworks }, undefined, 2)));
-    console.log(`\nDone in ${performance.now()}ms`);
+    process.stderr.write(`\nDone in ${performance.now()}ms`);
   });
 
 program.parse();
