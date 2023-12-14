@@ -39,10 +39,9 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "fs-extra": "*",
-        "yaml": "*",
-        "tslib": "*",
-        "@npmcli/run-script": "*"
+        "fs-extra": "^11.1.1",
+        "yaml": "^2.3.4",
+        "tslib": "^2.3.1"
     },
     "peerDependencies": {
         "@angular-devkit/architect": "~0.1700.0",
