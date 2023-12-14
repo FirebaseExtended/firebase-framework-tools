@@ -1,50 +1,57 @@
 #! /usr/bin/env node
-import { spawnSync, spawn } from "child_process";
+import { spawn } from "child_process";
 import { program } from "commander";
 import { parse as semverParse } from "semver";
-import { red, yellow, bold } from "colorette";
-
-const frameworkAliases = new Map([
-    ["nextjs", ["next"]],
-]);
+import { yellow, bgRed, bold } from "colorette";
+// @ts-expect-error TODO add interface
+import pickManifest from "npm-pick-manifest";
+import { discover } from "@apphosting/discover";
 
 program
-  .option('--framework <string>')
-  .argument('<directory>', "path to the project's root directory")
-  .action(async (cwd, { framework }: { framework?: string }) => {
-    if (!framework) {
-        throw new Error("Discovery not implemented. Must provide an option to --framework <string>");
+  .option("--framework <string>")
+  .argument("<directory>", "path to the project's root directory")
+  .action(async (cwd, options: { framework?: string; permitPrerelease?: boolean }) => {
+    const { framework: expectedFramework } = options;
+
+    const discoveryResults = await discover(cwd);
+    const nonBundledFrameworks = discoveryResults.filter((it) => !it.bundledWith);
+    if (nonBundledFrameworks.length === 0) throw new Error("Did not discover any frameworks.");
+    if (nonBundledFrameworks.length > 1) throw new Error("Found conflicting frameworks.");
+    if (expectedFramework && nonBundledFrameworks[0].framework !== expectedFramework) {
+      throw new Error("Discovery did not match expected framework.");
     }
-    const npmModules = frameworkAliases.get(framework) || [framework];
-    // TODO this search is naive, make it more robust, add types (zod?)
-    const result = JSON.parse(spawnSync("npm", ["ls", ...npmModules, "--json"], { cwd }).stdout.toString());
-    const packageName = npmModules.find(pkg => result.dependencies?.[pkg]);
-    const version = packageName && semverParse(result.dependencies[packageName].version);
-    if (!version) {
-        throw new Error(`Couldn't find ${framework}.`);
-    }
+    const { framework, version } = nonBundledFrameworks[0];
+
+    const parsedVersion = semverParse(version);
+    if (!parsedVersion) throw new Error("Could not parse framework version");
+
     const adapterName = `@apphosting/adapter-${framework}`;
-    // TODO add types here (zod?), add a search pattern, just using @next for now
-    let npmInfo = JSON.parse(spawnSync("npm", ["info", `${adapterName}@next`, "--json"]).stdout.toString());
-    if (npmInfo.error) {
-        throw new Error(npmInfo.error.detail)
+    const packumentResponse = await fetch(`https://registry.npmjs.org/${adapterName}`);
+    if (!packumentResponse.ok) throw new Error(`Something went wrong fetching ${adapterName}`);
+    // TODO types
+    const packument = await packumentResponse.json();
+    // TODO figure out a pattern for prereleases
+    const range = [
+      `>=${parsedVersion.major}.0.0 <${parsedVersion.major}.${parsedVersion.minor + 1}.0`,
+      `^${parsedVersion.major}.${parsedVersion.minor}.0`,
+    ].join(" || ");
+    let adapterVersion: string | undefined;
+    try {
+      adapterVersion = pickManifest(packument, range).version;
+    } catch (e) {
+      adapterVersion = packument["dist-tags"]["latest"];
     }
-    const adapterVersion = semverParse(npmInfo.version);
-    if (!adapterVersion) throw new Error(`Unable to parse ${adapterVersion}`);
-    // TODO actually write a reasonable error message here & use a generator function
-    if (adapterVersion.major !== version.major) {
-        console.error(red(bold(' !')), red('Warning:'), `Using a potentially incompatible adapter ${npmInfo.name}@${npmInfo.version}\n            This is intended to be used with ${packageName} v${adapterVersion.major} but found v${version.major}. You're likely to encounter issues.\n`);
-    } else if (adapterVersion.prerelease) {
-        if (adapterVersion.minor === version.minor) {
-            console.error(red(bold(' !')), red('Warning:'), `Using pre-release platform adapter ${npmInfo.name}@${npmInfo.version}\n            You're likely to encounter issues.\n`);
-        } else {
-            console.error(red(bold(' !')), red('Warning:'), `Using pre-release platform adapter ${npmInfo.name}@${npmInfo.version}\n            This is intended to be used with ${packageName} v${adapterVersion.major}.${adapterVersion.minor} but found v${version.major}.${version.minor}. You're likely to encounter issues.\n`);
-        }
-    } else if (adapterVersion.minor !== version.minor) {
-        console.warn(yellow(bold(' !')), yellow('Warning:'), `Using a potentially incompatible adapter ${npmInfo.name}@${npmInfo.version}\n            This is intended to be used with ${packageName} v${adapterVersion.major}.${adapterVersion.minor} but found v${version.major}.${version.minor}. You may encounter issues.\n`);
-    }
+    if (!adapterVersion) throw new Error("No matching adapter found.");
+
+    console.log(" 🔥", bgRed(` ${adapterName}@${yellow(bold(adapterVersion))} `), "\n");
+
+    // Call it via NPX
     const buildCommand = `apphosting-adapter-${framework}-build`;
-    spawn('npx', ['-y', '-p', `${adapterName}@${adapterVersion.raw}`, buildCommand], { cwd, shell: true, stdio: 'inherit' });
+    spawn("npx", ["-y", "-p", `${adapterName}@${adapterVersion}`, buildCommand], {
+      cwd,
+      shell: true,
+      stdio: "inherit",
+    });
   });
 
 program.parse();

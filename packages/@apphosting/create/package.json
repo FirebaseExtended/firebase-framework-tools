@@ -20,8 +20,7 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
-        "test": "node --loader ts-node/esm ./test.ts"
+        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*"
     },
     "exports": {
         ".": {
@@ -38,7 +37,7 @@
         "semver": "^7.5.4"
     },
     "devDependencies": {
-        "@types/commander": "^2.12.2",
-        "ts-node": "^10.9.1"
+        "@types/commander": "*",
+        "ts-node": "*"
     }
 }

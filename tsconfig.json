@@ -4,7 +4,7 @@
     "target": "ES2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "types": ["node"],
+    "types": ["node", "mocha"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -12,7 +12,7 @@
     "skipLibCheck": true,
     "paths": {
       "firebase-frameworks": ["./packages/firebase-frameworks"],
-      "@apphosting/adapter-nextjs": ["./packages/adapter-nextjs"]
+      "@apphosting/*": ["./packages/@apphosting/*"],
     }
   }
 }

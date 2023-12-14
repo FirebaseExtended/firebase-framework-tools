@@ -1,5 +1,5 @@
 {
-    "name": "@apphosting/build",
+    "name": "@apphosting/discover",
     "version": "0.1.0",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
@@ -8,7 +8,7 @@
         "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
     },
     "bin": {
-        "build": "dist/bin/build.js"
+        "discover": "dist/bin/discover.js"
     },
     "author": {
         "name": "Firebase",
@@ -33,13 +33,18 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
+        "@npmcli/arborist": "^7.2.1",
+        "@yarnpkg/lockfile": "^1.1.0",
         "colorette": "^2.0.20",
         "commander": "^11.1.0",
+        "fs-extra": "^11.1.1",
         "npm-pick-manifest": "^9.0.0",
         "ts-node": "^10.9.1",
-        "@apphosting/discover": "*"
+        "toml": "^3.0.0"
     },
     "devDependencies": {
-        "@types/commander": "*"
+        "@types/commander": "*",
+        "@types/npmcli__arborist": "*",
+        "@types/yarnpkg__lockfile": "*"
     }
 }

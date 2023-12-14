@@ -2,6 +2,7 @@ import { join } from "path";
 import fsExtra from "fs-extra";
 import { PHASE_PRODUCTION_BUILD } from "./constants.js"
 import { ROUTES_MANIFEST } from "./constants.js";
+import { fileURLToPath } from "url";
 
 import type { RoutesManifest } from "./interfaces.js";
 
@@ -19,3 +20,9 @@ export async function loadConfig(cwd: string) {
 export async function readRoutesManifest(distDir: string): Promise<RoutesManifest> {
     return await readJson(join(distDir, ROUTES_MANIFEST));
 }
+
+export const isMain = (meta: ImportMeta) => {
+    if (!meta) return false;
+    if (!process.argv[1]) return false;
+    return process.argv[1] === fileURLToPath(meta.url);
+};

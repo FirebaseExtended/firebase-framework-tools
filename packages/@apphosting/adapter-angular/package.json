@@ -1,6 +1,6 @@
 {
-    "name": "@apphosting/adapter-nextjs",
-    "version": "14.0.0",
+    "name": "@apphosting/adapter-angular",
+    "version": "17.0.0",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": {
@@ -8,8 +8,8 @@
         "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
     },
     "bin": {
-        "apphosting-adapter-nextjs-build": "dist/bin/build.js",
-        "apphosting-adapter-nextjs-create": "dist/bin/create.js"
+        "apphosting-adapter-angular-build": "dist/bin/build.js",
+        "apphosting-adapter-angular-create": "dist/bin/create.js"
     },
     "author": {
         "name": "Firebase",
@@ -39,23 +39,31 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "fs-extra": "^11.1.1",
-        "yaml": "^2.3.4"
+        "fs-extra": "*",
+        "yaml": "*",
+        "tslib": "*",
+        "@npmcli/run-script": "*"
     },
     "peerDependencies": {
-        "next": "~14.0.0"
+        "@angular-devkit/architect": "~0.1700.0",
+        "@angular-devkit/core": "~17.0.0"
     },
     "peerDependenciesMeta": {
-        "next": {
-            "optional": true
-        }
+        "@angular-devkit/architect": { "optional": true },
+        "@angular-devkit/core": { "optional": true }
     },
     "devDependencies": {
+        "@angular-devkit/architect": "~0.1700.0",
+        "@angular-devkit/core": "~17.0.0",
+        "@angular/core": "~17.0.0",
         "@types/fs-extra": "*",
+        "@types/mocha": "*",
         "@types/tmp": "*",
-        "next": "~14.0.0",
         "semver": "*",
         "tmp": "*",
-        "ts-node": "*"
+        "ts-node": "*",
+        "mocha": "*",
+        "ts-mocha": "*",
+        "typescript": "*"
     }
 }
