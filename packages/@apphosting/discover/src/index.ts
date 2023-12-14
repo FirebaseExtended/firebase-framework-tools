@@ -129,7 +129,6 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
 
             let packages = new Map<string, string>();
             if (platform === "nodejs") {
-              // TODO support npm-shrinkwrap.json
               // TODO handle workspaces
               if (lockfile === "package-lock.json" || lockfile === "npm-shrinkwrap.json") {
                 const packageJSON = await readJson(join(path, lockfile));
