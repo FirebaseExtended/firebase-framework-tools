@@ -3,7 +3,7 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { OutputBundleOptions } from "../interfaces";
+import { OutputBundleOptions } from "../interfaces.js";
 
 describe("build commands", () => {
   let tmpDir: string;
@@ -23,7 +23,7 @@ describe("build commands", () => {
     const { generateOutputBundle } = await importUtils;
     const files = {
       ".next/standalone/standalonefile": "",
-      ".next/static/staticfile": "",
+      ".next/static/staticfile": "{remove me}",
       ".next/routes-manifest.json": `{
         "headers":[], 
         "rewrites":[], 
