@@ -23,7 +23,7 @@ describe("build commands", () => {
     const { generateOutputBundle } = await importUtils;
     const files = {
       ".next/standalone/standalonefile": "",
-      ".next/static/staticfile": "{remove me}",
+      ".next/static/staticfile": "",
       ".next/routes-manifest.json": `{
         "headers":[], 
         "rewrites":[], 
