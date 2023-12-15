@@ -3,11 +3,12 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { OutputBundleOptions } from "../interfaces";
 
-describe("build commands", async () => {
+describe("build commands", () => {
   let tmpDir: string;
-  let outputBundleOptions: Object;
-  beforeEach(async () => {
+  let outputBundleOptions: OutputBundleOptions;
+  beforeEach(() => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
       bundleYamlPath: path.join(tmpDir, ".apphosting/bundle.yaml"),
@@ -18,9 +19,8 @@ describe("build commands", async () => {
     };
   });
 
-  it("expectes all output bundle files to be generated", async () => {
+  it("expects all output bundle files to be generated", async () => {
     const { generateOutputBundle } = await importUtils;
-
     const files = {
       ".next/standalone/standalonefile": "",
       ".next/static/staticfile": "",
@@ -51,7 +51,6 @@ staticAssets:
 
   it("expects public directory to be copied over", async () => {
     const { generateOutputBundle } = await importUtils;
-
     const files = {
       ".next/standalone/standalonefile": "",
       ".next/static/staticfile": "",
@@ -84,7 +83,6 @@ staticAssets:
 
   it("expects bundle.yaml headers/rewrites/redirects to be generated", async () => {
     const { generateOutputBundle } = await importUtils;
-
     const files = {
       ".next/standalone/standalonefile": "",
       ".next/static/staticfile": "",
@@ -131,7 +129,7 @@ staticAssets:
     };
     assert.deepEqual(populateOutputBundleOptions("test"), expectedOutputBundleOptions);
   });
-  afterEach(async () => {
+  afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 });
@@ -139,7 +137,7 @@ function generateTmpDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "test-files"));
 }
 
-function generateTestFiles(baseDir: string, filesToGenerate: Object) {
+function generateTestFiles(baseDir: string, filesToGenerate: Object): void {
   Object.entries(filesToGenerate).forEach((file) => {
     const fileName = file[0];
     const contents = file[1];
@@ -149,7 +147,7 @@ function generateTestFiles(baseDir: string, filesToGenerate: Object) {
   });
 }
 
-function validateTestFiles(baseDir: string, expectedFiles: Object) {
+function validateTestFiles(baseDir: string, expectedFiles: Object): void {
   Object.entries(expectedFiles).forEach((file) => {
     const fileName = file[0];
     const expectedContents = file[1];
