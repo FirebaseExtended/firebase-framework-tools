@@ -71,3 +71,12 @@ export interface RoutesManifest {
     localeDetection?: false;
   };
 }
+
+// The output bundle options are specified here
+export interface OutputBundleOptions {
+  bundleYamlPath: string;
+  outputDirectory: string;
+  serverFilePath: string;
+  outputPublicDirectory: string;
+  outputStaticDirectory: string;
+}
