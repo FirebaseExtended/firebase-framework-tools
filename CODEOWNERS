@@ -1,2 +1,5 @@
-/packages/adapter-*/ @Yuangwang
+/packages/@apphosting/adapter-*/ @Yuangwang
+/packages/@apphosting/build/ @jamesdaniels
+/packages/@apphosting/create/ @jamesdaniels
+/packages/@apphosting/discover/ @jamesdaniels
 /packages/firebase-frameworks/ @jamesdaniels
