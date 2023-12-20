@@ -61,10 +61,10 @@ type DiscoveredFramework = {
   bundledWith?: Array<(typeof PLATFORMS)[number][4][number][0]>;
 };
 
-export async function discover(path: string, githubRepo?: string, githubToken?: string) {
+export async function discover(directory: string, githubRepo?: string, githubToken?: string) {
   if (githubRepo && !githubToken) throw new Error("needs token");
 
-  const { join } = await (githubRepo ? import("node:path") : import("node:path/posix"));
+  const path = await (githubRepo ? import("node:path") : import("node:path/posix"));
 
   const { readFile, pathExists, readJson } = githubRepo
     ? {
@@ -115,12 +115,14 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
   await Promise.all(
     PLATFORMS.map(
       async ([platform, files, defaultPackageManager, packageManagers, frameworkDefinitions]) => {
-        const filesExist = await Promise.all(files.map((it) => pathExists(join(path, it))));
+        const filesExist = await Promise.all(
+          files.map((it) => pathExists(path.join(directory, it))),
+        );
         if (files.length && !filesExist.some((it) => it)) return;
         const discoverFrameworks = (fallback = false) => {
           return async ([packageManager, possibleLockfiles]: (typeof packageManagers)[number]) => {
             const possibleLockfilesExist = await Promise.all(
-              possibleLockfiles.map((it) => pathExists(join(path, it))),
+              possibleLockfiles.map((it) => pathExists(path.join(directory, it))),
             );
             const [lockfile] = possibleLockfilesExist
               .map((exists, index) => (exists ? possibleLockfiles[index] : undefined))
@@ -131,7 +133,7 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
             if (platform === "nodejs") {
               // TODO handle workspaces
               if (lockfile === "package-lock.json" || lockfile === "npm-shrinkwrap.json") {
-                const packageJSON = await readJson(join(path, lockfile));
+                const packageJSON = await readJson(path.join(directory, lockfile));
                 packages = new Map(
                   Object.keys(packageJSON.packages).map((pkg) => {
                     const name = pkg.replace(/^node_modules\//, "");
@@ -140,7 +142,7 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
                   }),
                 );
               } else if (lockfile === "yarn.lock") {
-                const file = await readFile(join(path, lockfile));
+                const file = await readFile(path.join(directory, lockfile));
                 const yarnLock = YarnLockfile.parse(file.toString());
                 if (yarnLock.type !== "success") throw new Error(`unable to read ${lockfile}`);
                 packages = new Map(
@@ -151,7 +153,7 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
                   }),
                 );
               } else if (lockfile === "pnpm-lock.yaml") {
-                const file = await readFile(join(path, lockfile));
+                const file = await readFile(path.join(directory, lockfile));
                 const pnpmLock = parseYaml(file.toString());
                 packages = new Map(
                   Object.keys(pnpmLock.packages).map((pkg) => {
@@ -164,9 +166,11 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
             } else if (platform === "python") {
               if (packageManager === "pip") {
                 const requirementsFile = "requirements.txt";
-                const requirementsFileExists = await pathExists(join(path, requirementsFile));
+                const requirementsFileExists = await pathExists(
+                  path.join(directory, requirementsFile),
+                );
                 if (!requirementsFileExists) return false;
-                const file = await readFile(join(path, requirementsFile));
+                const file = await readFile(path.join(directory, requirementsFile));
                 packages = new Map(
                   file
                     .toString()
@@ -176,7 +180,7 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
                     }),
                 );
               } else if (lockfile === "Pipfile.lock") {
-                const pipfileLock = await readJson(join(path, lockfile));
+                const pipfileLock = await readJson(path.join(directory, lockfile));
                 // TODO include develop too?
                 packages = new Map(
                   Object.keys(pipfileLock.default).map((name) => {
@@ -186,11 +190,11 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
                   }),
                 );
               } else if (lockfile === "poetry.lock") {
-                const poetryLock = await readFile(join(path, lockfile));
+                const poetryLock = await readFile(path.join(directory, lockfile));
                 packages = new Map(
                   toml
                     .parse(poetryLock.toString())
-                    .package?.map((it: any) => [it.name, it.version]),
+                    .package?.map((it: { name: string; version: string }) => [it.name, it.version]),
                 );
               }
             }
@@ -200,9 +204,9 @@ export async function discover(path: string, githubRepo?: string, githubToken?: 
               if (!requiredPackagePresent) continue;
               const requiredFileExist =
                 requiredFiles.length === 0 ||
-                (await Promise.all(requiredFiles.map((it) => pathExists(join(path, it))))).some(
-                  (it) => it,
-                );
+                (
+                  await Promise.all(requiredFiles.map((it) => pathExists(path.join(directory, it))))
+                ).some((it) => it);
               if (!requiredFileExist) continue;
               const [packageName] = requiredPackages;
               if (packageName)

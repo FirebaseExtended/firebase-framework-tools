@@ -1,6 +1,6 @@
 import type {
-    PHASE_PRODUCTION_BUILD as NEXT_PHASE_PRODUCTION_BUILD,
-    ROUTES_MANIFEST as NEXT_ROUTES_MANIFEST,
+  PHASE_PRODUCTION_BUILD as NEXT_PHASE_PRODUCTION_BUILD,
+  ROUTES_MANIFEST as NEXT_ROUTES_MANIFEST,
 } from "next/constants.js";
 
 // export next/constants ourselves so we don't have to dynamically import them
