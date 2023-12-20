@@ -32,37 +32,44 @@ const publicDirectory = join(cwd, "public");
 
 // Run build command
 function build(cwd: string) {
-    spawnSync("npm", ["run", "build"], {cwd, shell: true, stdio: "inherit"});
+  spawnSync("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
 }
 
 // move public directory to apphosting output public directory
 const movePublicDirectory = async () => {
-    const publicDirectoryExists = await exists(publicDirectory);
-    if (!publicDirectoryExists) return;
-    await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
+  const publicDirectoryExists = await exists(publicDirectory);
+  if (!publicDirectoryExists) return;
+  await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
 };
 
 // generate bundle.yaml
 const generateBundleYaml = async () => {
-    const headers = manifest.headers.map(it => ({...it, regex: undefined}));
-    const redirects = manifest.redirects.filter(it => !it.internal).map(it => ({...it, regex: undefined}));
-    const beforeFileRewrites = Array.isArray(manifest.rewrites) ? manifest.rewrites : manifest.rewrites?.beforeFiles || [];
-    const rewrites = beforeFileRewrites.map(it => ({...it, regex: undefined}));
-    await writeFile(outputBundlePath, yamlStringify({
-        headers,
-        redirects,
-        rewrites,
-        runCommand: `node ${normalize(relative(cwd, serverFilePath))}`,
-        neededDirs: [normalize(relative(cwd, appHostingOutputDirectory))],
-        staticAssets: [normalize(relative(cwd, appHostingPublicDirectory))],
-    }));
-}
+  const headers = manifest.headers.map((it) => ({ ...it, regex: undefined }));
+  const redirects = manifest.redirects
+    .filter((it) => !it.internal)
+    .map((it) => ({ ...it, regex: undefined }));
+  const beforeFileRewrites = Array.isArray(manifest.rewrites)
+    ? manifest.rewrites
+    : manifest.rewrites?.beforeFiles || [];
+  const rewrites = beforeFileRewrites.map((it) => ({ ...it, regex: undefined }));
+  await writeFile(
+    outputBundlePath,
+    yamlStringify({
+      headers,
+      redirects,
+      rewrites,
+      runCommand: `node ${normalize(relative(cwd, serverFilePath))}`,
+      neededDirs: [normalize(relative(cwd, appHostingOutputDirectory))],
+      staticAssets: [normalize(relative(cwd, appHostingPublicDirectory))],
+    }),
+  );
+};
 
 // move the standalone directory, the static directory and the public directory to apphosting output directory
 // as well as generating bundle.yaml
 await move(standaloneDirectory, appHostingOutputDirectory, { overwrite: true });
 await Promise.all([
-    move(staticDirectory, appHostingStaticDirectory, { overwrite: true }),
-    movePublicDirectory(),
-    generateBundleYaml(),
+  move(staticDirectory, appHostingStaticDirectory, { overwrite: true }),
+  movePublicDirectory(),
+  generateBundleYaml(),
 ]);

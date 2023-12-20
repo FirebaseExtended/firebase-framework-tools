@@ -6,6 +6,7 @@
     "test": "./scripts/test.js",
     "publish": "./scripts/publish.js",
     "lint": "eslint packages/* scripts/*",
+    "lint:quiet": "eslint packages/* scripts/* --quiet",
     "lint:fix": "eslint packages/* scripts/* --fix"
   },
   "workspaces": [

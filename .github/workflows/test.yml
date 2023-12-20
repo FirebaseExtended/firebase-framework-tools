@@ -118,7 +118,7 @@ jobs:
         if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Test
-        run: npm run lint
+        run: npm run lint:quiet
 
   # Break the branch protection test into a separate step, so we can manage the matrix more easily
   test_and_contribute:
