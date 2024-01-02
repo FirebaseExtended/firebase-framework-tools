@@ -96,11 +96,35 @@ jobs:
       - name: Test
         run: npm run test
 
-  # Break the branch protection test into a seperate step, so we can manage the matrix more easily
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          check-latest: true
+      - name: node_modules cache
+        id: node_modules_cache
+        uses: actions/cache@v3
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-20-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-20-
+      - name: Install deps
+        if: steps.node_modules_cache.outputs.cache-hit != 'true'
+        run: npm ci
+      - name: Test
+        run: npm run lint:quiet
+
+  # Break the branch protection test into a separate step, so we can manage the matrix more easily
   test_and_contribute:
     runs-on: ubuntu-latest
     name: Branch protection
-    needs: ['test']
+    needs: ['test', 'lint']
     steps:
       - run: true
 

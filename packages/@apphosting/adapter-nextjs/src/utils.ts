@@ -10,7 +10,7 @@ import { join, relative, normalize } from "path";
 
 import type { RoutesManifest } from "./interfaces.js";
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJSON } = fsExtra;
+export const { move, exists, writeFile, readJson } = fsExtra;
 
 export async function loadConfig(cwd: string) {
   // dynamically load NextJS so this can be used in an NPX context
@@ -21,7 +21,7 @@ export async function loadConfig(cwd: string) {
 }
 
 export async function readRoutesManifest(distDir: string): Promise<RoutesManifest> {
-  return await readJSON(join(distDir, ROUTES_MANIFEST));
+  return await readJson(join(distDir, ROUTES_MANIFEST));
 }
 
 export const isMain = (meta: ImportMeta) => {

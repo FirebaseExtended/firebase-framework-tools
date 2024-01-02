@@ -1,2 +1,13 @@
-/packages/adapter-*/ @Yuangwang
-/packages/firebase-frameworks/ @jamesdaniels
+# Global reviewers
+# TODO add group for global reviewers
+* @jamesdaniels @leoortizz @Yuangwang @sjjj986
+
+# App Hosting Platform Adapters code
+# TODO add group for App Hosting
+/packages/@apphosting/adapter-*/ @Yuangwang @sjjj986
+
+# Web Frameworks code
+/packages/@apphosting/build/ @FirebaseExtended/firebase-full-time-employees @FirebaseExtended/monogram
+/packages/@apphosting/create/ @FirebaseExtended/firebase-full-time-employees @FirebaseExtended/monogram
+/packages/@apphosting/discover/ @FirebaseExtended/firebase-full-time-employees @FirebaseExtended/monogram
+/packages/firebase-frameworks/ @FirebaseExtended/firebase-full-time-employees @FirebaseExtended/monogram

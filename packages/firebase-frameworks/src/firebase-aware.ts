@@ -34,7 +34,7 @@ const mintCookie = async (req: Request, res: Response) => {
     } else {
       const cookie = await adminAuth
         .createSessionCookie(idToken!, { expiresIn: COOKIE_MAX_AGE })
-        .catch((e: any) => {
+        .catch((e: Error) => {
           console.error(e.message);
         });
       if (cookie) {
@@ -55,18 +55,19 @@ const handleAuth = async (req: Request, res: Response) => {
   if (!__session) return;
   const decodedIdToken = await adminAuth
     .verifySessionCookie(__session)
-    .catch((e: any) => console.error(e.message));
+    .catch((e: Error) => console.error(e.message));
   if (!decodedIdToken) return;
   const { uid } = decodedIdToken;
   let app = firebaseAppsLRU.get(uid);
   if (!app) {
     const isRevoked = !(await adminAuth
       .verifySessionCookie(__session, true)
-      .catch((e: any) => console.error(e.message)));
+      .catch((e: Error) => console.error(e.message)));
     if (isRevoked) return;
     const random = Math.random().toString(36).split(".")[1];
     const appName = `authenticated-context:${uid}:${random}`;
     // Force JS SDK autoinit with the undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     app = initializeApp(undefined as any, appName);
     firebaseAppsLRU.set(uid, app);
   }
@@ -75,7 +76,7 @@ const handleAuth = async (req: Request, res: Response) => {
     // TODO(jamesdaniels) get custom claims
     const customToken = await adminAuth
       .createCustomToken(uid)
-      .catch((e: any) => console.error(e.message));
+      .catch((e: Error) => console.error(e.message));
     if (!customToken) return;
     await signInWithCustomToken(auth, customToken);
   }
