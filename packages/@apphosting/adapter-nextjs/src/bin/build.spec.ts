@@ -20,7 +20,7 @@ describe("build commands", () => {
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateOutputBundle } = await importUtils;
+    const { generateOutputDirectory } = await importUtils;
     const files = {
       ".next/standalone/standalonefile": "",
       ".next/static/staticfile": "",
@@ -31,7 +31,7 @@ describe("build commands", () => {
       }`,
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputBundle(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await generateOutputDirectory(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
 
     const expectedFiles = {
       ".apphosting/.next/static/staticfile": "",
@@ -50,7 +50,7 @@ staticAssets:
   });
 
   it("expects public directory to be copied over", async () => {
-    const { generateOutputBundle } = await importUtils;
+    const { generateOutputDirectory } = await importUtils;
     const files = {
       ".next/standalone/standalonefile": "",
       ".next/static/staticfile": "",
@@ -62,7 +62,7 @@ staticAssets:
       }`,
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputBundle(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await generateOutputDirectory(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
 
     const expectedFiles = {
       ".apphosting/.next/static/staticfile": "",
@@ -82,7 +82,7 @@ staticAssets:
   });
 
   it("expects bundle.yaml headers/rewrites/redirects to be generated", async () => {
-    const { generateOutputBundle } = await importUtils;
+    const { generateOutputDirectory } = await importUtils;
     const files = {
       ".next/standalone/standalonefile": "",
       ".next/static/staticfile": "",
@@ -93,7 +93,7 @@ staticAssets:
       }`,
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputBundle(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await generateOutputDirectory(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
 
     const expectedFiles = {
       ".apphosting/.next/static/staticfile": "",

@@ -52,7 +52,7 @@ export function build(cwd: string): void {
 
 // move the standalone directory, the static directory and the public directory to apphosting output directory
 // as well as generating bundle.yaml
-export async function generateOutputBundle(
+export async function generateOutputDirectory(
   cwd: string,
   outputBundleOptions: OutputBundleOptions,
   nextBuildDirectory: string,
