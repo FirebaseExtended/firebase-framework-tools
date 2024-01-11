@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "./scripts/build.js",
+    "build:watch": "lerna watch -- lerna run build",
     "test": "./scripts/test.js",
     "publish": "./scripts/publish.js",
     "lint": "eslint packages/* scripts/*",
