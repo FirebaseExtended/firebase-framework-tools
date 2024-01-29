@@ -39,9 +39,14 @@ function populateOutputBundleOptions(): OutputBundleOptions {
 }
 
 // Run build command
-async function build(cwd: string): Promise<void> {
-  await spawn("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
-}
+const build = (cwd = process.cwd()) =>
+  new Promise<void>((resolve, reject) => {
+    const process = spawn("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+    process.on("exit", (code) => {
+      if (code === 0) return resolve();
+      reject();
+    });
+  });
 
 // move the base output directory, which contains the server and browser bundle directory, and prerendered routes
 // as well as generating bundle.yaml
@@ -78,5 +83,5 @@ async function generateBundleYaml(
 }
 
 const outputBundleOptions = populateOutputBundleOptions();
-await build(cwd);
+await build().catch(() => process.exit(1));
 await generateOutputDirectory(cwd, outputBundleOptions);

@@ -7,7 +7,7 @@ export const { writeFile, move, readJson } = fsExtra;
 
 export type { ApplicationBuilderOptions };
 
-export async function loadConfig(cwd: string) {
+export async function loadConfig(cwd: string): Promise<ApplicationBuilderOptions> {
   // dynamically load NextJS so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
     `${cwd}/node_modules/@angular-devkit/core/node/index.js`
