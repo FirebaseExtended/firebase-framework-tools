@@ -5,7 +5,7 @@ import type { ApplicationBuilderOptions } from "@angular-devkit/build-angular";
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson } = fsExtra;
 
-export type {ApplicationBuilderOptions};
+export type { ApplicationBuilderOptions };
 
 export async function loadConfig(cwd: string) {
   // dynamically load NextJS so this can be used in an NPX context
@@ -51,7 +51,10 @@ export async function loadConfig(cwd: string) {
   if (!options) throw new Error("Not able to find options for build target.");
 
   // options has to be of type ApplicationBuilderOptions when the builder is an application builder
-  const applicationBuilderOptions: ApplicationBuilderOptions = Object.assign({} as ApplicationBuilderOptions, options);
+  const applicationBuilderOptions: ApplicationBuilderOptions = Object.assign(
+    {} as ApplicationBuilderOptions,
+    options,
+  );
 
   return applicationBuilderOptions;
 }

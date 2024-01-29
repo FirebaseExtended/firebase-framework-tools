@@ -12,20 +12,18 @@ interface OutputBundleOptions {
   browserDirectory: string;
 }
 
-const cwd = process.cwd()
+const cwd = process.cwd();
 
 // read Application Builder config
 const config: ApplicationBuilderOptions = await loadConfig(cwd);
 const outputPath = config.outputPath;
 // normalized output path structure
-const normalizedOutputPath = { 
-  browser: 'browser',
-  server: 'server',
-  media: 'media',
-  ...(typeof outputPath === 'string' ? undefined : outputPath),
-  base: normalize(
-    resolve(typeof outputPath === 'string' ? outputPath : outputPath.base),
-  ),
+const normalizedOutputPath = {
+  browser: "browser",
+  server: "server",
+  media: "media",
+  ...(typeof outputPath === "string" ? undefined : outputPath),
+  base: normalize(resolve(typeof outputPath === "string" ? outputPath : outputPath.base)),
 };
 
 // populate file/directory paths we need inside app hosting output directory
@@ -54,7 +52,7 @@ async function generateOutputDirectory(
   const baseDirectory = resolve(normalizedOutputPath.base);
 
   await Promise.all([
-    move(baseDirectory, outputBundleOptions.outputBaseDirectory, { overwrite: true }), 
+    move(baseDirectory, outputBundleOptions.outputBaseDirectory, { overwrite: true }),
     generateBundleYaml(outputBundleOptions, cwd),
   ]);
   return;
@@ -63,7 +61,7 @@ async function generateOutputDirectory(
 // generate bundle.yaml
 async function generateBundleYaml(
   outputBundleOptions: OutputBundleOptions,
-  cwd : string,
+  cwd: string,
 ): Promise<void> {
   await writeFile(
     outputBundleOptions.bundleYamlPath,
