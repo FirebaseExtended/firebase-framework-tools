@@ -1,8 +1,17 @@
 #! /usr/bin/env node
 const { execSync } = require("child_process");
+const { minor, major } = require("semver");
 const { writeFileSync, readFileSync } = require("fs");
 const { join } = require("path");
-const { filteredLernaList, versionFromRef, shortSHA, prerelease } = require("./github.js");
+const {
+  filteredLernaList,
+  versionFromRef,
+  shortSHA,
+  prerelease,
+  packageFromBranch,
+  versionFromBranch,
+  packageFromRef,
+} = require("./github.js");
 
 const wombatDressingRoomTokens = new Map([
   // Disabling this until I can get wombat access to this org
@@ -20,6 +29,20 @@ for (const lerna of filteredLernaList) {
   if (versionFromRef && versionFromRef.split("-")[0] !== lerna.version) {
     throw new Error(
       `Cowardly refusing to publish ${lerna.name}@${versionFromRef} from ${lerna.version}, version needs to be bumped in source.`,
+    );
+  }
+  if (
+    versionFromRef &&
+    packageFromRef &&
+    (packageFromRef !== packageFromBranch ||
+      `${major(versionFromRef)}.${minor(versionFromRef)}` !== versionFromBranch)
+  ) {
+    throw new Error(
+      `Refusing to publish ${lerna.name}@${versionFromRef}, ${
+        lerna.name
+      }@${versionFromRef} needs to be published from the branch: ${packageFromRef}-v${major(
+        versionFromRef,
+      )}.${minor(versionFromRef)}`,
     );
   }
   const version = versionFromRef || `${lerna.version}-canary.${shortSHA}`;
