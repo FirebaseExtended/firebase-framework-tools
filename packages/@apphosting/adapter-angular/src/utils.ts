@@ -1,8 +1,11 @@
 import fsExtra from "fs-extra";
 import { fileURLToPath } from "url";
+import type { ApplicationBuilderOptions } from "@angular-devkit/build-angular";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { readJson } = fsExtra;
+export const { writeFile, move, readJson } = fsExtra;
+
+export type {ApplicationBuilderOptions};
 
 export async function loadConfig(cwd: string) {
   // dynamically load NextJS so this can be used in an NPX context
@@ -46,7 +49,11 @@ export async function loadConfig(cwd: string) {
 
   const options = await architectHost.getOptionsForTarget(buildTarget);
   if (!options) throw new Error("Not able to find options for build target.");
-  return options;
+
+  // options has to be of type ApplicationBuilderOptions when the builder is an application builder
+  const applicationBuilderOptions: ApplicationBuilderOptions = Object.assign({} as ApplicationBuilderOptions, options);
+
+  return applicationBuilderOptions;
 }
 
 export const isMain = (meta: ImportMeta) => {
