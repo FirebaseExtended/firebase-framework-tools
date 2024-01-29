@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 import { spawn } from "child_process";
 import { loadConfig, ApplicationBuilderOptions, move, writeFile } from "../utils.js";
-import { join, resolve, normalize, relative } from "path";
+import { resolve, normalize, relative } from "path";
 import { stringify as yamlStringify } from "yaml";
 
 interface OutputBundleOptions {
@@ -36,13 +36,13 @@ function populateOutputBundleOptions(): OutputBundleOptions {
     outputDirectory: outputBundleDir,
     outputBaseDirectory: resolve(outputBundleDir, "dist"),
     serverFilePath: resolve(outputBundleDir, "dist", normalizedOutputPath.server, "server.mjs"),
-    browserDirectory: resolve(outputBundleDir, "dist", normalizedOutputPath.browser)
+    browserDirectory: resolve(outputBundleDir, "dist", normalizedOutputPath.browser),
   };
 }
 
 // Run build command
 async function build(cwd: string): Promise<void> {
-  spawn("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+  await spawn("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
 }
 
 // move the base output directory, which contains the server and browser bundle directory, and prerendered routes
