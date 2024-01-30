@@ -32,6 +32,7 @@ for (const lerna of filteredLernaList) {
     );
   }
   if (
+    process.env.BRANCH_NAME !== "main" &&
     versionFromRef &&
     packageFromRef &&
     (packageFromRef !== packageFromBranch ||
