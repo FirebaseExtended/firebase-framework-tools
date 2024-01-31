@@ -89,8 +89,10 @@ export function populateOutputBundleOptions(config: ApplicationBuilderOptions): 
 // Run build command
 export const build = (cwd = process.cwd()) =>
   new Promise<void>((resolve, reject) => {
-    const process = spawn("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
-    process.on("exit", (code) => {
+    // enable JSON build logs for application builder
+    process.env.NG_BUILD_LOGS_JSON = "1"; 
+    const childProcess = spawn("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+    childProcess.on("exit", (code) => {
       if (code === 0) return resolve();
       reject();
     });
