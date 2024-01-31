@@ -75,7 +75,7 @@ export function populateOutputBundleOptions(config: ApplicationBuilderOptions): 
     base: normalize(resolve(typeof outputPath === "string" ? outputPath : outputPath.base)),
   };
   const outputBundleDir = resolve(".apphosting");
-  
+
   return {
     bundleYamlPath: resolve(outputBundleDir, "bundle.yaml"),
     outputDirectory: outputBundleDir,
@@ -102,9 +102,10 @@ export async function generateOutputDirectory(
   cwd: string,
   outputPathOptions: OutputPathOptions,
 ): Promise<void> {
-
   await Promise.all([
-    move(outputPathOptions.baseDirectory, outputPathOptions.outputBaseDirectory, { overwrite: true }),
+    move(outputPathOptions.baseDirectory, outputPathOptions.outputBaseDirectory, {
+      overwrite: true,
+    }),
     generateBundleYaml(outputPathOptions, cwd),
   ]);
 }
@@ -126,7 +127,6 @@ export async function generateBundleYaml(
     }),
   );
 }
-
 
 export const isMain = (meta: ImportMeta) => {
   if (!meta) return false;
