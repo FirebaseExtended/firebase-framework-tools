@@ -1,9 +1,5 @@
 #! /usr/bin/env node
-import {
-  checkBuildConditions,
-  build,
-  generateOutputDirectory,
-} from "../utils.js";
+import { checkBuildConditions, build, generateOutputDirectory } from "../utils.js";
 
 const cwd = process.cwd();
 

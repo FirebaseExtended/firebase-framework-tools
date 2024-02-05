@@ -40,8 +40,7 @@ export async function checkBuildConditions(cwd: string): Promise<void> {
   const target = "build";
   if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
 
-  const { builder, defaultConfiguration: configuration = "production" } =
-    workspaceProject.targets.get(target)!;
+  const { builder } = workspaceProject.targets.get(target)!;
   if (builder !== "@angular-devkit/build-angular:application") {
     throw new Error("Only the Angular application builder is supported.");
   }
@@ -54,7 +53,7 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
   const baseDirectory = fileURLToPath(outputPaths["root"]);
   const browserRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["browser"]));
   let serverRelativePath = "server";
-  if (outputPaths["server"]){
+  if (outputPaths["server"]) {
     serverRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["server"]));
   }
 
@@ -73,34 +72,44 @@ export const build = (cwd = process.cwd()) =>
   new Promise<OutputPathOptions>((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn("npm", ["run", "build"], { cwd, shell: true, stdio: ['inherit', 'pipe', 'pipe'] });
-    var outputPathOptions = {} as OutputPathOptions;
-    var manifest = {} as ValidManifest;
-    if (childProcess.stdout){
-      childProcess.stdout.on('data', (data) => {
+    const childProcess = spawn("npm", ["run", "build"], {
+      cwd,
+      shell: true,
+      stdio: ["inherit", "pipe", "pipe"],
+    });
+    let outputPathOptions = {} as OutputPathOptions;
+    let manifest = {} as ValidManifest;
+    if (childProcess.stdout) {
+      childProcess.stdout.on("data", (data) => {
         try {
           if (data.toString().includes("outputPaths")) {
-            var parsedManifest = JSON.parse(data);
+            const parsedManifest = JSON.parse(data);
             // validate if the manifest is of the expected form
-            manifest = buildManifestSchema.parse(parsedManifest); 
-            if (manifest["errors"].length > 0){ // errors when extracting manifest
-              for (var i in manifest.errors) logger.error(manifest.errors[i]);
+            manifest = buildManifestSchema.parse(parsedManifest);
+            if (manifest["errors"].length > 0) {
+              // errors when extracting manifest
+              manifest.errors.forEach((error) => {
+                logger.error(error);
+              });
               reject();
-            } 
-            if (manifest["warnings"].length > 0){ // warnings when extracting manifest
-              for (var i in manifest.warnings) logger.info(manifest.warnings[i]);
             }
-            if (manifest["outputPaths"]){
+            if (manifest["warnings"].length > 0) {
+              // warnings when extracting manifest
+              manifest.warnings.forEach((warning) => {
+                logger.info(warning);
+              });
+            }
+            if (manifest["outputPaths"]) {
               outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
             } else {
               throw new Error("Could not find output paths from the build manifest.");
-            }        
-          };
+            }
+          }
         } catch (err) {
-          logger.error("Build manifest is not of expected structure: " + err)
+          logger.error("Build manifest is not of expected structure: " + err);
         }
-      })
-    };
+      });
+    }
     childProcess.on("exit", (code) => {
       if (code === 0) return resolve(outputPathOptions);
       reject();
