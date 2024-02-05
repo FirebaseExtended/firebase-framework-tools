@@ -1,17 +1,21 @@
 import fsExtra from "fs-extra";
+import logger from "firebase-functions/logger";
+
 import { fileURLToPath } from "url";
-import type { ApplicationBuilderOptions } from "@angular-devkit/build-angular";
 import { spawn } from "child_process";
 import { resolve, normalize, relative } from "path";
 import { stringify as yamlStringify } from "yaml";
-import { OutputPathOptions } from "./interface.js";
+import { OutputPathOptions, OutputPaths, buildManifestSchema, ValidManifest } from "./interface.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson } = fsExtra;
 
-export type { ApplicationBuilderOptions };
-
-export async function loadConfig(cwd: string): Promise<ApplicationBuilderOptions> {
+/*
+ Check if build conditions are satisfied for the workspace:
+ The workspace cannot contain multiple angular projects.
+ The angular project must be using application builder.
+*/
+export async function checkBuildConditions(cwd: string): Promise<void> {
   // dynamically load NextJS so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
     `${cwd}/node_modules/@angular-devkit/core/node/index.js`
@@ -19,12 +23,9 @@ export async function loadConfig(cwd: string): Promise<ApplicationBuilderOptions
   const { workspaces }: typeof import("@angular-devkit/core") = await import(
     `${cwd}/node_modules/@angular-devkit/core/src/index.js`
   );
-  const { WorkspaceNodeModulesArchitectHost }: typeof import("@angular-devkit/architect/node") =
-    await import(`${cwd}/node_modules/@angular-devkit/architect/node/index.js`);
 
   const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
   const { workspace } = await workspaces.readWorkspace(cwd, host);
-  const architectHost = new WorkspaceNodeModulesArchitectHost(workspace, cwd);
 
   const apps: string[] = [];
   workspace.projects.forEach((value, key) => {
@@ -44,62 +45,72 @@ export async function loadConfig(cwd: string): Promise<ApplicationBuilderOptions
   if (builder !== "@angular-devkit/build-angular:application") {
     throw new Error("Only the Angular application builder is supported.");
   }
-
-  const buildTarget = {
-    project,
-    target,
-    configuration,
-  };
-
-  const options = await architectHost.getOptionsForTarget(buildTarget);
-  if (!options) throw new Error("Not able to find options for build target.");
-
-  // options has to be of type ApplicationBuilderOptions when the builder is an application builder
-  const applicationBuilderOptions: ApplicationBuilderOptions = Object.assign(
-    {} as ApplicationBuilderOptions,
-    options,
-  );
-
-  return applicationBuilderOptions;
 }
 
-// populate file/directory paths we need inside app hosting output directory
-export function populateOutputBundleOptions(config: ApplicationBuilderOptions): OutputPathOptions {
-  const outputPath = config.outputPath;
-  // normalized output path structure
-  const normalizedOutputPath = {
-    browser: "browser",
-    server: "server",
-    media: "media",
-    ...(typeof outputPath === "string" ? undefined : outputPath),
-    base: normalize(resolve(typeof outputPath === "string" ? outputPath : outputPath.base)),
-  };
+// Populate file or directory paths we need for generating output directory
+export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPathOptions {
   const outputBundleDir = resolve(".apphosting");
+
+  const baseDirectory = fileURLToPath(outputPaths["root"]);
+  const browserRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["browser"]));
+  let serverRelativePath = "server";
+  if (outputPaths["server"]){
+    serverRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["server"]));
+  }
 
   return {
     bundleYamlPath: resolve(outputBundleDir, "bundle.yaml"),
     outputDirectory: outputBundleDir,
-    baseDirectory: resolve(normalizedOutputPath.base),
+    baseDirectory,
     outputBaseDirectory: resolve(outputBundleDir, "dist"),
-    serverFilePath: resolve(outputBundleDir, "dist", normalizedOutputPath.server, "server.mjs"),
-    browserDirectory: resolve(outputBundleDir, "dist", normalizedOutputPath.browser),
+    serverFilePath: resolve(outputBundleDir, "dist", serverRelativePath, "server.mjs"),
+    browserDirectory: resolve(outputBundleDir, "dist", browserRelativePath),
   };
 }
 
 // Run build command
 export const build = (cwd = process.cwd()) =>
-  new Promise<void>((resolve, reject) => {
+  new Promise<OutputPathOptions>((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+    const childProcess = spawn("npm", ["run", "build"], { cwd, shell: true, stdio: ['inherit', 'pipe', 'pipe'] });
+    var outputPathOptions = {} as OutputPathOptions;
+    var manifest = {} as ValidManifest;
+    if (childProcess.stdout){
+      childProcess.stdout.on('data', (data) => {
+        try {
+          if (data.toString().includes("outputPaths")) {
+            var parsedManifest = JSON.parse(data);
+            // validate if the manifest is of the expected form
+            manifest = buildManifestSchema.parse(parsedManifest); 
+            if (manifest["errors"].length > 0){ // errors when extracting manifest
+              for (var i in manifest.errors) logger.error(manifest.errors[i]);
+              reject();
+            } 
+            if (manifest["warnings"].length > 0){ // warnings when extracting manifest
+              for (var i in manifest.warnings) logger.info(manifest.warnings[i]);
+            }
+            if (manifest["outputPaths"]){
+              outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
+            } else {
+              throw new Error("Could not find output paths from the build manifest.");
+            }        
+          };
+        } catch (err) {
+          logger.error("Build manifest is not of expected structure: " + err)
+        }
+      })
+    };
     childProcess.on("exit", (code) => {
-      if (code === 0) return resolve();
+      if (code === 0) return resolve(outputPathOptions);
       reject();
     });
   });
 
-// move the base output directory, which contains the server and browser bundle directory, and prerendered routes
-// as well as generating bundle.yaml
+/* 
+Move the base output directory, which contains the server and browser bundle directory, and prerendered routes
+as well as generating bundle.yaml.
+ */
 export async function generateOutputDirectory(
   cwd: string,
   outputPathOptions: OutputPathOptions,
@@ -112,7 +123,7 @@ export async function generateOutputDirectory(
   ]);
 }
 
-// generate bundle.yaml
+// Generate bundle.yaml
 export async function generateBundleYaml(
   outputPathOptions: OutputPathOptions,
   cwd: string,
