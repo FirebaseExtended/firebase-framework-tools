@@ -100,7 +100,6 @@ export const build = (cwd = process.cwd()) =>
               });
             }
             outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
-            return outputPathOptions;
           }
         } catch (error) {
           throw new Error("Build manifest is not of expected structure: " + error);
