@@ -39,11 +39,10 @@ const url = z.custom<URL>((data: any) => {
 export const buildManifestSchema = z.object({
   errors: z.array(z.string()),
   warnings: z.array(z.string()),
-  outputPaths: z
-    .object({
-      root: url,
-      server: z.optional(url),
-      browser: url,
-    }),
+  outputPaths: z.object({
+    root: url,
+    server: z.optional(url),
+    browser: url,
+  }),
   prerenderedRoutes: z.optional(z.string().array()),
 });

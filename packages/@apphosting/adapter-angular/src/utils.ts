@@ -66,7 +66,7 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
     browserDirectory: resolve(outputBundleDir, "dist", browserRelativePath),
   };
 }
-  
+
 // Run build command
 export const build = (cwd = process.cwd()) =>
   new Promise<OutputPathOptions>((resolve, reject) => {
@@ -81,40 +81,40 @@ export const build = (cwd = process.cwd()) =>
     let manifest = {} as ValidManifest;
 
     if (childProcess.stdout) {
-    childProcess.stdout.on("data", (data) => {
-      try {
-        if (data.toString().includes("outputPaths")) {
-          const parsedManifest = JSON.parse(data);
-          // validate if the manifest is of the expected form
-          manifest = buildManifestSchema.parse(parsedManifest);
-          if (manifest["errors"].length > 0) {
-            // errors when extracting manifest
-            manifest.errors.forEach((error) => {
-              logger.error(error);
-            });
+      childProcess.stdout.on("data", (data) => {
+        try {
+          if (data.toString().includes("outputPaths")) {
+            const parsedManifest = JSON.parse(data);
+            // validate if the manifest is of the expected form
+            manifest = buildManifestSchema.parse(parsedManifest);
+            if (manifest["errors"].length > 0) {
+              // errors when extracting manifest
+              manifest.errors.forEach((error) => {
+                logger.error(error);
+              });
+            }
+            if (manifest["warnings"].length > 0) {
+              // warnings when extracting manifest
+              manifest.warnings.forEach((warning) => {
+                logger.info(warning);
+              });
+            }
+            outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
+            return outputPathOptions;
           }
-          if (manifest["warnings"].length > 0) {
-            // warnings when extracting manifest
-            manifest.warnings.forEach((warning) => {
-              logger.info(warning);
-            });
-          }
-          outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
-          return outputPathOptions;
+        } catch (error) {
+          throw new Error("Build manifest is not of expected structure: " + error);
         }
-      } catch (error) {
-        throw new Error("Build manifest is not of expected structure: " + error);
-      }
-    });
-  } else {
-    throw new Error("Unable to locate build manifest with output paths.");
-  }
+      });
+    } else {
+      throw new Error("Unable to locate build manifest with output paths.");
+    }
 
-  childProcess.on("exit", (code) => {
-    if (code === 0) return resolve(outputPathOptions);
-    reject();
+    childProcess.on("exit", (code) => {
+      if (code === 0) return resolve(outputPathOptions);
+      reject();
+    });
   });
-});
 
 /* 
 Move the base output directory, which contains the server and browser bundle directory, and prerendered routes
