@@ -16,7 +16,7 @@ export const { writeFile, move, readJson } = fsExtra;
  The angular project must be using application builder.
 */
 export async function checkBuildConditions(cwd: string): Promise<void> {
-  // dynamically load NextJS so this can be used in an NPX context
+  // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
     `${cwd}/node_modules/@angular-devkit/core/node/index.js`
   );
@@ -66,7 +66,7 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
     browserDirectory: resolve(outputBundleDir, "dist", browserRelativePath),
   };
 }
-
+  
 // Run build command
 export const build = (cwd = process.cwd()) =>
   new Promise<OutputPathOptions>((resolve, reject) => {
@@ -79,42 +79,42 @@ export const build = (cwd = process.cwd()) =>
     });
     let outputPathOptions = {} as OutputPathOptions;
     let manifest = {} as ValidManifest;
+
     if (childProcess.stdout) {
-      childProcess.stdout.on("data", (data) => {
-        try {
-          if (data.toString().includes("outputPaths")) {
-            const parsedManifest = JSON.parse(data);
-            // validate if the manifest is of the expected form
-            manifest = buildManifestSchema.parse(parsedManifest);
-            if (manifest["errors"].length > 0) {
-              // errors when extracting manifest
-              manifest.errors.forEach((error) => {
-                logger.error(error);
-              });
-              reject();
-            }
-            if (manifest["warnings"].length > 0) {
-              // warnings when extracting manifest
-              manifest.warnings.forEach((warning) => {
-                logger.info(warning);
-              });
-            }
-            if (manifest["outputPaths"]) {
-              outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
-            } else {
-              throw new Error("Could not find output paths from the build manifest.");
-            }
+    childProcess.stdout.on("data", (data) => {
+      try {
+        if (data.toString().includes("outputPaths")) {
+          const parsedManifest = JSON.parse(data);
+          // validate if the manifest is of the expected form
+          manifest = buildManifestSchema.parse(parsedManifest);
+          if (manifest["errors"].length > 0) {
+            // errors when extracting manifest
+            manifest.errors.forEach((error) => {
+              logger.error(error);
+            });
           }
-        } catch (err) {
-          logger.error("Build manifest is not of expected structure: " + err);
+          if (manifest["warnings"].length > 0) {
+            // warnings when extracting manifest
+            manifest.warnings.forEach((warning) => {
+              logger.info(warning);
+            });
+          }
+          outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
+          return outputPathOptions;
         }
-      });
-    }
-    childProcess.on("exit", (code) => {
-      if (code === 0) return resolve(outputPathOptions);
-      reject();
+      } catch (error) {
+        throw new Error("Build manifest is not of expected structure: " + error);
+      }
     });
+  } else {
+    throw new Error("Unable to locate build manifest with output paths.");
+  }
+
+  childProcess.on("exit", (code) => {
+    if (code === 0) return resolve(outputPathOptions);
+    reject();
   });
+});
 
 /* 
 Move the base output directory, which contains the server and browser bundle directory, and prerendered routes

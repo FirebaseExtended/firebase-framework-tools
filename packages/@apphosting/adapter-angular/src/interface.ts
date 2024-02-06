@@ -15,7 +15,7 @@ export interface OutputPathOptions {
 export interface ValidManifest {
   errors: string[];
   warnings: string[];
-  outputPaths?: OutputPaths | undefined;
+  outputPaths: OutputPaths;
   prerenderedRoutes?: string[] | undefined;
 }
 
@@ -44,7 +44,6 @@ export const buildManifestSchema = z.object({
       root: url,
       server: z.optional(url),
       browser: url,
-    })
-    .optional(),
+    }),
   prerenderedRoutes: z.optional(z.string().array()),
 });
