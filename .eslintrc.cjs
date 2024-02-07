@@ -13,6 +13,7 @@ module.exports = {
   ],
   rules: {
     "jsdoc/newline-after-description": "off",
+    "@typescript-eslint/no-explicit-any": "off", // TODO(sijin): remove later
     "jsdoc/require-jsdoc": "off",
     "no-restricted-globals": ["error", "name", "length"],
     "prefer-arrow-callback": "error",
