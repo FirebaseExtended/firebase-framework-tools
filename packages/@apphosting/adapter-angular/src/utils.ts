@@ -123,12 +123,10 @@ export async function generateOutputDirectory(
   cwd: string,
   outputPathOptions: OutputPathOptions,
 ): Promise<void> {
-  await Promise.all([
-    move(outputPathOptions.baseDirectory, outputPathOptions.outputBaseDirectory, {
-      overwrite: true,
-    }),
-    generateBundleYaml(outputPathOptions, cwd),
-  ]);
+  await move(outputPathOptions.baseDirectory, outputPathOptions.outputBaseDirectory, {
+    overwrite: true,
+  });
+  await generateBundleYaml(outputPathOptions, cwd);
 }
 
 // Generate bundle.yaml
