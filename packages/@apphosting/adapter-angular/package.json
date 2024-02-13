@@ -41,7 +41,8 @@
     "dependencies": {
         "fs-extra": "^11.1.1",
         "yaml": "^2.3.4",
-        "tslib": "^2.3.1"
+        "tslib": "^2.3.1",
+        "firebase-functions": "^4.3.1"
     },
     "peerDependencies": {
         "@angular-devkit/architect": "~0.1700.0",
@@ -58,7 +59,6 @@
         "@types/fs-extra": "*",
         "@types/mocha": "*",
         "@types/tmp": "*", 
-        "firebase-functions": "^4.3.1",
         "semver": "*",
         "tmp": "*",
         "ts-node": "*",
