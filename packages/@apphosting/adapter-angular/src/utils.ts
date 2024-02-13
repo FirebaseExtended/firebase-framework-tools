@@ -1,4 +1,5 @@
 import fsExtra from "fs-extra";
+import logger from "firebase-functions/logger";
 
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
