@@ -59,7 +59,7 @@
         "@angular/core": "~17.0.0",
         "@types/fs-extra": "*",
         "@types/mocha": "*",
-        "@types/tmp": "*", 
+        "@types/tmp": "*",
         "semver": "*",
         "tmp": "*",
         "ts-node": "*",
