@@ -44638,4 +44638,7 @@ app.use(express.static(path$2.join(__dirname, "..", "browser")));
 app.get("*", function (request, response) {
   response.sendFile(path$2.join(__dirname, "..", "browser", "index.html"));
 });
-app.listen(4000);
+var port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Node Express server listening on http://localhost:${port}`);
+});
