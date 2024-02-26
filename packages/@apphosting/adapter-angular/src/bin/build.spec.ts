@@ -18,6 +18,7 @@ describe("build commands", () => {
       outputBaseDirectory: resolve(tmpDir, ".apphosting", "dist"),
       outputDirectory: resolve(tmpDir, ".apphosting"),
       serverFilePath: resolve(tmpDir, ".apphosting", "dist", "server", "server.mjs"),
+      needsServerGenerated: false,
     };
   });
 

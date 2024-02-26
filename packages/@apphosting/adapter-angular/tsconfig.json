@@ -3,11 +3,13 @@
   "compilerOptions": {
     "noEmit": false,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "allowJs": true
   },
   "include": [
     "src/index.ts",
     "src/bin/*.ts",
+    "src/simple-server/*",
   ],
   "exclude": [
     "src/*.spec.ts"
