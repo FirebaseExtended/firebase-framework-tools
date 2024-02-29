@@ -2,7 +2,7 @@ import { z } from "zod";
 import { URL } from "node:url";
 
 // options to help generate output directory
-export interface OutputPathOptions {
+export interface OutputBundleOptions {
   bundleYamlPath: string;
   outputDirectory: string;
   baseDirectory: string;

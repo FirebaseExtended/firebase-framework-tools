@@ -109,3 +109,15 @@ async function generateBundleYaml(
   );
   return;
 }
+
+// Validate output directory includes all necessary parts
+export async function validateOutputDirectory(
+  outputBundleOptions: OutputBundleOptions,
+): Promise<void> {
+  if (
+    !(await fsExtra.exists(outputBundleOptions.outputDirectory)) ||
+    !(await fsExtra.exists(outputBundleOptions.serverFilePath))
+  ) {
+    throw new Error("Output directory is not of expected structure");
+  }
+}
