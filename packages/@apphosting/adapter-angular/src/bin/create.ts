@@ -3,7 +3,7 @@ import { spawn } from "child_process";
 
 import { isMain } from "../utils.js";
 
-export const ANGULAR_CLI_VERSION = "~17.0.0";
+export const ANGULAR_CLI_VERSION = "~17.2.0";
 
 const main = isMain(import.meta);
 
