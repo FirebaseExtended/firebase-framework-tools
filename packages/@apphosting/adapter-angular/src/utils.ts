@@ -5,7 +5,12 @@ import { fileURLToPath } from "url";
 import { spawn } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
-import { OutputPathOptions, OutputPaths, buildManifestSchema, ValidManifest } from "./interface.js";
+import {
+  OutputBundleOptions,
+  OutputPaths,
+  buildManifestSchema,
+  ValidManifest,
+} from "./interface.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
@@ -51,7 +56,7 @@ export async function checkBuildConditions(cwd: string): Promise<void> {
 }
 
 // Populate file or directory paths we need for generating output directory
-export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPathOptions {
+export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBundleOptions {
   const outputBundleDir = resolve(".apphosting");
 
   const baseDirectory = fileURLToPath(outputPaths["root"]);
@@ -76,7 +81,7 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
 
 // Run build command
 export const build = (cwd = process.cwd()) =>
-  new Promise<OutputPathOptions>((resolve, reject) => {
+  new Promise<OutputBundleOptions>((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
     const childProcess = spawn("npm", ["run", "build"], {
@@ -84,7 +89,7 @@ export const build = (cwd = process.cwd()) =>
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],
     });
-    let outputPathOptions = {} as OutputPathOptions;
+    let outputBundleOptions = {} as OutputBundleOptions;
     let manifest = {} as ValidManifest;
 
     if (childProcess.stdout) {
@@ -106,7 +111,7 @@ export const build = (cwd = process.cwd()) =>
                 logger.info(warning);
               });
             }
-            outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
+            outputBundleOptions = populateOutputBundleOptions(manifest["outputPaths"]);
           }
         } catch (error) {
           throw new Error("Build manifest is not of expected structure: " + error);
@@ -117,7 +122,7 @@ export const build = (cwd = process.cwd()) =>
     }
 
     childProcess.on("exit", (code) => {
-      if (code === 0) return resolve(outputPathOptions);
+      if (code === 0) return resolve(outputBundleOptions);
       reject();
     });
   });
@@ -128,39 +133,52 @@ as well as generating bundle.yaml.
  */
 export async function generateOutputDirectory(
   cwd: string,
-  outputPathOptions: OutputPathOptions,
+  outputBundleOptions: OutputBundleOptions,
 ): Promise<void> {
-  await move(outputPathOptions.baseDirectory, outputPathOptions.outputBaseDirectory, {
+  await move(outputBundleOptions.baseDirectory, outputBundleOptions.outputBaseDirectory, {
     overwrite: true,
   });
-  if (outputPathOptions.needsServerGenerated) {
-    await generateServer(outputPathOptions);
+  if (outputBundleOptions.needsServerGenerated) {
+    await generateServer(outputBundleOptions);
   }
-  await generateBundleYaml(outputPathOptions, cwd);
+  await generateBundleYaml(outputBundleOptions, cwd);
 }
 
 // Generate bundle.yaml
 async function generateBundleYaml(
-  outputPathOptions: OutputPathOptions,
+  outputBundleOptions: OutputBundleOptions,
   cwd: string,
 ): Promise<void> {
   await writeFile(
-    outputPathOptions.bundleYamlPath,
+    outputBundleOptions.bundleYamlPath,
     yamlStringify({
       headers: [],
       redirects: [],
       rewrites: [],
-      runCommand: `node ${normalize(relative(cwd, outputPathOptions.serverFilePath))}`,
-      neededDirs: [normalize(relative(cwd, outputPathOptions.outputDirectory))],
-      staticAssets: [normalize(relative(cwd, outputPathOptions.browserDirectory))],
+      runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
+      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
+      staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
     }),
   );
 }
 
 // Generate server file for CSR apps
-async function generateServer(outputPathOptions: OutputPathOptions): Promise<void> {
-  await mkdir(dirname(outputPathOptions.serverFilePath));
-  await copyFile(SIMPLE_SERVER_FILE_PATH, outputPathOptions.serverFilePath);
+async function generateServer(outputBundleOptions: OutputBundleOptions): Promise<void> {
+  await mkdir(dirname(outputBundleOptions.serverFilePath));
+  await copyFile(SIMPLE_SERVER_FILE_PATH, outputBundleOptions.serverFilePath);
+}
+
+// Validate output directory includes all necessary parts
+export async function validateOutputDirectory(
+  outputBundleOptions: OutputBundleOptions,
+): Promise<void> {
+  if (
+    !(await fsExtra.exists(outputBundleOptions.outputDirectory)) ||
+    !(await fsExtra.exists(outputBundleOptions.browserDirectory)) ||
+    !(await fsExtra.exists(outputBundleOptions.serverFilePath))
+  ) {
+    throw new Error("Output directory is not of expected structure");
+  }
 }
 
 export const isMain = (meta: ImportMeta) => {
