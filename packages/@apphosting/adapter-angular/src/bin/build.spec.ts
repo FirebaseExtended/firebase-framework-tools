@@ -41,7 +41,7 @@ runCommand: node .apphosting/dist/server/server.mjs
 neededDirs:
   - .apphosting
 staticAssets:
-  - .apphosting/dist/browser
+  - .apphosting/dist/break
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
