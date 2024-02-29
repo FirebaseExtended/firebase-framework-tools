@@ -54,9 +54,9 @@
         "@angular-devkit/core": { "optional": true }
     },
     "devDependencies": {
-        "@angular-devkit/architect": "~0.1700.0",
-        "@angular-devkit/core": "~17.0.0",
-        "@angular/core": "~17.0.0",
+        "@angular-devkit/architect": "~0.1702.0",
+        "@angular-devkit/core": "~17.2.0",
+        "@angular/core": "~17.2.0",
         "@types/fs-extra": "*",
         "@types/mocha": "*",
         "@types/tmp": "*",
