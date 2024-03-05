@@ -5,6 +5,9 @@ const { basename } = require("path");
 const [, packageFromRef, versionFromRef, , prerelease] =
   /^refs\/tags\/(.+)-v(\d\d*\.\d\d*(\.\d\d*)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
 
+const [, packageFromBranch, versionFromBranch] =
+  /^refs\/heads\/(.+)-v(\d\d*\.\d\d*)$/.exec(process.env.BRANCH_NAME ?? "") ?? [];
+
 const since = process.env.GITHUB_ACTION
   ? `--since ${
       (process.env.GITHUB_BASE_REF && `origin/${process.env.GITHUB_BASE_REF}`) || "HEAD^1"
@@ -39,4 +42,6 @@ module.exports = {
   filteredLernaList,
   shortSHA,
   lernaScopeArgs,
+  packageFromBranch,
+  versionFromBranch,
 };
