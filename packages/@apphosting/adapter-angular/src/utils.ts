@@ -98,13 +98,10 @@ export const build = (
         reject(new Error(`Process exited with error code ${code}`));
       }
       try {
-        // console.log("BUILD OUTPUT:", buildOutput);
         const strippedManifest = extractManifestOutput(buildOutput);
         const parsedManifest = JSON.parse(strippedManifest) as string;
-        // console.log("PARSED MANIFEST", parsedManifest);
         // validate if the manifest is of the expected form
         manifest = buildManifestSchema.parse(parsedManifest);
-        // console.log("MANIFEST", manifest);
         if (manifest["errors"].length > 0) {
           // errors when extracting manifest
           manifest.errors.forEach((error) => {
