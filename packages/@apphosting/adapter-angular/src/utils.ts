@@ -11,12 +11,14 @@ import stripAnsi from "strip-ansi";
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson } = fsExtra;
 
+export const DEFAULT_COMMAND = "npm";
+
 /**
  * Check if the following build conditions are satisfied for the workspace:
  * - The workspace does not contain multiple angular projects.
  * - The angular project must be using the application builder.
  */
-export async function checkStandaloneBuildConditions(cwd: string): Promise<void> {
+export async function checkBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
     `${cwd}/node_modules/@angular-devkit/core/node/index.js`
@@ -69,12 +71,15 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
 }
 
 // Run build command
-export const build = (cwd = process.cwd(), cmd = "npm") =>
-  new Promise<OutputPathOptions>((resolve, reject) => {
+export const build = (
+  projectRoot = process.cwd(),
+  cmd = DEFAULT_COMMAND,
+): Promise<OutputPathOptions> =>
+  new Promise((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
     const childProcess = spawn(cmd, ["run", "build"], {
-      cwd,
+      cwd: projectRoot,
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],
     });
@@ -120,16 +125,19 @@ export const build = (cwd = process.cwd(), cmd = "npm") =>
   });
 
 /**
- * Extracts build manifest from the build command's console output.
+ * Extracts the build manifest from the build command's console output.
  * N.B. Unfortunately, there is currently no consistent way to suppress extraneous default output from the task
- * runners of monorepo tools such as Nx (such as using the --silent flag for npm scripts). As a result, we must
+ * runners of monorepo tools such as Nx (i.e. using the --silent flag for npm scripts). As a result, we must
  * temporarily resort to "cleaning" the output of executing the Angular application builder in a monorepo's tooling
  * context, in order to extract the build manifest. This method is a potentially flaky stopgap until we can find a
- * more reliable strategy.
+ * more consistent and resilient strategy for reading the output.
  */
 function extractManifestOutput(output: string): string {
   const start = output.indexOf("{");
   const end = output.lastIndexOf("}");
+  if (start === -1 || end === -1 || start > end) {
+    throw new Error(`Failed to find valid JSON object from build output: ${output}`);
+  }
   return stripAnsi(output.substring(start, end + 1));
 }
 

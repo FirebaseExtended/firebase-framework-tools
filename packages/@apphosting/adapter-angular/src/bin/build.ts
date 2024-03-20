@@ -1,33 +1,21 @@
 #! /usr/bin/env node
-import { checkStandaloneBuildConditions, build, generateOutputDirectory } from "../utils.js";
+import { checkBuildConditions, build, generateOutputDirectory, DEFAULT_COMMAND } from "../utils.js";
 
-// Check if monorepo is being used
-const monorepoProject = process.env.MONOREPO_PROJECT;
-const monorepoCmd = process.env.MONOREPO_CMD;
+const root = process.cwd();
 
-const cwd = process.cwd();
-
-let project = cwd;
-if (monorepoProject) {
-  project = project + "/" + monorepoProject;
+// Determine root of project to build
+let projectRoot = root;
+if (process.env.MONOREPO_PROJECT && process.env.FIREBASE_APP_DIRECTORY) {
+  projectRoot = projectRoot.concat("/", process.env.FIREBASE_APP_DIRECTORY);
 } else {
-  await checkStandaloneBuildConditions(project);
+  await checkBuildConditions(projectRoot);
 }
 
-let cmd = "npm";
-if (monorepoCmd) {
-  cmd = monorepoCmd;
+// Determine which build runner to use
+let cmd = DEFAULT_COMMAND;
+if (process.env.MONOREPO_COMMAND) {
+  cmd = process.env.MONOREPO_COMMAND;
 }
 
-console.log("CWD:", cwd);
-console.log("PROJECT:", project);
-console.log("COMMAND:", cmd);
-
-try {
-  const outputBundleOptions = await build(project, cmd);
-  console.log("OUTPUT BUNDLE OPTS", outputBundleOptions);
-  await generateOutputDirectory(cwd, outputBundleOptions);
-} catch (error) {
-  console.error(`Build failed with error: ${error}`);
-  process.exit(1);
-}
+const outputBundleOptions = await build(projectRoot, cmd);
+await generateOutputDirectory(root, outputBundleOptions);
