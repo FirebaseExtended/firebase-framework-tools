@@ -1,5 +1,11 @@
 #! /usr/bin/env node
-import { checkBuildConditions, build, generateOutputDirectory, DEFAULT_COMMAND } from "../utils.js";
+import {
+  build,
+  generateOutputDirectory,
+  DEFAULT_COMMAND,
+  checkStandaloneBuildConditions,
+  checkMonorepoBuildConditions,
+} from "../utils.js";
 
 const root = process.cwd();
 
@@ -7,8 +13,10 @@ const root = process.cwd();
 let projectRoot = root;
 if (process.env.MONOREPO_PROJECT && process.env.FIREBASE_APP_DIRECTORY) {
   projectRoot = projectRoot.concat("/", process.env.FIREBASE_APP_DIRECTORY);
+  const builder = process.env.MONOREPO_BUILDER || "";
+  checkMonorepoBuildConditions(builder);
 } else {
-  await checkBuildConditions(projectRoot);
+  await checkStandaloneBuildConditions(projectRoot);
 }
 
 // Determine which build runner to use

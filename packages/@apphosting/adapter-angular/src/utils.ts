@@ -12,13 +12,14 @@ import stripAnsi from "strip-ansi";
 export const { writeFile, move, readJson } = fsExtra;
 
 export const DEFAULT_COMMAND = "npm";
+export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
 
 /**
  * Check if the following build conditions are satisfied for the workspace:
  * - The workspace does not contain multiple angular projects.
  * - The angular project must be using the application builder.
  */
-export async function checkBuildConditions(cwd: string): Promise<void> {
+export async function checkStandaloneBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
     `${cwd}/node_modules/@angular-devkit/core/node/index.js`
@@ -44,7 +45,16 @@ export async function checkBuildConditions(cwd: string): Promise<void> {
   if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
 
   const { builder } = workspaceProject.targets.get(target)!;
-  if (builder !== "@angular-devkit/build-angular:application") {
+  if (builder !== REQUIRED_BUILDER) {
+    throw new Error("Only the Angular application builder is supported.");
+  }
+}
+
+/**
+ * Check if the monorepo build system is using the Angular application builder.
+ */
+export function checkMonorepoBuildConditions(builder: string): void {
+  if (builder !== REQUIRED_BUILDER) {
     throw new Error("Only the Angular application builder is supported.");
   }
 }
