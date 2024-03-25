@@ -7,15 +7,17 @@ import { stringify as yamlStringify } from "yaml";
 import { spawnSync } from "child_process";
 
 import { join, relative, normalize } from "path";
+import { createRequire } from "node:module";
 
 import type { RoutesManifest } from "./interfaces.js";
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson } = fsExtra;
 
 export async function loadConfig(cwd: string) {
+  const require = createRequire(import.meta.url);
   // dynamically load NextJS so this can be used in an NPX context
   const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
-    await import(`${cwd}/node_modules/next/dist/server/config.js`);
+    await import(require.resolve("next/dist/server/config.js", { paths: [cwd] }));
   const loadConfig = nextServerConfig.default;
   return await loadConfig(PHASE_PRODUCTION_BUILD, cwd);
 }
