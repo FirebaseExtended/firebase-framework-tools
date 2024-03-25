@@ -6,10 +6,12 @@ import { spawn } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import { OutputPathOptions, OutputPaths, buildManifestSchema, ValidManifest } from "./interface.js";
+import { createRequire } from 'node:module';
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
 
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
@@ -21,12 +23,13 @@ const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server
 */
 export async function checkBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
-  const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
-    `${cwd}/node_modules/@angular-devkit/core/node/index.js`
-  );
+  const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import (
+    require.resolve('@angular-devkit/core/node/index.js')
+    );
+
   const { workspaces }: typeof import("@angular-devkit/core") = await import(
-    `${cwd}/node_modules/@angular-devkit/core/src/index.js`
-  );
+    require.resolve('@angular-devkit/core/src/index.js')
+    );
 
   const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
   const { workspace } = await workspaces.readWorkspace(cwd, host);
