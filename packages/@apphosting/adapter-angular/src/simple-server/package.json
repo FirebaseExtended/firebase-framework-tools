@@ -1,16 +1,21 @@
 {
-    "scripts": {
-      "build": "rollup -c --bundleConfigAsCjs"
-    },
-    "dependencies": {
-      "@rollup/plugin-json": "^6.1.0",
-      "express": "^4.18.2",
-      "rollup": "^4.12.0"
-    },
-    "devDependencies": {
-      "@rollup/plugin-node-resolve": "^15.2.3",
-      "rollup-plugin-commonjs": "^10.1.0",
-      "rollup-plugin-node-resolve": "^5.2.0"
-    }
-  }
-  
+  "scripts": {
+    "build": "rollup -c --bundleConfigAsCjs"
+  },
+  "dependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "express": "^4.18.2",
+    "rollup": "^4.12.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0"
+  },
+  "name": "simple-server",
+  "version": "1.0.0",
+  "main": "rollup.config.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
