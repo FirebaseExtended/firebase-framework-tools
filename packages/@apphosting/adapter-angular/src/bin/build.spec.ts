@@ -18,6 +18,7 @@ describe("build commands", () => {
       outputBaseDirectory: resolve(tmpDir, ".apphosting", "dist"),
       outputDirectory: resolve(tmpDir, ".apphosting"),
       serverFilePath: resolve(tmpDir, ".apphosting", "dist", "server", "server.mjs"),
+      needsServerGenerated: false,
     };
   });
 
@@ -55,6 +56,7 @@ staticAssets:
       outputBaseDirectory: resolve(".apphosting", "dist"),
       outputDirectory: resolve("", ".apphosting"),
       serverFilePath: resolve(".apphosting", "server", "server.mjs"),
+      needsServerGenerated: false,
     };
     const outputPaths = {
       root: new URL("file:///test"),

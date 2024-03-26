@@ -3,13 +3,17 @@ import logger from "firebase-functions/logger";
 
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
-import { resolve, normalize, relative } from "path";
+import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import { OutputPathOptions, OutputPaths, buildManifestSchema, ValidManifest } from "./interface.js";
 import stripAnsi from "strip-ansi";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { writeFile, move, readJson } = fsExtra;
+export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
 
 export const DEFAULT_COMMAND = "npm";
 export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
@@ -66,8 +70,10 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
   const baseDirectory = fileURLToPath(outputPaths["root"]);
   const browserRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["browser"]));
   let serverRelativePath = "server";
+  let needsServerGenerated = true;
   if (outputPaths["server"]) {
     serverRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["server"]));
+    needsServerGenerated = false;
   }
 
   return {
@@ -77,6 +83,7 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
     outputBaseDirectory: resolve(outputBundleDir, "dist"),
     serverFilePath: resolve(outputBundleDir, "dist", serverRelativePath, "server.mjs"),
     browserDirectory: resolve(outputBundleDir, "dist", browserRelativePath),
+    needsServerGenerated,
   };
 }
 
@@ -159,11 +166,14 @@ export async function generateOutputDirectory(
   await move(outputPathOptions.baseDirectory, outputPathOptions.outputBaseDirectory, {
     overwrite: true,
   });
+  if (outputPathOptions.needsServerGenerated) {
+    await generateServer(outputPathOptions);
+  }
   await generateBundleYaml(outputPathOptions, cwd);
 }
 
 // Generate bundle.yaml
-export async function generateBundleYaml(
+async function generateBundleYaml(
   outputPathOptions: OutputPathOptions,
   cwd: string,
 ): Promise<void> {
@@ -178,6 +188,12 @@ export async function generateBundleYaml(
       staticAssets: [normalize(relative(cwd, outputPathOptions.browserDirectory))],
     }),
   );
+}
+
+// Generate server file for CSR apps
+async function generateServer(outputPathOptions: OutputPathOptions): Promise<void> {
+  await mkdir(dirname(outputPathOptions.serverFilePath));
+  await copyFile(SIMPLE_SERVER_FILE_PATH, outputPathOptions.serverFilePath);
 }
 
 export const isMain = (meta: ImportMeta) => {

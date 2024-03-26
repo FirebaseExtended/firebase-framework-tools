@@ -9,6 +9,7 @@ export interface OutputPathOptions {
   outputBaseDirectory: string;
   serverFilePath: string;
   browserDirectory: string;
+  needsServerGenerated: boolean;
 }
 
 // valid manifest schema
