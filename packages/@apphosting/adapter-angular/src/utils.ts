@@ -101,11 +101,11 @@ export const build = (
     });
 
     childProcess.on("exit", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with error code ${code}. Output: ${buildOutput}`));
+      }
       if (!buildOutput) {
         reject(new Error("Unable to locate build manifest with output paths."));
-      }
-      if (code !== 0) {
-        reject(new Error(`Process exited with error code ${code}`));
       }
       try {
         const strippedManifest = extractManifestOutput(buildOutput);
