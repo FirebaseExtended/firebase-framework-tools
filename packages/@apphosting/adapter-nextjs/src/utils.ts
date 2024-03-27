@@ -49,7 +49,7 @@ export async function build(cwd: string): Promise<void> {
   process.env.NEXT_PRIVATE_STANDALONE = "true";
   // Opt-out sending telemetry to Vercel
   process.env.NEXT_TELEMETRY_DISABLED = "1";
-  if (!(await exists(join(cwd, "node_modules")))) {
+  if (await exists(join(cwd, "yarn.lock"))) {
     spawnSync("yarn", ["build"], { cwd, shell: true, stdio: "inherit" });
   } else {
     spawnSync("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
