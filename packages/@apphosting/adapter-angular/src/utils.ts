@@ -55,7 +55,6 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
   const outputBundleDir = resolve(".apphosting");
 
   const baseDirectory = fileURLToPath(outputPaths["root"]);
-  console.log("outputpaths: " + baseDirectory);
   const browserRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["browser"]));
   let serverRelativePath = "server";
   let needsServerGenerated = true;
@@ -107,7 +106,6 @@ export const build = (cwd = process.cwd()) =>
                 logger.info(warning);
               });
             }
-
             outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
           }
         } catch (error) {
