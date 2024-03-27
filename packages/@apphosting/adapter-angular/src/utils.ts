@@ -22,18 +22,10 @@ const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server
 export async function checkBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
-<<<<<<< Updated upstream
     `${cwd}/node_modules/@angular-devkit/core/node/index.js`
-=======
-    require.resolve("@angular-devkit/core/node/index.js")
->>>>>>> Stashed changes
   );
   const { workspaces }: typeof import("@angular-devkit/core") = await import(
-<<<<<<< Updated upstream
     `${cwd}/node_modules/@angular-devkit/core/src/index.js`
-=======
-    require.resolve("@angular-devkit/core/src/index.js")
->>>>>>> Stashed changes
   );
 
   const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
@@ -95,15 +87,11 @@ export const build = (cwd = process.cwd()) =>
     });
     let outputPathOptions = {} as OutputPathOptions;
     let manifest = {} as ValidManifest;
-    console.log("manifest");
 
     if (childProcess.stdout) {
-      console.log("stout");
       childProcess.stdout.on("data", (data) => {
-        console.log("stout data");
         try {
           if (data.toString().includes("outputPaths")) {
-            console.log("include outputpaths");
             const parsedManifest = JSON.parse(data);
             // validate if the manifest is of the expected form
             manifest = buildManifestSchema.parse(parsedManifest);
@@ -119,7 +107,6 @@ export const build = (cwd = process.cwd()) =>
                 logger.info(warning);
               });
             }
-            console.log("manifest output: " + manifest["outputPaths"]);
 
             outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
           }
