@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { OutputBundleOptions } from "./interfaces.js";
 import { stringify as yamlStringify } from "yaml";
 import { spawnSync } from "child_process";
+import { createRequire } from "node:module";
 
 import { join, relative, normalize } from "path";
 
@@ -14,8 +15,9 @@ export const { move, exists, writeFile, readJson } = fsExtra;
 
 export async function loadConfig(cwd: string) {
   // dynamically load NextJS so this can be used in an NPX context
+  const require = createRequire(import.meta.url);
   const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
-    await import(`${cwd}/node_modules/next/dist/server/config.js`);
+    await import(require.resolve("next/dist/server/config.js"));
   const loadConfig = nextServerConfig.default;
   return await loadConfig(PHASE_PRODUCTION_BUILD, cwd);
 }
@@ -42,12 +44,16 @@ export function populateOutputBundleOptions(cwd: string): OutputBundleOptions {
 }
 
 // Run build command
-export function build(cwd: string): void {
+export async function build(cwd: string): Promise<void> {
   // Set standalone mode
   process.env.NEXT_PRIVATE_STANDALONE = "true";
   // Opt-out sending telemetry to Vercel
   process.env.NEXT_TELEMETRY_DISABLED = "1";
-  spawnSync("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+  if (!(await exists(join(cwd, "node_modules")))) {
+    spawnSync("yarn", ["build"], { cwd, shell: true, stdio: "inherit" });
+  } else {
+    spawnSync("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+  }
 }
 
 // move the standalone directory, the static directory and the public directory to apphosting output directory
