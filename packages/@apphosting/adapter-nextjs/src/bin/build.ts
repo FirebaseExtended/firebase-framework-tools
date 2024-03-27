@@ -10,7 +10,7 @@ import { join } from "path";
 
 const cwd = process.cwd();
 
-build(cwd);
+await build(cwd);
 
 const outputBundleOptions = populateOutputBundleOptions(cwd);
 const { distDir } = await loadConfig(cwd);
