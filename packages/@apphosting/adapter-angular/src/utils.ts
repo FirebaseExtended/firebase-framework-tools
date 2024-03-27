@@ -6,6 +6,7 @@ import { spawn } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import { OutputPathOptions, OutputPaths, buildManifestSchema, ValidManifest } from "./interface.js";
+import stripAnsi from "strip-ansi";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
@@ -14,12 +15,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
 
-/*
- Check if build conditions are satisfied for the workspace:
- The workspace cannot contain multiple angular projects.
- The angular project must be using application builder.
-*/
-export async function checkBuildConditions(cwd: string): Promise<void> {
+export const DEFAULT_COMMAND = "npm";
+export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
+
+/**
+ * Check if the following build conditions are satisfied for the workspace:
+ * - The workspace does not contain multiple angular projects.
+ * - The angular project must be using the application builder.
+ */
+export async function checkStandaloneBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
     `${cwd}/node_modules/@angular-devkit/core/node/index.js`
@@ -45,7 +49,16 @@ export async function checkBuildConditions(cwd: string): Promise<void> {
   if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
 
   const { builder } = workspaceProject.targets.get(target)!;
-  if (builder !== "@angular-devkit/build-angular:application") {
+  if (builder !== REQUIRED_BUILDER) {
+    throw new Error("Only the Angular application builder is supported.");
+  }
+}
+
+/**
+ * Check if the monorepo build system is using the Angular application builder.
+ */
+export function checkMonorepoBuildConditions(builder: string): void {
+  if (builder !== REQUIRED_BUILDER) {
     throw new Error("Only the Angular application builder is supported.");
   }
 }
@@ -75,56 +88,76 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
 }
 
 // Run build command
-export const build = (cwd = process.cwd()) =>
-  new Promise<OutputPathOptions>((resolve, reject) => {
+export const build = (
+  projectRoot = process.cwd(),
+  cmd = DEFAULT_COMMAND,
+): Promise<OutputPathOptions> =>
+  new Promise((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn("npm", ["run", "build"], {
-      cwd,
+    const childProcess = spawn(cmd, ["run", "build"], {
+      cwd: projectRoot,
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],
     });
-    let outputPathOptions = {} as OutputPathOptions;
+    let buildOutput = "";
     let manifest = {} as ValidManifest;
 
-    if (childProcess.stdout) {
-      childProcess.stdout.on("data", (data) => {
-        try {
-          if (data.toString().includes("outputPaths")) {
-            const parsedManifest = JSON.parse(data);
-            // validate if the manifest is of the expected form
-            manifest = buildManifestSchema.parse(parsedManifest);
-            if (manifest["errors"].length > 0) {
-              // errors when extracting manifest
-              manifest.errors.forEach((error) => {
-                logger.error(error);
-              });
-            }
-            if (manifest["warnings"].length > 0) {
-              // warnings when extracting manifest
-              manifest.warnings.forEach((warning) => {
-                logger.info(warning);
-              });
-            }
-            outputPathOptions = populateOutputBundleOptions(manifest["outputPaths"]);
-          }
-        } catch (error) {
-          throw new Error("Build manifest is not of expected structure: " + error);
-        }
-      });
-    } else {
-      throw new Error("Unable to locate build manifest with output paths.");
-    }
+    childProcess.stdout.on("data", (data: Buffer) => {
+      buildOutput += data.toString();
+    });
 
     childProcess.on("exit", (code) => {
-      if (code === 0) return resolve(outputPathOptions);
-      reject();
+      if (code !== 0) {
+        reject(new Error(`Process exited with error code ${code}. Output: ${buildOutput}`));
+      }
+      if (!buildOutput) {
+        reject(new Error("Unable to locate build manifest with output paths."));
+      }
+      try {
+        const strippedManifest = extractManifestOutput(buildOutput);
+        const parsedManifest = JSON.parse(strippedManifest) as string;
+        // validate if the manifest is of the expected form
+        manifest = buildManifestSchema.parse(parsedManifest);
+        if (manifest["errors"].length > 0) {
+          // errors when extracting manifest
+          manifest.errors.forEach((error) => {
+            logger.error(error);
+          });
+        }
+        if (manifest["warnings"].length > 0) {
+          // warnings when extracting manifest
+          manifest.warnings.forEach((warning) => {
+            logger.info(warning);
+          });
+        }
+        resolve(populateOutputBundleOptions(manifest["outputPaths"]));
+      } catch (error) {
+        reject(new Error("Build manifest is not of expected structure: " + error));
+      }
     });
   });
 
-/* 
-Move the base output directory, which contains the server and browser bundle directory, and prerendered routes
-as well as generating bundle.yaml.
+/**
+ * Extracts the build manifest from the build command's console output.
+ * N.B. Unfortunately, there is currently no consistent way to suppress extraneous default output from the task
+ * runners of monorepo tools such as Nx (i.e. using the --silent flag for npm scripts). As a result, we must
+ * temporarily resort to "cleaning" the output of executing the Angular application builder in a monorepo's tooling
+ * context, in order to extract the build manifest. This method is a potentially flaky stopgap until we can find a
+ * more consistent and resilient strategy for reading the output.
+ */
+function extractManifestOutput(output: string): string {
+  const start = output.indexOf("{");
+  const end = output.lastIndexOf("}");
+  if (start === -1 || end === -1 || start > end) {
+    throw new Error(`Failed to find valid JSON object from build output: ${output}`);
+  }
+  return stripAnsi(output.substring(start, end + 1));
+}
+
+/**
+ * Move the base output directory, which contains the server and browser bundle directory, and prerendered routes
+ * as well as generating bundle.yaml.
  */
 export async function generateOutputDirectory(
   cwd: string,
