@@ -1,21 +1,27 @@
+import { spawnSync } from "child_process";
 import fsExtra from "fs-extra";
+import { createRequire } from "node:module";
+import { join, relative, normalize } from "path";
+import { fileURLToPath } from "url";
+import { stringify as yamlStringify } from "yaml";
+
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 import { ROUTES_MANIFEST } from "./constants.js";
-import { fileURLToPath } from "url";
-import { OutputBundleOptions } from "./interfaces.js";
-import { stringify as yamlStringify } from "yaml";
-import { spawnSync } from "child_process";
+import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
+import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
-import { join, relative, normalize } from "path";
-
-import type { RoutesManifest } from "./interfaces.js";
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson } = fsExtra;
 
-export async function loadConfig(cwd: string) {
+export const DEFAULT_COMMAND = "npm";
+
+export async function loadConfig(cwd: string): Promise<NextConfigComplete> {
   // dynamically load NextJS so this can be used in an NPX context
+  const require = createRequire(import.meta.url);
+  const configPath = require.resolve("next/dist/server/config.js", { paths: [cwd] });
   const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
-    await import(`${cwd}/node_modules/next/dist/server/config.js`);
+    await import(configPath);
+
   const loadConfig = nextServerConfig.default;
   return await loadConfig(PHASE_PRODUCTION_BUILD, cwd);
 }
@@ -30,42 +36,48 @@ export const isMain = (meta: ImportMeta) => {
   return process.argv[1] === fileURLToPath(meta.url);
 };
 
-export function populateOutputBundleOptions(cwd: string): OutputBundleOptions {
-  const outputBundleDir = join(cwd, ".apphosting");
+export function populateOutputBundleOptions(rootDir: string, appDir: string): OutputBundleOptions {
+  const outputBundleDir = join(rootDir, ".apphosting");
+  // In monorepo setups, the standalone directory structure will mirror the structure of the monorepo.
+  // We find the relative path from the root to the app directory to correctly locate server.js.
+  const appToRootRelativePath = relative(rootDir, appDir);
   return {
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
     outputDirectory: outputBundleDir,
-    serverFilePath: join(outputBundleDir, "server.js"),
+    serverFilePath: join(outputBundleDir, appToRootRelativePath, "server.js"),
     outputPublicDirectory: join(outputBundleDir, "public"),
     outputStaticDirectory: join(outputBundleDir, ".next", "static"),
   };
 }
 
 // Run build command
-export function build(cwd: string): void {
+export function build(cwd: string, cmd = DEFAULT_COMMAND): void {
   // Set standalone mode
   process.env.NEXT_PRIVATE_STANDALONE = "true";
   // Opt-out sending telemetry to Vercel
   process.env.NEXT_TELEMETRY_DISABLED = "1";
-  spawnSync("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+  spawnSync(cmd, ["run", "build"], { cwd, shell: true, stdio: "inherit" });
 }
 
 // move the standalone directory, the static directory and the public directory to apphosting output directory
 // as well as generating bundle.yaml
 export async function generateOutputDirectory(
-  cwd: string,
+  rootDir: string,
+  appDir: string,
   outputBundleOptions: OutputBundleOptions,
   nextBuildDirectory: string,
 ): Promise<void> {
   const standaloneDirectory = join(nextBuildDirectory, "standalone");
+  console.log("STANDALONE DIR:", standaloneDirectory);
+  console.log("OUTPUT DIR:    ", outputBundleOptions.outputDirectory);
   await move(standaloneDirectory, outputBundleOptions.outputDirectory, { overwrite: true });
 
   const staticDirectory = join(nextBuildDirectory, "static");
-  const publicDirectory = join(cwd, "public");
+  const publicDirectory = join(appDir, "public");
   await Promise.all([
     move(staticDirectory, outputBundleOptions.outputStaticDirectory, { overwrite: true }),
     movePublicDirectory(publicDirectory, outputBundleOptions.outputPublicDirectory),
-    generateBundleYaml(outputBundleOptions, nextBuildDirectory, cwd),
+    generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir),
   ]);
   return;
 }
