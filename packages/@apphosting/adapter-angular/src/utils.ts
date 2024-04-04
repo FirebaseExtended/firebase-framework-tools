@@ -183,7 +183,9 @@ async function generateBundleYaml(
       headers: [],
       redirects: [],
       rewrites: [],
-      runCommand: `SSR_PORT=$PORT node ${normalize(relative(cwd, outputPathOptions.serverFilePath))}`,
+      runCommand: `SSR_PORT=$PORT node ${normalize(
+        relative(cwd, outputPathOptions.serverFilePath),
+      )}`,
       neededDirs: [normalize(relative(cwd, outputPathOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputPathOptions.browserDirectory))],
     }),
