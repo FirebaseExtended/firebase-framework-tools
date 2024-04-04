@@ -5,7 +5,12 @@ import { fileURLToPath } from "url";
 import { spawn } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
-import { OutputBundleOptions, OutputPaths, buildManifestSchema, ValidManifest } from "./interface.js";
+import {
+  OutputBundleOptions,
+  OutputPaths,
+  buildManifestSchema,
+  ValidManifest,
+} from "./interface.js";
 import stripAnsi from "strip-ansi";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
