@@ -25,8 +25,14 @@ export const handle = async (req: Request, res: Response) => {
   if (!rendered) {
     return res.writeHead(404, "Not Found").end();
   }
+  
+  let body;
+  if(rendered.headers.get("Content-Type").includes('text/')){
+    body = await rendered.text(); 
+  }else {
+    body = Buffer.from(await rendered.arrayBuffer());
+  }
 
-  const body = await rendered.text();
   return res.writeHead(rendered.status, Object.fromEntries(rendered.headers)).end(body);
 };
 
