@@ -116,7 +116,8 @@ export async function validateOutputDirectory(
 ): Promise<void> {
   if (
     !(await fsExtra.exists(outputBundleOptions.outputDirectory)) ||
-    !(await fsExtra.exists(outputBundleOptions.serverFilePath))
+    !(await fsExtra.exists(outputBundleOptions.serverFilePath)) ||
+    !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))
   ) {
     throw new Error("Output directory is not of expected structure");
   }
