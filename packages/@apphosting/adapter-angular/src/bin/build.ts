@@ -5,6 +5,7 @@ import {
   DEFAULT_COMMAND,
   checkStandaloneBuildConditions,
   checkMonorepoBuildConditions,
+  validateOutputDirectory,
 } from "../utils.js";
 
 const root = process.cwd();
@@ -18,7 +19,6 @@ if (process.env.MONOREPO_PROJECT && process.env.FIREBASE_APP_DIRECTORY) {
 } else {
   await checkStandaloneBuildConditions(projectRoot);
 }
-
 // Determine which build runner to use
 let cmd = DEFAULT_COMMAND;
 if (process.env.MONOREPO_COMMAND) {
@@ -27,3 +27,5 @@ if (process.env.MONOREPO_COMMAND) {
 
 const outputBundleOptions = await build(projectRoot, cmd);
 await generateOutputDirectory(root, outputBundleOptions);
+
+await validateOutputDirectory(outputBundleOptions);

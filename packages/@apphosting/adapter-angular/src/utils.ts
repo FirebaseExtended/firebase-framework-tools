@@ -5,7 +5,12 @@ import { fileURLToPath } from "url";
 import { spawn } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
-import { OutputPathOptions, OutputPaths, buildManifestSchema, ValidManifest } from "./interface.js";
+import {
+  OutputBundleOptions,
+  OutputPaths,
+  buildManifestSchema,
+  ValidManifest,
+} from "./interface.js";
 import stripAnsi from "strip-ansi";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
@@ -64,7 +69,7 @@ export function checkMonorepoBuildConditions(builder: string): void {
 }
 
 // Populate file or directory paths we need for generating output directory
-export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPathOptions {
+export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBundleOptions {
   const outputBundleDir = resolve(".apphosting");
 
   const baseDirectory = fileURLToPath(outputPaths["root"]);
@@ -91,7 +96,7 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputPat
 export const build = (
   projectRoot = process.cwd(),
   cmd = DEFAULT_COMMAND,
-): Promise<OutputPathOptions> =>
+): Promise<OutputBundleOptions> =>
   new Promise((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
@@ -161,42 +166,56 @@ function extractManifestOutput(output: string): string {
  */
 export async function generateOutputDirectory(
   cwd: string,
-  outputPathOptions: OutputPathOptions,
+  outputBundleOptions: OutputBundleOptions,
 ): Promise<void> {
-  await move(outputPathOptions.baseDirectory, outputPathOptions.outputBaseDirectory, {
+  await move(outputBundleOptions.baseDirectory, outputBundleOptions.outputBaseDirectory, {
     overwrite: true,
   });
-  if (outputPathOptions.needsServerGenerated) {
-    await generateServer(outputPathOptions);
+  if (outputBundleOptions.needsServerGenerated) {
+    await generateServer(outputBundleOptions);
   }
-  await generateBundleYaml(outputPathOptions, cwd);
+  await generateBundleYaml(outputBundleOptions, cwd);
 }
 
 // Generate bundle.yaml
 async function generateBundleYaml(
-  outputPathOptions: OutputPathOptions,
+  outputBundleOptions: OutputBundleOptions,
   cwd: string,
 ): Promise<void> {
   await writeFile(
-    outputPathOptions.bundleYamlPath,
+    outputBundleOptions.bundleYamlPath,
     yamlStringify({
       headers: [],
       redirects: [],
       rewrites: [],
       // this fix is needed for Angular version 17.3.2
       runCommand: `SSR_PORT=$PORT node ${normalize(
-        relative(cwd, outputPathOptions.serverFilePath),
+        relative(cwd, outputBundleOptions.serverFilePath),
       )}`,
-      neededDirs: [normalize(relative(cwd, outputPathOptions.outputDirectory))],
-      staticAssets: [normalize(relative(cwd, outputPathOptions.browserDirectory))],
+      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
+      staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
     }),
   );
 }
 
 // Generate server file for CSR apps
-async function generateServer(outputPathOptions: OutputPathOptions): Promise<void> {
-  await mkdir(dirname(outputPathOptions.serverFilePath));
-  await copyFile(SIMPLE_SERVER_FILE_PATH, outputPathOptions.serverFilePath);
+async function generateServer(outputBundleOptions: OutputBundleOptions): Promise<void> {
+  await mkdir(dirname(outputBundleOptions.serverFilePath));
+  await copyFile(SIMPLE_SERVER_FILE_PATH, outputBundleOptions.serverFilePath);
+}
+
+// Validate output directory includes all necessary parts
+export async function validateOutputDirectory(
+  outputBundleOptions: OutputBundleOptions,
+): Promise<void> {
+  if (
+    !(await fsExtra.exists(outputBundleOptions.outputDirectory)) ||
+    !(await fsExtra.exists(outputBundleOptions.browserDirectory)) ||
+    !(await fsExtra.exists(outputBundleOptions.serverFilePath)) ||
+    !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))
+  ) {
+    throw new Error("Output directory is not of expected structure");
+  }
 }
 
 export const isMain = (meta: ImportMeta) => {
