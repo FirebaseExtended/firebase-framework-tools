@@ -45,8 +45,8 @@ export function populateOutputBundleOptions(rootDir: string, appDir: string): Ou
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
     outputDirectory: outputBundleDir,
     serverFilePath: join(outputBundleDir, appToRootRelativePath, "server.js"),
-    outputPublicDirectory: join(outputBundleDir, "public"),
-    outputStaticDirectory: join(outputBundleDir, ".next", "static"),
+    outputPublicDirectory: join(outputBundleDir, appToRootRelativePath, "public"),
+    outputStaticDirectory: join(outputBundleDir, appToRootRelativePath, ".next", "static"),
   };
 }
 
@@ -68,8 +68,6 @@ export async function generateOutputDirectory(
   nextBuildDirectory: string,
 ): Promise<void> {
   const standaloneDirectory = join(nextBuildDirectory, "standalone");
-  console.log("STANDALONE DIR:", standaloneDirectory);
-  console.log("OUTPUT DIR:    ", outputBundleOptions.outputDirectory);
   await move(standaloneDirectory, outputBundleOptions.outputDirectory, { overwrite: true });
 
   const staticDirectory = join(nextBuildDirectory, "static");

@@ -24,9 +24,7 @@ if (process.env.MONOREPO_COMMAND) {
 build(projectRoot, cmd);
 
 const outputBundleOptions = populateOutputBundleOptions(root, projectRoot);
-console.log("OUTPUT BUNDLE: ", outputBundleOptions);
 const { distDir } = await loadConfig(root);
 const nextBuildDirectory = join(projectRoot, distDir);
-console.log("NEXT BUILD DIR:", nextBuildDirectory);
 
 await generateOutputDirectory(root, projectRoot, outputBundleOptions, nextBuildDirectory);
