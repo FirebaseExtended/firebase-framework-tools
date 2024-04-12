@@ -188,7 +188,6 @@ async function generateBundleYaml(
       headers: [],
       redirects: [],
       rewrites: [],
-      // this fix is needed for Angular version 17.3.2
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
