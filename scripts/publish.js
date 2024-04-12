@@ -5,9 +5,9 @@ const { join } = require("path");
 const { filteredLernaList, versionFromRef, shortSHA, prerelease } = require("./github.js");
 
 const wombatDressingRoomTokens = new Map([
-  // Disabling this until I can get wombat access to this org
   // ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
-  // ['@apphosting/adapter-nextjs', process.env.ADAPTER_NEXTJS_NPM_TOKEN],
+  ["@apphosting/adapter-nextjs", process.env.ADAPTER_NEXTJS_NPM_TOKEN],
+  ["@apphosting/adapter-angular", process.env.ADAPTER_ANGULAR_NPM_TOKEN],
 ]);
 
 wombatDressingRoomTokens.forEach((token, pkg) => {
