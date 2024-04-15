@@ -11,7 +11,7 @@ import { join } from "path";
 const root = process.cwd();
 
 let projectRoot = root;
-if (process.env.MONOREPO_PROJECT && process.env.FIREBASE_APP_DIRECTORY) {
+if (process.env.FIREBASE_APP_DIRECTORY) {
   projectRoot = projectRoot.concat("/", process.env.FIREBASE_APP_DIRECTORY);
 }
 
@@ -24,7 +24,7 @@ if (process.env.MONOREPO_COMMAND) {
 build(projectRoot, cmd);
 
 const outputBundleOptions = populateOutputBundleOptions(root, projectRoot);
-const { distDir } = await loadConfig(root);
+const { distDir } = await loadConfig(root, projectRoot);
 const nextBuildDirectory = join(projectRoot, distDir);
 
 await generateOutputDirectory(root, projectRoot, outputBundleOptions, nextBuildDirectory);

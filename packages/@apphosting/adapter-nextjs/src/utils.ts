@@ -13,17 +13,19 @@ import { NextConfigComplete } from "next/dist/server/config-shared.js";
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson } = fsExtra;
 
+// The default fallback command prefix to run a build.
 export const DEFAULT_COMMAND = "npm";
 
-export async function loadConfig(cwd: string): Promise<NextConfigComplete> {
+// Loads the user's next.config.js file.
+export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
   // dynamically load NextJS so this can be used in an NPX context
   const require = createRequire(import.meta.url);
-  const configPath = require.resolve("next/dist/server/config.js", { paths: [cwd] });
+  const configPath = require.resolve("next/dist/server/config.js", { paths: [projectRoot] });
   const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
     await import(configPath);
 
   const loadConfig = nextServerConfig.default;
-  return await loadConfig(PHASE_PRODUCTION_BUILD, cwd);
+  return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
 
 export async function readRoutesManifest(distDir: string): Promise<RoutesManifest> {
@@ -36,17 +38,27 @@ export const isMain = (meta: ImportMeta) => {
   return process.argv[1] === fileURLToPath(meta.url);
 };
 
+/**
+ * Provides the paths in the output bundle for the built artifacts.
+ * @param rootDir The root directory of the uploaded source code.
+ * @param appDir The path to the application source code, relative to the root.
+ * @return The output bundle paths.
+ */
 export function populateOutputBundleOptions(rootDir: string, appDir: string): OutputBundleOptions {
   const outputBundleDir = join(rootDir, ".apphosting");
   // In monorepo setups, the standalone directory structure will mirror the structure of the monorepo.
   // We find the relative path from the root to the app directory to correctly locate server.js.
-  const appToRootRelativePath = relative(rootDir, appDir);
+  const outputBundleAppDir = join(
+    outputBundleDir,
+    process.env.MONOREPO_COMMAND ? relative(rootDir, appDir) : "",
+  );
+
   return {
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
     outputDirectory: outputBundleDir,
-    serverFilePath: join(outputBundleDir, appToRootRelativePath, "server.js"),
-    outputPublicDirectory: join(outputBundleDir, appToRootRelativePath, "public"),
-    outputStaticDirectory: join(outputBundleDir, appToRootRelativePath, ".next", "static"),
+    serverFilePath: join(outputBundleAppDir, "server.js"),
+    outputPublicDirectory: join(outputBundleAppDir, "public"),
+    outputStaticDirectory: join(outputBundleAppDir, ".next", "static"),
   };
 }
 
@@ -59,8 +71,14 @@ export function build(cwd: string, cmd = DEFAULT_COMMAND): void {
   spawnSync(cmd, ["run", "build"], { cwd, shell: true, stdio: "inherit" });
 }
 
-// move the standalone directory, the static directory and the public directory to apphosting output directory
-// as well as generating bundle.yaml
+/**
+ * Moves the standalone directory, the static directory and the public directory to apphosting output directory.
+ * Also generates the bundle.yaml file.
+ * @param rootDir The root directory of the uploaded source code.
+ * @param appDir The path to the application source code, relative to the root.
+ * @param outputBundleOptions The target location of built artifacts in the output bundle.
+ * @param nextBuildDirectory The location of the .next directory.
+ */
 export async function generateOutputDirectory(
   rootDir: string,
   appDir: string,
