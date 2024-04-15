@@ -1,6 +1,6 @@
 {
     "scripts": {
-      "build": "rollup -c --bundleConfigAsCjs"
+      "generate-server": "rollup -c --bundleConfigAsCjs"
     },
     "dependencies": {
       "@rollup/plugin-json": "^6.1.0",
