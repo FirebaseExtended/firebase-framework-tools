@@ -53,6 +53,7 @@ staticAssets:
       "dist/test/browser/browserfile": "",
       "dist/test/server/notserver.mjs": "",
     };
+    breakbuild;
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions);
     assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
