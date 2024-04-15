@@ -68,7 +68,6 @@ staticAssets:
       outputDirectory: resolve("", ".apphosting"),
       needsServerGenerated: false,
       serverFilePath: resolve(".apphosting", "server", "server.mjs"),
-      serverFilePath: resolve(".apphosting", "server", "server.mjs"),
     };
     const outputPaths = {
       root: new URL("file:///test"),
