@@ -18,9 +18,11 @@ export const DEFAULT_COMMAND = "npm";
 
 // Loads the user's next.config.js file.
 export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
-  // dynamically load NextJS so this can be used in an NPX context
+  // createRequire() gives us access to require.resolve() in ESM
+  // https://nodejs.org/api/module.html#modulecreaterequirefilename
   const require = createRequire(import.meta.url);
   const configPath = require.resolve("next/dist/server/config.js", { paths: [projectRoot] });
+  // dynamically load NextJS so this can be used in an NPX context
   const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
     await import(configPath);
 
