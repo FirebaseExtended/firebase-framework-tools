@@ -53,7 +53,6 @@ staticAssets:
       "dist/test/browser/browserfile": "",
       "dist/test/server/notserver.mjs": "",
     };
-    breakbuild;
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions);
     assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
@@ -69,6 +68,7 @@ staticAssets:
       outputDirectory: resolve("", ".apphosting"),
       needsServerGenerated: false,
       serverFilePath: resolve(".apphosting", "server", "server.mjs"),
+      needsServerGenerated: false,
     };
     const outputPaths = {
       root: new URL("file:///test"),
