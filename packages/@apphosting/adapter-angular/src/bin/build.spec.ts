@@ -38,7 +38,7 @@ describe("build commands", () => {
       ".apphosting/bundle.yaml": `headers: []
 redirects: []
 rewrites: []
-runCommand: SSR_PORT=$PORT node .apphosting/dist/server/server.mjs
+runCommand: node .apphosting/dist/server/server.mjs
 neededDirs:
   - .apphosting
 staticAssets:
@@ -68,7 +68,6 @@ staticAssets:
       outputDirectory: resolve("", ".apphosting"),
       needsServerGenerated: false,
       serverFilePath: resolve(".apphosting", "server", "server.mjs"),
-      needsServerGenerated: false,
     };
     const outputPaths = {
       root: new URL("file:///test"),
