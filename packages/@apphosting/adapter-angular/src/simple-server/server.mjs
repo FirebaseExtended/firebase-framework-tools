@@ -1,5 +1,5 @@
 // *** IMPORTANT NOTE ***
-// make sure to run "npm run generate-server" after making any changes to this file
+// make sure to run "npm run build" after making any changes to this file
 // changes to this file will not be reflected unless that command is run
 import express from "express";
 import path from "path";
