@@ -43,7 +43,7 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: 'Upload Artifact'
+      - name: "Upload Artifact"
         uses: actions/upload-artifact@v3
         with:
           path: |
@@ -57,7 +57,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        node: [ 16, 18, 20 ]
+        node: [16, 18, 20]
       fail-fast: false
     name: Test Node ${{ matrix.node }}
     steps:
@@ -124,34 +124,35 @@ jobs:
   test_and_contribute:
     runs-on: ubuntu-latest
     name: Branch protection
-    needs: ['test', 'lint']
+    needs: ["test", "lint"]
     steps:
       - run: true
 
   publish:
     runs-on: ubuntu-latest
     name: Publish (NPM)
-    needs: ['build', 'test']
+    needs: ["build", "test"]
     if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'release' }}
     permissions:
       id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
-            fetch-depth: 2
+          fetch-depth: 2
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: 20
           check-latest: false
-          registry-url: 'https://registry.npmjs.org'
-      - name: 'Download Artifacts'
+          registry-url: "https://registry.npmjs.org"
+      - name: "Download Artifacts"
         uses: actions/download-artifact@v3
       - name: Rsync Artifacts
         run: rsync -a artifact/ packages
       - name: Publish
         run: npm run publish
         env:
-          # ADAPTER_NEXTJS_NPM_TOKEN: ${{ secrets.ADAPTER_NEXTJS_NPM_TOKEN }}
+          ADAPTER_NEXTJS_NPM_TOKEN: ${{ secrets.ADAPTER_NEXTJS_NPM_TOKEN }}
+          ADAPTER_ANGULAR_NPM_TOKEN: ${{ secrets.ADAPTER_ANGULAR_NPM_TOKEN }}
           # FIREBASE_FRAMEWORKS_NPM_TOKEN: ${{ secrets.FIREBASE_FRAMEWORKS_NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_NPM_TOKEN }}
