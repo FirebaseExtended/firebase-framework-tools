@@ -18,7 +18,10 @@ export const DEFAULT_COMMAND = "npm";
 
 // Loads the user's next.config.js file.
 export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
-  // createRequire() gives us access to require.resolve() in ESM
+  // createRequire() gives us access to require.resolve() in ESM. We want to use the require.resolve
+  // resolution algorithm to get the path to the next config module, which may reside in the node_modules
+  // folder at a higher level in the directory structure (e.g. for monorepo projects). We then dynamically
+  // load the module using the returned path.
   // https://nodejs.org/api/module.html#modulecreaterequirefilename
   const require = createRequire(import.meta.url);
   const configPath = require.resolve("next/dist/server/config.js", { paths: [projectRoot] });
