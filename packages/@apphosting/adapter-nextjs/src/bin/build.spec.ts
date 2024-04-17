@@ -174,7 +174,7 @@ staticAssets:
       }`,
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await generateOutputDirectory(tmpDir, tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
     assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
   });
   it("test populate output bundle options", async () => {
