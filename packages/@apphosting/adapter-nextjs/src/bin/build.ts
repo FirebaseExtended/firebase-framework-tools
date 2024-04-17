@@ -5,6 +5,7 @@ import {
   populateOutputBundleOptions,
   generateOutputDirectory,
   DEFAULT_COMMAND,
+  validateOutputDirectory,
 } from "../utils.js";
 import { join } from "path";
 
@@ -28,3 +29,4 @@ const { distDir } = await loadConfig(root, projectRoot);
 const nextBuildDirectory = join(projectRoot, distDir);
 
 await generateOutputDirectory(root, projectRoot, outputBundleOptions, nextBuildDirectory);
+await validateOutputDirectory(outputBundleOptions);

@@ -20,9 +20,9 @@ describe("build commands", () => {
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateOutputDirectory } = await importUtils;
+    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
     const files = {
-      ".next/standalone/standalonefile": "",
+      ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
       ".next/routes-manifest.json": `{
         "headers":[], 
@@ -32,10 +32,11 @@ describe("build commands", () => {
     };
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await validateOutputDirectory(outputBundleOptions);
 
     const expectedFiles = {
       ".apphosting/.next/static/staticfile": "",
-      ".apphosting/standalonefile": "",
+      ".apphosting/server.js": "",
       ".apphosting/bundle.yaml": `headers: []
 redirects: []
 rewrites: []
@@ -92,9 +93,9 @@ staticAssets:
   });
 
   it("expects public directory to be copied over", async () => {
-    const { generateOutputDirectory } = await importUtils;
+    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
     const files = {
-      ".next/standalone/standalonefile": "",
+      ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
       "public/publicfile": "",
       ".next/routes-manifest.json": `{
@@ -105,10 +106,11 @@ staticAssets:
     };
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await validateOutputDirectory(outputBundleOptions);
 
     const expectedFiles = {
       ".apphosting/.next/static/staticfile": "",
-      ".apphosting/standalonefile": "",
+      ".apphosting/server.js": "",
       ".apphosting/public/publicfile": "",
       ".apphosting/bundle.yaml": `headers: []
 redirects: []
@@ -124,9 +126,9 @@ staticAssets:
   });
 
   it("expects bundle.yaml headers/rewrites/redirects to be generated", async () => {
-    const { generateOutputDirectory } = await importUtils;
+    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
     const files = {
-      ".next/standalone/standalonefile": "",
+      ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
       ".next/routes-manifest.json": `{
         "headers":[{"source":"source", "headers":["header1"]}], 
@@ -136,10 +138,11 @@ staticAssets:
     };
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await validateOutputDirectory(outputBundleOptions);
 
     const expectedFiles = {
       ".apphosting/.next/static/staticfile": "",
-      ".apphosting/standalonefile": "",
+      ".apphosting/server.js": "",
       ".apphosting/bundle.yaml": `headers:
   - source: source
     headers:
@@ -159,7 +162,21 @@ staticAssets:
     };
     validateTestFiles(tmpDir, expectedFiles);
   });
-
+  it("test failed validateOutputDirectory", async () => {
+    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
+    const files = {
+      ".next/standalone/notserver.js": "",
+      ".next/static/staticfile": "",
+      ".next/routes-manifest.json": `{
+        "headers":[{"source":"source", "headers":["header1"]}], 
+        "rewrites":[{"source":"source", "destination":"destination"}], 
+        "redirects":[{"source":"source", "destination":"destination"}]
+      }`,
+    };
+    generateTestFiles(tmpDir, files);
+    await generateOutputDirectory(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
+  });
   it("test populate output bundle options", async () => {
     const { populateOutputBundleOptions } = await importUtils;
     const expectedOutputBundleOptions = {

@@ -44633,8 +44633,9 @@ var express = express$1;
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path$2.dirname(__filename);
+const oneYear = 31_536_000_000;
 
-app.use(express.static(path$2.join(__dirname, "..", "browser")));
+app.use(express.static(path$2.join(__dirname, "..", "browser"), { maxAge: oneYear }));
 app.get("*", function (request, response) {
   response.sendFile(path$2.join(__dirname, "..", "browser", "index.html"));
 });

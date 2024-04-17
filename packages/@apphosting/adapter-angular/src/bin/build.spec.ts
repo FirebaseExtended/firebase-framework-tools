@@ -4,14 +4,14 @@ import { resolve } from "path";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { OutputPathOptions } from "../interface.js";
+import { OutputBundleOptions } from "../interface.js";
 
 describe("build commands", () => {
   let tmpDir: string;
-  let outputPathOptions: OutputPathOptions;
+  let outputBundleOptions: OutputBundleOptions;
   beforeEach(() => {
     tmpDir = generateTmpDir();
-    outputPathOptions = {
+    outputBundleOptions = {
       baseDirectory: resolve(tmpDir, "dist", "test"),
       browserDirectory: resolve(tmpDir, ".apphosting", "dist", "browser"),
       bundleYamlPath: resolve(tmpDir, ".apphosting", "bundle.yaml"),
@@ -23,13 +23,14 @@ describe("build commands", () => {
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateOutputDirectory } = await importUtils;
+    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputPathOptions);
+    await generateOutputDirectory(tmpDir, outputBundleOptions);
+    await validateOutputDirectory(outputBundleOptions);
 
     const expectedFiles = {
       ".apphosting/dist/browser/browserfile": "",
@@ -46,6 +47,16 @@ staticAssets:
     };
     validateTestFiles(tmpDir, expectedFiles);
   });
+  it("test failed validateOutputDirectory", async () => {
+    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
+    const files = {
+      "dist/test/browser/browserfile": "",
+      "dist/test/server/notserver.mjs": "",
+    };
+    generateTestFiles(tmpDir, files);
+    await generateOutputDirectory(tmpDir, outputBundleOptions);
+    assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
+  });
 
   it("test populate output bundle options", async () => {
     const { populateOutputBundleOptions } = await importUtils;
@@ -55,8 +66,8 @@ staticAssets:
       bundleYamlPath: resolve(".apphosting", "bundle.yaml"),
       outputBaseDirectory: resolve(".apphosting", "dist"),
       outputDirectory: resolve("", ".apphosting"),
-      serverFilePath: resolve(".apphosting", "server", "server.mjs"),
       needsServerGenerated: false,
+      serverFilePath: resolve(".apphosting", "server", "server.mjs"),
     };
     const outputPaths = {
       root: new URL("file:///test"),
