@@ -1,23 +1,38 @@
+import { spawnSync } from "child_process";
 import fsExtra from "fs-extra";
+import { createRequire } from "node:module";
+import { join, relative, normalize } from "path";
+import { fileURLToPath } from "url";
+import { stringify as yamlStringify } from "yaml";
+
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 import { ROUTES_MANIFEST } from "./constants.js";
-import { fileURLToPath } from "url";
-import { OutputBundleOptions } from "./interfaces.js";
-import { stringify as yamlStringify } from "yaml";
-import { spawnSync } from "child_process";
+import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
+import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
-import { join, relative, normalize } from "path";
-
-import type { RoutesManifest } from "./interfaces.js";
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson } = fsExtra;
 
-export async function loadConfig(cwd: string) {
+// The default fallback command prefix to run a build.
+export const DEFAULT_COMMAND = "npm";
+
+// Loads the user's next.config.js file.
+export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
+  // createRequire() gives us access to Node's CommonJS implementation of require.resolve()
+  // (https://nodejs.org/api/module.html#modulecreaterequirefilename).
+  // We use the require.resolve() resolution algorithm to get the path to the next config module,
+  // which may reside in the node_modules folder at a higher level in the directory structure
+  // (e.g. for monorepo projects).
+  // Note that ESM has an equivalent (https://nodejs.org/api/esm.html#importmetaresolvespecifier),
+  // but the feature is still experimental.
+  const require = createRequire(import.meta.url);
+  const configPath = require.resolve("next/dist/server/config.js", { paths: [projectRoot] });
   // dynamically load NextJS so this can be used in an NPX context
   const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
-    await import(`${cwd}/node_modules/next/dist/server/config.js`);
+    await import(configPath);
+
   const loadConfig = nextServerConfig.default;
-  return await loadConfig(PHASE_PRODUCTION_BUILD, cwd);
+  return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
 
 export async function readRoutesManifest(distDir: string): Promise<RoutesManifest> {
@@ -30,30 +45,50 @@ export const isMain = (meta: ImportMeta) => {
   return process.argv[1] === fileURLToPath(meta.url);
 };
 
-export function populateOutputBundleOptions(cwd: string): OutputBundleOptions {
-  const outputBundleDir = join(cwd, ".apphosting");
+/**
+ * Provides the paths in the output bundle for the built artifacts.
+ * @param rootDir The root directory of the uploaded source code.
+ * @param appDir The path to the application source code, relative to the root.
+ * @return The output bundle paths.
+ */
+export function populateOutputBundleOptions(rootDir: string, appDir: string): OutputBundleOptions {
+  const outputBundleDir = join(rootDir, ".apphosting");
+  // In monorepo setups, the standalone directory structure will mirror the structure of the monorepo.
+  // We find the relative path from the root to the app directory to correctly locate server.js.
+  const outputBundleAppDir = join(
+    outputBundleDir,
+    process.env.MONOREPO_COMMAND ? relative(rootDir, appDir) : "",
+  );
+
   return {
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
     outputDirectory: outputBundleDir,
-    serverFilePath: join(outputBundleDir, "server.js"),
-    outputPublicDirectory: join(outputBundleDir, "public"),
-    outputStaticDirectory: join(outputBundleDir, ".next", "static"),
+    serverFilePath: join(outputBundleAppDir, "server.js"),
+    outputPublicDirectory: join(outputBundleAppDir, "public"),
+    outputStaticDirectory: join(outputBundleAppDir, ".next", "static"),
   };
 }
 
 // Run build command
-export function build(cwd: string): void {
+export function build(cwd: string, cmd = DEFAULT_COMMAND): void {
   // Set standalone mode
   process.env.NEXT_PRIVATE_STANDALONE = "true";
   // Opt-out sending telemetry to Vercel
   process.env.NEXT_TELEMETRY_DISABLED = "1";
-  spawnSync("npm", ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+  spawnSync(cmd, ["run", "build"], { cwd, shell: true, stdio: "inherit" });
 }
 
-// move the standalone directory, the static directory and the public directory to apphosting output directory
-// as well as generating bundle.yaml
+/**
+ * Moves the standalone directory, the static directory and the public directory to apphosting output directory.
+ * Also generates the bundle.yaml file.
+ * @param rootDir The root directory of the uploaded source code.
+ * @param appDir The path to the application source code, relative to the root.
+ * @param outputBundleOptions The target location of built artifacts in the output bundle.
+ * @param nextBuildDirectory The location of the .next directory.
+ */
 export async function generateOutputDirectory(
-  cwd: string,
+  rootDir: string,
+  appDir: string,
   outputBundleOptions: OutputBundleOptions,
   nextBuildDirectory: string,
 ): Promise<void> {
@@ -61,11 +96,11 @@ export async function generateOutputDirectory(
   await move(standaloneDirectory, outputBundleOptions.outputDirectory, { overwrite: true });
 
   const staticDirectory = join(nextBuildDirectory, "static");
-  const publicDirectory = join(cwd, "public");
+  const publicDirectory = join(appDir, "public");
   await Promise.all([
     move(staticDirectory, outputBundleOptions.outputStaticDirectory, { overwrite: true }),
     movePublicDirectory(publicDirectory, outputBundleOptions.outputPublicDirectory),
-    generateBundleYaml(outputBundleOptions, nextBuildDirectory, cwd),
+    generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir),
   ]);
   return;
 }
