@@ -27,13 +27,13 @@ export const handle = async (req: Request, res: Response) => {
   }
 
   let body;
-  let contentType = rendered.headers.get("Content-Type");
+  const contentType = rendered.headers.get("Content-Type");
   if (
     contentType.startsWith("text/") ||
     contentType.startsWith("application/json") ||
     contentType.startsWith("application/xml") ||
     contentType.startsWith("application/javascript") ||
-    contentType.startsWith("application/vnd.ms-excel") 
+    contentType.startsWith("application/vnd.ms-excel")
   ) {
     body = await rendered.text();
   } else {
