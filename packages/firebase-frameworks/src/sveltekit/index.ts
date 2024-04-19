@@ -25,11 +25,18 @@ export const handle = async (req: Request, res: Response) => {
   if (!rendered) {
     return res.writeHead(404, "Not Found").end();
   }
-  
+
   let body;
-  if(rendered.headers.get("Content-Type").includes('text/')){
-    body = await rendered.text(); 
-  }else {
+  let contentType = rendered.headers.get("Content-Type");
+  if (
+    contentType.startsWith("text/") ||
+    contentType.startsWith("application/json") ||
+    contentType.startsWith("application/xml") ||
+    contentType.startsWith("application/javascript") ||
+    contentType.startsWith("application/vnd.ms-excel") 
+  ) {
+    body = await rendered.text();
+  } else {
     body = Buffer.from(await rendered.arrayBuffer());
   }
 
