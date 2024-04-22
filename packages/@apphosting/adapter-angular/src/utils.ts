@@ -24,6 +24,7 @@ const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server
 export async function checkBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
+    //TODO (sijinli): resolve paths under cwd to be safer later 
     require.resolve("@angular-devkit/core/node/index.js")
   );
 
