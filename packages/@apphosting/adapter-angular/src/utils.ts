@@ -33,7 +33,7 @@ export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
 export async function checkStandaloneBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
-    //TODO (sijinli): resolve paths under cwd to be safer later 
+    // TODO (sijinli): resolve paths under cwd to be safer later
     require.resolve("@angular-devkit/core/node/index.js")
   );
   const { workspaces }: typeof import("@angular-devkit/core") = await import(
