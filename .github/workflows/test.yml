@@ -156,3 +156,4 @@ jobs:
           ADAPTER_ANGULAR_NPM_TOKEN: ${{ secrets.ADAPTER_ANGULAR_NPM_TOKEN }}
           # FIREBASE_FRAMEWORKS_NPM_TOKEN: ${{ secrets.FIREBASE_FRAMEWORKS_NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_NPM_TOKEN }}
+          BRANCH_NAME: ${{ github.event.base_ref }}
