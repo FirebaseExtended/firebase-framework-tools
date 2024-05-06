@@ -3,7 +3,7 @@ import { getDateString, getRandomUUID } from "../utils";
 export default function Page() {
   return (
     <main className="content">
-      <h1 className="heading">Sample title for SSG</h1>
+      <h1 className="heading">SSG</h1>
 
       <section className="data-container">
         <article className="card">
