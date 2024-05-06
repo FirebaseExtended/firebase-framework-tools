@@ -53,7 +53,7 @@ function run(): void {
   });
 }
 
-// Note: The express server is started by firebase automatically.
+// Note: The express server is started by Firebase automatically.
 if (process.env['LOCAL']) {
   run();
 }
