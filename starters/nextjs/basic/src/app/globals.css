@@ -109,9 +109,6 @@ body {
   justify-content: center;
   align-items: center;
 }
-.header svg:first-child {
-  border-right: 2px solid var(--primary-contrast);
-}
 .header svg {
   padding: 16px 25px;
 }
@@ -149,7 +146,9 @@ body {
   border-radius: 100px;
   border: none;
   cursor: pointer;
-  transition: scale 0.2s, filter 0.2s;
+  transition:
+    scale 0.2s,
+    filter 0.2s;
 }
 .button:hover {
   filter: brightness(1.1);
@@ -262,7 +261,9 @@ body {
   border-radius: 24px;
   padding: 1px;
   background: linear-gradient(var(--border), transparent 30%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
