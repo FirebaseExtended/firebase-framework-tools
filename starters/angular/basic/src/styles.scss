@@ -244,39 +244,12 @@ a:hover {
   color: var(--secondary-contrast);
   letter-spacing: -1%;
 }
-.link,
 .card p a {
   color: var(--primary-contrast);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.links-container {
-  padding-top: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-}
-
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.links a {
-  padding: 14px 15px;
-  color: var(--primary-contrast);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  white-space: nowrap;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-}
-
-.links a,
 .card {
   position: relative;
   border-radius: 24px;
@@ -285,7 +258,6 @@ a:hover {
   display: flex;
 }
 
-.links a::before,
 .card::before {
   content: '';
   position: absolute;
@@ -299,8 +271,7 @@ a:hover {
   pointer-events: none;
 }
 
-.card:not(:first-child)::after,
-.links a:not(:first-child)::after {
+.card:not(:first-child)::after {
   content: '';
   top: 0;
   height: 100%;
@@ -314,13 +285,6 @@ a:hover {
   left: -10px;
   mask: url('assets/between-cards.svg') no-repeat center / contain;
   -webkit-mask: url('assets/between-cards.svg') no-repeat center / contain;
-}
-
-.links a:not(:first-child)::after {
-  width: 30px;
-  left: calc(-20px);
-  mask: url('assets/between-links.svg') no-repeat center / contain;
-  -webkit-mask: url('assets/between-links.svg') no-repeat center / contain;
 }
 
 @media only screen and (max-width: 1023px) {
@@ -338,9 +302,6 @@ a:hover {
   }
   .top-gradient,
   .card::after,
-  .links a::after {
-    display: none;
-  }
   .bottom-gradient {
     width: 150%;
     height: 400px;
