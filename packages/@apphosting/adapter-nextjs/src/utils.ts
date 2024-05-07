@@ -106,7 +106,7 @@ export async function generateOutputDirectory(
   return;
 }
 
-// Move all files and directories directory to apphosting output directory.
+// Move all files and directories to apphosting output directory.
 // Files are skipped if there is already a file with the same name in the output directory
 async function moveResources(appDir: string, outputBundleAppDir: string): Promise<void> {
   const appDirExists = await exists(appDir);
