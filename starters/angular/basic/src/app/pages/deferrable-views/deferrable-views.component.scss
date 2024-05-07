@@ -1,0 +1,23 @@
+.example {
+  width: 100%;
+  max-width: 600px;
+  min-height: 300px;
+  margin-bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  border-top: 1px solid var(--border);
+  padding-top: 40px;
+  h2,
+  p {
+    text-align: center;
+  }
+  h2 {
+    font-weight: 500;
+  }
+  p {
+    font-size: 14px;
+    color: var(--secondary-contrast);
+    margin: auto;
+  }
+}
