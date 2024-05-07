@@ -1,6 +1,7 @@
 /packages/**/*/dist/
 /examples/
 /dist
+/packages/@apphosting/publish-dev/.local
 
 # NPM
 node_modules
