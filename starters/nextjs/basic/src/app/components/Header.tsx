@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Arrow } from "./Arrow";
-import { NextJs } from "./NextJs";
 import { Firebase } from "./Firebase";
 
 export function Header() {
@@ -19,7 +18,6 @@ export function Header() {
       )}
 
       <header className="header">
-        <NextJs />
         <Firebase />
       </header>
     </>
