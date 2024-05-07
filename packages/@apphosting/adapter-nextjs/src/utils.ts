@@ -11,7 +11,7 @@ import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJson } = fsExtra;
+export const { move, exists, writeFile, readJson, readdir } = fsExtra;
 
 // The default fallback command prefix to run a build.
 export const DEFAULT_COMMAND = "npm";
@@ -79,7 +79,8 @@ export function build(cwd: string, cmd = DEFAULT_COMMAND): void {
 }
 
 /**
- * Moves the standalone directory, the static directory and the public directory to apphosting output directory.
+ * Moves the standalone directory, the static directory and copies over all of the apps resources
+ * to the apphosting output directory.
  * Also generates the bundle.yaml file.
  * @param rootDir The root directory of the uploaded source code.
  * @param appDir The path to the application source code, relative to the root.
@@ -96,23 +97,29 @@ export async function generateOutputDirectory(
   await move(standaloneDirectory, outputBundleOptions.outputDirectory, { overwrite: true });
 
   const staticDirectory = join(nextBuildDirectory, "static");
-  const publicDirectory = join(appDir, "public");
   await Promise.all([
     move(staticDirectory, outputBundleOptions.outputStaticDirectory, { overwrite: true }),
-    movePublicDirectory(publicDirectory, outputBundleOptions.outputPublicDirectory),
+    moveResources(appDir, outputBundleOptions.outputDirectory, rootDir),
     generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir),
   ]);
   return;
 }
 
-// move public directory to apphosting output public directory
-async function movePublicDirectory(
-  publicDirectory: string,
-  appHostingPublicDirectory: string,
+// Move all files and directories directory to apphosting output directory.
+// Files are skipped if there is already a file with the same name in the output directory
+async function moveResources(
+  appDir: string,
+  outputDirectory: string,
+  rootDir: string,
 ): Promise<void> {
-  const publicDirectoryExists = await exists(publicDirectory);
+  const publicDirectoryExists = await exists(appDir);
   if (!publicDirectoryExists) return;
-  await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
+  const dirsToMove = await readdir(appDir);
+  for (const dir of dirsToMove) {
+    if (join(rootDir, dir) !== outputDirectory && !(await exists(join(outputDirectory, dir)))) {
+      await move(dir, join(outputDirectory, dir));
+    }
+  }
   return;
 }
 
