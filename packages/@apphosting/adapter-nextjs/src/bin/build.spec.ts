@@ -13,6 +13,7 @@ describe("build commands", () => {
     outputBundleOptions = {
       bundleYamlPath: path.join(tmpDir, ".apphosting/bundle.yaml"),
       outputDirectory: path.join(tmpDir, ".apphosting"),
+      outputBundleAppDir: path.join(tmpDir, ".apphosting"),
       outputPublicDirectory: path.join(tmpDir, ".apphosting/public"),
       outputStaticDirectory: path.join(tmpDir, ".apphosting/.next/static"),
       serverFilePath: path.join(tmpDir, ".apphosting/server.js"),
@@ -69,6 +70,7 @@ staticAssets:
       {
         bundleYamlPath: path.join(tmpDir, ".apphosting/bundle.yaml"),
         outputDirectory: path.join(tmpDir, ".apphosting"),
+        outputBundleAppDir: path.join(tmpDir, ".apphosting/apps/next-app"),
         outputPublicDirectory: path.join(tmpDir, ".apphosting/apps/next-app/public"),
         outputStaticDirectory: path.join(tmpDir, ".apphosting/apps/next-app/.next/static"),
         serverFilePath: path.join(tmpDir, ".apphosting/apps/next-app/server.js"),
@@ -182,6 +184,7 @@ staticAssets:
     const expectedOutputBundleOptions = {
       bundleYamlPath: "test/.apphosting/bundle.yaml",
       outputDirectory: "test/.apphosting",
+      outputBundleAppDir: "test/.apphosting",
       outputPublicDirectory: "test/.apphosting/public",
       outputStaticDirectory: "test/.apphosting/.next/static",
       serverFilePath: "test/.apphosting/server.js",

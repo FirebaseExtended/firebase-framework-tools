@@ -63,6 +63,7 @@ export function populateOutputBundleOptions(rootDir: string, appDir: string): Ou
   return {
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
     outputDirectory: outputBundleDir,
+    outputBundleAppDir,
     serverFilePath: join(outputBundleAppDir, "server.js"),
     outputPublicDirectory: join(outputBundleAppDir, "public"),
     outputStaticDirectory: join(outputBundleAppDir, ".next", "static"),
@@ -99,7 +100,7 @@ export async function generateOutputDirectory(
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
     move(staticDirectory, outputBundleOptions.outputStaticDirectory, { overwrite: true }),
-    moveResources(appDir, outputBundleOptions.outputDirectory, rootDir),
+    moveResources(appDir, outputBundleOptions.outputBundleAppDir),
     generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir),
   ]);
   return;
@@ -107,17 +108,16 @@ export async function generateOutputDirectory(
 
 // Move all files and directories directory to apphosting output directory.
 // Files are skipped if there is already a file with the same name in the output directory
-async function moveResources(
-  appDir: string,
-  outputDirectory: string,
-  rootDir: string,
-): Promise<void> {
-  const publicDirectoryExists = await exists(appDir);
-  if (!publicDirectoryExists) return;
+async function moveResources(appDir: string, outputBundleAppDir: string): Promise<void> {
+  const appDirExists = await exists(appDir);
+  if (!appDirExists) return;
   const dirsToMove = await readdir(appDir);
   for (const dir of dirsToMove) {
-    if (join(rootDir, dir) !== outputDirectory && !(await exists(join(outputDirectory, dir)))) {
-      await move(dir, join(outputDirectory, dir));
+    if (
+      join(appDir, dir) !== outputBundleAppDir &&
+      !(await exists(join(outputBundleAppDir, dir)))
+    ) {
+      await move(join(appDir, dir), join(outputBundleAppDir, dir));
     }
   }
   return;

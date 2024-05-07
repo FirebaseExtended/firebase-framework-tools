@@ -76,6 +76,7 @@ export interface RoutesManifest {
 export interface OutputBundleOptions {
   bundleYamlPath: string;
   outputDirectory: string;
+  outputBundleAppDir: string;
   serverFilePath: string;
   outputPublicDirectory: string;
   outputStaticDirectory: string;
