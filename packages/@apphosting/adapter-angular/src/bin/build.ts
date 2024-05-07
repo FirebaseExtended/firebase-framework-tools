@@ -10,22 +10,28 @@ import {
 
 const root = process.cwd();
 
-// Determine root of project to build
+// Determine which build runner to use
+let cmd = process.env.MONOREPO_COMMAND || DEFAULT_COMMAND;
+
+// Read environment variable (only relevant for monorepos with multiple targets)
+let target = process.env.MONOREPO_PROJECT || "";
+
+// Determine root of project to build.
 let projectRoot = root;
-if (process.env.MONOREPO_PROJECT && process.env.FIREBASE_APP_DIRECTORY) {
+// N.B. We don't want to change directories for monorepo builds, so that the build process can
+// locate necessary files outside the project directory (e.g. at the root).
+if (process.env.FIREBASE_APP_DIRECTORY && !target) {
   projectRoot = projectRoot.concat("/", process.env.FIREBASE_APP_DIRECTORY);
-  const builder = process.env.MONOREPO_BUILDER || "";
-  checkMonorepoBuildConditions(builder);
+}
+
+// Check build conditions, which vary depending on your project structure (standalone or monorepo)
+if (target) {
+  checkMonorepoBuildConditions(cmd, target);
 } else {
   await checkStandaloneBuildConditions(projectRoot);
 }
-// Determine which build runner to use
-let cmd = DEFAULT_COMMAND;
-if (process.env.MONOREPO_COMMAND) {
-  cmd = process.env.MONOREPO_COMMAND;
-}
 
-const outputBundleOptions = await build(projectRoot, cmd);
+const outputBundleOptions = await build(projectRoot, cmd, target);
 await generateOutputDirectory(root, outputBundleOptions);
 
 await validateOutputDirectory(outputBundleOptions);

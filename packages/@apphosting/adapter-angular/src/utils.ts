@@ -2,7 +2,7 @@ import fsExtra from "fs-extra";
 import logger from "firebase-functions/logger";
 
 import { fileURLToPath } from "url";
-import { spawn } from "child_process";
+import { spawn, execSync } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import {
@@ -64,7 +64,13 @@ export async function checkStandaloneBuildConditions(cwd: string): Promise<void>
 /**
  * Check if the monorepo build system is using the Angular application builder.
  */
-export function checkMonorepoBuildConditions(builder: string): void {
+export function checkMonorepoBuildConditions(cmd: string, target: string) {
+  let builder;
+  if (cmd === "nx") {
+    const output = execSync(`npx nx show project ${target}`);
+    const projectJson = JSON.parse(output.toString());
+    builder = projectJson.targets.build.executor;
+  }
   if (builder !== REQUIRED_BUILDER) {
     throw new Error(
       "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/esbuild#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
@@ -100,11 +106,12 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBun
 export const build = (
   projectRoot = process.cwd(),
   cmd = DEFAULT_COMMAND,
+  ...argv: string[]
 ): Promise<OutputBundleOptions> =>
   new Promise((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn(cmd, ["run", "build"], {
+    const childProcess = spawn(cmd, ["build", ...argv], {
       cwd: projectRoot,
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],
