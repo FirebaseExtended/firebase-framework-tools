@@ -111,7 +111,7 @@ export const build = (
   new Promise((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn(cmd, ["build", ...argv], {
+    const childProcess = spawn(cmd, ["run", "build", ...argv], {
       cwd: projectRoot,
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],
