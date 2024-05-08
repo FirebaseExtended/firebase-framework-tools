@@ -55,18 +55,18 @@ export function populateOutputBundleOptions(rootDir: string, appDir: string): Ou
   const outputBundleDir = join(rootDir, ".apphosting");
   // In monorepo setups, the standalone directory structure will mirror the structure of the monorepo.
   // We find the relative path from the root to the app directory to correctly locate server.js.
-  const outputBundleAppDir = join(
+  const outputDirectoryAppPath = join(
     outputBundleDir,
     process.env.MONOREPO_COMMAND ? relative(rootDir, appDir) : "",
   );
 
   return {
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
-    outputDirectory: outputBundleDir,
-    outputBundleAppDir,
-    serverFilePath: join(outputBundleAppDir, "server.js"),
-    outputPublicDirectory: join(outputBundleAppDir, "public"),
-    outputStaticDirectory: join(outputBundleAppDir, ".next", "static"),
+    outputDirectoryBasePath: outputBundleDir,
+    outputDirectoryAppPath,
+    serverFilePath: join(outputDirectoryAppPath, "server.js"),
+    outputPublicDirectoryPath: join(outputDirectoryAppPath, "public"),
+    outputStaticDirectoryPath: join(outputDirectoryAppPath, ".next", "static"),
   };
 }
 
@@ -95,12 +95,12 @@ export async function generateOutputDirectory(
   nextBuildDirectory: string,
 ): Promise<void> {
   const standaloneDirectory = join(nextBuildDirectory, "standalone");
-  await move(standaloneDirectory, outputBundleOptions.outputDirectory, { overwrite: true });
+  await move(standaloneDirectory, outputBundleOptions.outputDirectoryBasePath, { overwrite: true });
 
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
-    move(staticDirectory, outputBundleOptions.outputStaticDirectory, { overwrite: true }),
-    moveResources(appDir, outputBundleOptions.outputBundleAppDir),
+    move(staticDirectory, outputBundleOptions.outputStaticDirectoryPath, { overwrite: true }),
+    moveResources(appDir, outputBundleOptions.outputDirectoryAppPath),
     generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir),
   ]);
   return;
@@ -111,13 +111,12 @@ export async function generateOutputDirectory(
 async function moveResources(appDir: string, outputBundleAppDir: string): Promise<void> {
   const appDirExists = await exists(appDir);
   if (!appDirExists) return;
-  const dirsToMove = await readdir(appDir);
-  for (const dir of dirsToMove) {
-    if (
-      join(appDir, dir) !== outputBundleAppDir &&
-      !(await exists(join(outputBundleAppDir, dir)))
-    ) {
-      await move(join(appDir, dir), join(outputBundleAppDir, dir));
+  const pathsToMove = await readdir(appDir);
+  for (const path of pathsToMove) {
+    const isOutputBundleDir = join(appDir, path) === outputBundleAppDir;
+    const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
+    if (!isOutputBundleDir && !existsInOutputBundle) {
+      await move(join(appDir, path), join(outputBundleAppDir, path));
     }
   }
   return;
@@ -145,8 +144,8 @@ async function generateBundleYaml(
       redirects,
       rewrites,
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
-      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
-      staticAssets: [normalize(relative(cwd, outputBundleOptions.outputPublicDirectory))],
+      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectoryBasePath))],
+      staticAssets: [normalize(relative(cwd, outputBundleOptions.outputPublicDirectoryPath))],
     }),
   );
   return;
@@ -157,7 +156,7 @@ export async function validateOutputDirectory(
   outputBundleOptions: OutputBundleOptions,
 ): Promise<void> {
   if (
-    !(await fsExtra.exists(outputBundleOptions.outputDirectory)) ||
+    !(await fsExtra.exists(outputBundleOptions.outputDirectoryBasePath)) ||
     !(await fsExtra.exists(outputBundleOptions.serverFilePath)) ||
     !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))
   ) {

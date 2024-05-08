@@ -12,10 +12,10 @@ describe("build commands", () => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
       bundleYamlPath: path.join(tmpDir, ".apphosting/bundle.yaml"),
-      outputDirectory: path.join(tmpDir, ".apphosting"),
-      outputBundleAppDir: path.join(tmpDir, ".apphosting"),
-      outputPublicDirectory: path.join(tmpDir, ".apphosting/public"),
-      outputStaticDirectory: path.join(tmpDir, ".apphosting/.next/static"),
+      outputDirectoryBasePath: path.join(tmpDir, ".apphosting"),
+      outputDirectoryAppPath: path.join(tmpDir, ".apphosting"),
+      outputPublicDirectoryPath: path.join(tmpDir, ".apphosting/public"),
+      outputStaticDirectoryPath: path.join(tmpDir, ".apphosting/.next/static"),
       serverFilePath: path.join(tmpDir, ".apphosting/server.js"),
     };
   });
@@ -69,10 +69,10 @@ staticAssets:
       "apps/next-app",
       {
         bundleYamlPath: path.join(tmpDir, ".apphosting/bundle.yaml"),
-        outputDirectory: path.join(tmpDir, ".apphosting"),
-        outputBundleAppDir: path.join(tmpDir, ".apphosting/apps/next-app"),
-        outputPublicDirectory: path.join(tmpDir, ".apphosting/apps/next-app/public"),
-        outputStaticDirectory: path.join(tmpDir, ".apphosting/apps/next-app/.next/static"),
+        outputDirectoryBasePath: path.join(tmpDir, ".apphosting"),
+        outputDirectoryAppPath: path.join(tmpDir, ".apphosting/apps/next-app"),
+        outputPublicDirectoryPath: path.join(tmpDir, ".apphosting/apps/next-app/public"),
+        outputStaticDirectoryPath: path.join(tmpDir, ".apphosting/apps/next-app/.next/static"),
         serverFilePath: path.join(tmpDir, ".apphosting/apps/next-app/server.js"),
       },
       path.join(tmpDir, ".next"),
@@ -94,12 +94,13 @@ staticAssets:
     validateTestFiles(tmpDir, expectedFiles);
   });
 
-  it("expects public directory to be copied over", async () => {
+  it("expects directories and other files to be copied over", async () => {
     const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
     const files = {
       ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
       "public/publicfile": "",
+      extrafile: "",
       ".next/routes-manifest.json": `{
         "headers":[], 
         "rewrites":[], 
@@ -114,6 +115,7 @@ staticAssets:
       ".apphosting/.next/static/staticfile": "",
       ".apphosting/server.js": "",
       ".apphosting/public/publicfile": "",
+      ".apphosting/extrafile": "",
       ".apphosting/bundle.yaml": `headers: []
 redirects: []
 rewrites: []
@@ -183,10 +185,10 @@ staticAssets:
     const { populateOutputBundleOptions } = await importUtils;
     const expectedOutputBundleOptions = {
       bundleYamlPath: "test/.apphosting/bundle.yaml",
-      outputDirectory: "test/.apphosting",
-      outputBundleAppDir: "test/.apphosting",
-      outputPublicDirectory: "test/.apphosting/public",
-      outputStaticDirectory: "test/.apphosting/.next/static",
+      outputDirectoryBasePath: "test/.apphosting",
+      outputDirectoryAppPath: "test/.apphosting",
+      outputPublicDirectoryPath: "test/.apphosting/public",
+      outputStaticDirectoryPath: "test/.apphosting/.next/static",
       serverFilePath: "test/.apphosting/server.js",
     };
     assert.deepEqual(populateOutputBundleOptions("test", "test"), expectedOutputBundleOptions);
