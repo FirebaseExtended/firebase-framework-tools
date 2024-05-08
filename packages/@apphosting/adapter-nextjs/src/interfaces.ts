@@ -85,18 +85,19 @@ export interface OutputBundleOptions {
   /**
    * Path to where the App's code sits in the output directory.
    * This will only be different from outputDirectoryPath in Monorepo scenerios.
+   * For example if the monorepo app sits under the apps/next-app directory, this value will be .apphosting/apps/next-app
    */
   outputDirectoryAppPath: string;
   /**
-   * Path to the generated server.js file in the output directory
+   * Path to the generated server.js file generated relative to the output directory
    */
   serverFilePath: string;
   /**
-   * Path to where the public directory is generated in the output directory
+   * Path to where the public directory is generated relative to the output directory
    */
   outputPublicDirectoryPath: string;
   /**
-   * Path to where the static assets directory is generated in the output directory
+   * Path to where the static assets directory is generated relative to the output directory
    */
   outputStaticDirectoryPath: string;
 }
