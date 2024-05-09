@@ -11,11 +11,13 @@ import {
   buildManifestSchema,
   ValidManifest,
 } from "./interface.js";
+import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
 
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
@@ -31,10 +33,11 @@ export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
 export async function checkStandaloneBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
-    `${cwd}/node_modules/@angular-devkit/core/node/index.js`
+    // TODO (sijinli): resolve paths under cwd to be safer later
+    require.resolve("@angular-devkit/core/node/index.js")
   );
   const { workspaces }: typeof import("@angular-devkit/core") = await import(
-    `${cwd}/node_modules/@angular-devkit/core/src/index.js`
+    require.resolve("@angular-devkit/core/src/index.js")
   );
 
   const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
