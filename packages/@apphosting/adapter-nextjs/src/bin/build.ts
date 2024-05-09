@@ -16,14 +16,14 @@ if (process.env.FIREBASE_APP_DIRECTORY) {
   projectRoot = projectRoot.concat("/", process.env.FIREBASE_APP_DIRECTORY);
 }
 
-// Determine which command to run the build
-const cmd = process.env.MONOREPO_COMMAND || DEFAULT_COMMAND;
-
 // Parse args to pass to the build command
 let cmdArgs: string[] = [];
 if (process.env.MONOREPO_BUILD_ARGS) {
   cmdArgs = process.env.MONOREPO_BUILD_ARGS.split(",");
 }
+
+// Determine which command to run the build
+const cmd = process.env.MONOREPO_COMMAND || DEFAULT_COMMAND;
 
 // Run build command from the subdirectory if specified.
 // N.B. We run the build command from the root for monorepo builds, so that the build process can
