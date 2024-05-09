@@ -1,21 +1,49 @@
 #! /usr/bin/env node
-import { spawn } from "child_process";
+import { spawnSync, spawn } from "child_process";
 import { program } from "commander";
+import { downloadTemplate } from "giget";
+import { select } from "@inquirer/prompts";
 
 program
   .option("--framework <string>")
   .argument("<directory>", "path to the project's root directory")
-  .action((directory, { framework }: { framework?: string }) => {
+  .action(async (dir, { framework }: { framework?: string }) => {
+    // TODO validate the framework
     if (!framework) {
-      throw new Error(
-        "Framework selecter not implemented. Must provide an option to --framework <string>",
-      );
+      framework = await select({
+        message: "Select a framework",
+        choices: [
+          { name: "Angular", value: "angular" },
+          { name: "Next.js", value: "nextjs" },
+        ],
+      });
     }
-    const adapterName = `@apphosting/adapter-${framework}`;
-    const buildCommand = `apphosting-adapter-${framework}-create`;
-    spawn("npx", ["-y", "-p", adapterName, buildCommand, directory], {
+    // TODO allow different templates
+    await downloadTemplate(
+      `gh:FirebaseExtended/firebase-framework-tools/starters/${framework}/basic`,
+      { dir, force: true },
+    );
+    const packageManager = await select({
+      message: "Select a package manager",
+      default: "npm",
+      choices: [
+        { name: "npm", value: "npm" },
+        { name: "yarn", value: "yarn" },
+        { name: "pnpm", value: "pnpm" },
+      ],
+    });
+    if (packageManager !== "npm") {
+      spawnSync("corepack", ["enable"]);
+      spawnSync("corepack", ["use", `${packageManager}@*`], {
+        shell: true,
+        stdio: "inherit",
+        cwd: dir,
+      });
+    }
+    spawn(packageManager, ["install"], {
       shell: true,
       stdio: "inherit",
+      cwd: dir,
     });
   });
 

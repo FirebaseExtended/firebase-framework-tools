@@ -33,7 +33,9 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
+        "@inquirer/prompts": "^5.0.2",
         "commander": "^11.1.0",
+        "giget": "^1.2.3",
         "semver": "^7.5.4"
     },
     "devDependencies": {
