@@ -71,12 +71,12 @@ export function populateOutputBundleOptions(rootDir: string, appDir: string): Ou
 }
 
 // Run build command
-export function build(cwd: string, cmd = DEFAULT_COMMAND): void {
+export function build(cwd: string, cmd = DEFAULT_COMMAND, ...argv: string[]): void {
   // Set standalone mode
   process.env.NEXT_PRIVATE_STANDALONE = "true";
   // Opt-out sending telemetry to Vercel
   process.env.NEXT_TELEMETRY_DISABLED = "1";
-  spawnSync(cmd, ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+  spawnSync(cmd, ["run", "build", ...argv], { cwd, shell: true, stdio: "inherit" });
 }
 
 /**
