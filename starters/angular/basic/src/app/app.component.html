@@ -1,0 +1,12 @@
+@if (!isMainPage()) {
+  <a routerLink="/" class="button back-button">
+    <app-arrow-back-icon/>
+    Back to home</a>
+}
+
+<header class="header">
+  <app-angular-icon/>
+  <app-firebase-icon/>
+</header>
+
+<router-outlet />
