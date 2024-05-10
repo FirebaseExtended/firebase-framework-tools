@@ -7,6 +7,7 @@ import {
   checkMonorepoBuildConditions,
   validateOutputDirectory,
 } from "../utils.js";
+import { join } from "path";
 
 const root = process.cwd();
 
@@ -22,7 +23,7 @@ let projectRoot = root;
 // N.B. We don't want to change directories for monorepo builds, so that the build process can
 // locate necessary files outside the project directory (e.g. at the root).
 if (process.env.FIREBASE_APP_DIRECTORY && !project) {
-  projectRoot = projectRoot.concat("/", process.env.FIREBASE_APP_DIRECTORY);
+  projectRoot = join(root, process.env.FIREBASE_APP_DIRECTORY);
 }
 
 // Determine which command to run the build

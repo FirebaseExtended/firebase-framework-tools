@@ -13,7 +13,7 @@ const root = process.cwd();
 
 let projectRoot = root;
 if (process.env.FIREBASE_APP_DIRECTORY) {
-  projectRoot = projectRoot.concat("/", process.env.FIREBASE_APP_DIRECTORY);
+  projectRoot = join(root, process.env.FIREBASE_APP_DIRECTORY);
 }
 
 // Parse args to pass to the build command
