@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 import { program } from "commander";
 import spawn from "@npmcli/promise-spawn";
-import { input } from "@inquirer/prompts";
 
 const contextIsNpmCreate = process.env.npm_command === "init";
 
@@ -15,10 +14,6 @@ const npmUserAgent = process.env.npm_config_user_agent
 program
   .argument("[directory]", "path to the project's root directory")
   .action(async (directory) => {
-    directory ||= await input({
-      message: "What directory should we bootstrap the application in?",
-      default: ".",
-    });
     let packageManager: string | undefined = undefined;
     if (contextIsNpmCreate) {
       packageManager = "npm";
@@ -28,15 +23,23 @@ program
       packageManager = "yarn";
     }
     if (packageManager) {
-      await spawn(packageManager, ["create", "@apphosting", "--framework=nextjs", directory], {
-        shell: true,
-        stdio: "inherit",
-      });
+      await spawn(
+        packageManager,
+        ["create", "@apphosting", "--framework=nextjs", directory].filter((it) => it),
+        {
+          shell: true,
+          stdio: "inherit",
+        },
+      );
     } else {
-      await spawn("npx", ["@apphosting/create", "--framework=nextjs", directory], {
-        shell: true,
-        stdio: "inherit",
-      });
+      await spawn(
+        "npx",
+        ["@apphosting/create", "--framework=nextjs", directory].filter((it) => it),
+        {
+          shell: true,
+          stdio: "inherit",
+        },
+      );
     }
   });
 

@@ -1,31 +1,21 @@
 # Angular on Firebase App Hosting
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.1.0-rc.0.
+## 1. Bootstrap your project
 
-## Development server
+```bash
+npm create @apphosting --framework=angular
+```
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## 2. Get your project setup on GitHub
 
-## Code scaffolding
+[Create a new repository on GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) & follow the instructions to push the starter template. E.g,
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+<pre>
+git remote add origin https://github.com/<b>$YOUR_NEW_REPOSITORY</b>.git
+git branch -M main
+git push -u origin main
+</pre>
 
-## Build
+## 3. Setup Firebase App Hosting
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-
-## Deploy to Firebase
-
-Run `firebase init hosting`, then `firebase deploy`.
+Continue the [Firebase App Hosting Getting Started guide](https://firebase.google.com/docs/app-hosting/get-started#step-1:).

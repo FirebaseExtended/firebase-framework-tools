@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/FirebaseExtended/firebase-framework-tools#readme",
   "dependencies": {
-    "@inquirer/prompts": "^5.0.2",
     "@npmcli/promise-spawn": "^7.0.2",
     "commander": "^12.0.0",
     "tslib": "^2.6.2"
