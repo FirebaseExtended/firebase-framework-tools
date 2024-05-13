@@ -1,6 +1,6 @@
 {
     "name": "@apphosting/create",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": {
@@ -34,12 +34,15 @@
     "license": "Apache-2.0",
     "dependencies": {
         "@inquirer/prompts": "^5.0.2",
+        "@npmcli/promise-spawn": "^7.0.2",
         "commander": "^11.1.0",
         "giget": "^1.2.3",
+        "ora": "^8.0.1",
         "semver": "^7.5.4"
     },
     "devDependencies": {
         "@types/commander": "*",
+        "@types/npmcli__promise-spawn": "^6.0.3",
         "ts-node": "*"
     }
 }
