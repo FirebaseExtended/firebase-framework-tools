@@ -1,8 +1,11 @@
 {
   "name": "create-next-on-firebase",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Experimental CLI to init a Next.js project for deployment on Firebase",
   "main": "dist/index.js",
+  "bin": {
+    "create": "dist/bin/create.js"
+  },
   "scripts": {
     "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*"
   },
