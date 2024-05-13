@@ -1,6 +1,6 @@
 # Angular on Firebase App Hosting
 
-This is a boilerplate [Angular](https://angular.dev/) project to showcase SSG and SSR on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
+This is a boilerplate [Angular](https://angular.dev/) project to showcase SSG, SSR, and Deferrable Views on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
 
 ## Getting Started
 
@@ -10,7 +10,7 @@ Run the development server:
 npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:4200](http://localhost:4200) with your browser to see the result.
 
 ## Deploy to Firebase App Hosting
 

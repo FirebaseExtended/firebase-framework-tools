@@ -1,6 +1,6 @@
 # Next.js on Firebase App Hosting
 
-This is a boilerplate [Next.js](https://nextjs.org/) project to showcase SSG, SSR and ISR on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
+This is a boilerplate [Next.js](https://nextjs.org/) project to showcase SSG, SSR, and ISR on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
 
 ## Getting Started
 
