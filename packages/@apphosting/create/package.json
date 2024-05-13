@@ -43,7 +43,6 @@
     "devDependencies": {
         "@types/commander": "*",
         "@types/npmcli__promise-spawn": "^6.0.3",
-        "ts-node": "*",
         "typescript": "*"
     }
 }
