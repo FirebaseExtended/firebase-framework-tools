@@ -1,6 +1,20 @@
 # Angular on Firebase App Hosting
 
-## 1. Get your project setup on GitHub
+This is a boilerplate [Angular](https://angular.dev/) project to showcase SSG and SSR on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
+
+## Getting Started
+
+Run the development server:
+
+```bash
+npm run start
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Deploy to Firebase App Hosting
+
+### 1. Get your project setup on GitHub
 
 [Create a new GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) and push the newly-initialized sample code to it. E.g,
 
@@ -10,6 +24,6 @@ git branch -M main
 git push -u origin main
 </pre>
 
-## 2. Setup Firebase App Hosting
+### 2. Setup Firebase App Hosting
 
 Continue the [Firebase App Hosting Getting Started guide](https://firebase.google.com/docs/app-hosting/get-started#step-1:).
