@@ -57,7 +57,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        node: [16, 18, 20]
+        node: [18, 20]
       fail-fast: false
     name: Test Node ${{ matrix.node }}
     steps:
