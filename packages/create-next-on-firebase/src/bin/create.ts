@@ -23,11 +23,10 @@ program
     if (contextIsNpmCreate) {
       packageManager = "npm";
     } else if (npmUserAgent.pnpm) {
-      packageManager = `pnpm@${npmUserAgent.pnpm}`;
+      packageManager = "pnpm";
     } else if (npmUserAgent.yarn) {
-      packageManager = `yarn@${npmUserAgent.yarn}`;
+      packageManager = "yarn";
     }
-    console.log(packageManager, ["create", "@apphosting", "--framework=nextjs", directory]);
     if (packageManager) {
       await spawn(packageManager, ["create", "@apphosting", "--framework=nextjs", directory], {
         shell: true,
