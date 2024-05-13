@@ -72,8 +72,8 @@ program
       );
       cloneSpinner.succeed();
       if (packageManager === "npm") {
-        console.log(`> ${packageManager} install`);
-        await spawn(packageManager, ["install"], {
+        console.log("> npm install");
+        await spawn("npm", ["install"], {
           shell: true,
           stdio: "inherit",
           cwd: dir,
