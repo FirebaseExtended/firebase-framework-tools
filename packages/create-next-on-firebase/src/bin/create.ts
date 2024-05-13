@@ -15,32 +15,27 @@ program
   .argument("[directory]", "path to the project's root directory")
   .action(async (directory) => {
     let packageManager: string | undefined = undefined;
+    let packageManagerVersion = "*";
     if (contextIsNpmCreate) {
       packageManager = "npm";
     } else if (npmUserAgent.pnpm) {
       packageManager = "pnpm";
+      packageManagerVersion = npmUserAgent.pnpm;
     } else if (npmUserAgent.yarn) {
       packageManager = "yarn";
+      packageManagerVersion = npmUserAgent.yarn;
     }
+    const args = ["--yes", "@apphosting/create@latest", "--framework=nextjs"];
     if (packageManager) {
-      await spawn(
-        packageManager,
-        ["create", "@apphosting", "--framework=nextjs", directory].filter((it) => it),
-        {
-          shell: true,
-          stdio: "inherit",
-        },
-      );
-    } else {
-      await spawn(
-        "npx",
-        ["@apphosting/create", "--framework=nextjs", directory].filter((it) => it),
-        {
-          shell: true,
-          stdio: "inherit",
-        },
-      );
+      args.push(`--package-manager=${packageManager}@${packageManagerVersion}`);
     }
+    if (directory) {
+      args.push(directory);
+    }
+    await spawn("npx", args, {
+      shell: true,
+      stdio: "inherit",
+    });
   });
 
 program.parse();
