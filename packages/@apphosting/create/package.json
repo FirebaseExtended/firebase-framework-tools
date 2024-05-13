@@ -37,8 +37,7 @@
         "@npmcli/promise-spawn": "^7.0.2",
         "commander": "^11.1.0",
         "giget": "^1.2.3",
-        "ora": "^8.0.1",
-        "semver": "^7.5.4"
+        "ora": "^8.0.1"
     },
     "devDependencies": {
         "@types/commander": "*",
