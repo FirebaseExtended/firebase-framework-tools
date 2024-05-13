@@ -5,22 +5,21 @@ import { select } from "@inquirer/prompts";
 import spawn from "@npmcli/promise-spawn";
 import ora from "ora";
 
-console.log(process);
+const contextIsNpmCreate = process.env.npm_command === "init";
+
+// npm/10.1.0 node/v20.9.0 darwin x64 workspaces/false
+// pnpm/9.1.0 npm/? node/v20.9.0 darwin x64
+// yarn/1.7.0 npm/? node/v8.9.4 darwin x64
+const npmUserAgent = process.env.npm_config_user_agent
+  ? Object.fromEntries(process.env.npm_config_user_agent.split(" ").map((s) => s.split("/")))
+  : {};
 
 program
   .option("--framework <string>")
   .option("--package-manager <string>")
-  .option("--skip-install")
   .argument("<directory>", "path to the project's root directory")
   .action(
-    async (
-      dir,
-      {
-        framework,
-        packageManager,
-        skipInstall,
-      }: { framework?: string; packageManager?: string; skipInstall?: true },
-    ) => {
+    async (dir, { framework, packageManager }: { framework?: string; packageManager?: string }) => {
       // TODO DRY up the validation and error handling, move to commander parse
       if (framework) {
         if (!["angular", "nextjs"].includes(framework)) {
@@ -36,21 +35,24 @@ program
           ],
         });
       }
-      const cloneSpinner = ora("Cloning template...").start();
-      // TODO allow different templates
-      await downloadTemplate(
-        `gh:FirebaseExtended/firebase-framework-tools/starters/${framework}/basic`,
-        { dir, force: true },
-      );
-      cloneSpinner.succeed();
       // TODO DRY up validation and error message, move to commander parse
+      let packageManagerVersion = "*";
       if (packageManager) {
+        [packageManager, packageManagerVersion = "*"] = packageManager.split("@");
         if (!["npm", "yarn", "pnpm"].includes(packageManager)) {
           console.error(
             `Invalid package manager: ${packageManager}, valid choices are npm, yarn, and pnpm`,
           );
           process.exit(1);
         }
+      } else if (contextIsNpmCreate) {
+        packageManager = "npm";
+      } else if (npmUserAgent.yarn) {
+        packageManager = "yarn";
+        packageManagerVersion = npmUserAgent.yarn;
+      } else if (npmUserAgent.pnpm) {
+        packageManager = "pnpm";
+        packageManagerVersion = npmUserAgent.pnpm;
       } else {
         packageManager = await select({
           message: "Select a package manager",
@@ -62,26 +64,31 @@ program
           ],
         });
       }
-      if (packageManager !== "npm") {
-        await spawn("corepack", ["enable"], {
-          shell: true,
-          stdio: "inherit",
-          cwd: dir,
-        });
-        await spawn("corepack", ["use", `${packageManager}@*`], {
-          shell: true,
-          stdio: "inherit",
-          cwd: dir,
-        });
-      }
-      if (!skipInstall) {
-        const installSpinner = ora("Installing dependencies...").start();
+      const cloneSpinner = ora("Cloning template...").start();
+      // TODO allow different templates
+      await downloadTemplate(
+        `gh:FirebaseExtended/firebase-framework-tools/starters/${framework}/basic`,
+        { dir, force: true },
+      );
+      cloneSpinner.succeed();
+      if (packageManager === "npm") {
+        console.log(`> ${packageManager} install`);
         await spawn(packageManager, ["install"], {
           shell: true,
           stdio: "inherit",
           cwd: dir,
         });
-        installSpinner.succeed();
+      } else {
+        await spawn("corepack", ["enable"], {
+          shell: true,
+          stdio: "inherit",
+          cwd: dir,
+        });
+        await spawn("corepack", ["use", `${packageManager}@${packageManagerVersion}`], {
+          shell: true,
+          stdio: "inherit",
+          cwd: dir,
+        });
       }
     },
   );
