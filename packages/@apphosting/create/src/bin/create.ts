@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 import { program } from "commander";
 import { downloadTemplate } from "giget";
-import { select } from "@inquirer/prompts";
+import { select, input } from "@inquirer/prompts";
 import spawn from "@npmcli/promise-spawn";
 import ora from "ora";
 
@@ -17,9 +17,16 @@ const npmUserAgent = process.env.npm_config_user_agent
 program
   .option("--framework <string>")
   .option("--package-manager <string>")
-  .argument("<directory>", "path to the project's root directory")
+  .argument("[directory]", "path to the project's root directory")
   .action(
-    async (dir, { framework, packageManager }: { framework?: string; packageManager?: string }) => {
+    async (
+      directory,
+      { framework, packageManager }: { framework?: string; packageManager?: string },
+    ) => {
+      directory ||= await input({
+        message: "What directory should we bootstrap the application in?",
+        default: ".",
+      });
       // TODO DRY up the validation and error handling, move to commander parse
       if (framework) {
         if (!["angular", "nextjs"].includes(framework)) {
@@ -68,7 +75,7 @@ program
       // TODO allow different templates
       await downloadTemplate(
         `gh:FirebaseExtended/firebase-framework-tools/starters/${framework}/basic`,
-        { dir, force: true },
+        { dir: directory, force: true },
       );
       cloneSpinner.succeed();
       if (packageManager === "npm") {
@@ -76,18 +83,18 @@ program
         await spawn("npm", ["install"], {
           shell: true,
           stdio: "inherit",
-          cwd: dir,
+          cwd: directory,
         });
       } else {
         await spawn("corepack", ["enable"], {
           shell: true,
           stdio: "inherit",
-          cwd: dir,
+          cwd: directory,
         });
         await spawn("corepack", ["use", `${packageManager}@${packageManagerVersion}`], {
           shell: true,
           stdio: "inherit",
-          cwd: dir,
+          cwd: directory,
         });
       }
     },
