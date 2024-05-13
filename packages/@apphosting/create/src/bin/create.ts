@@ -83,6 +83,7 @@ program
         });
         installSpinner.succeed();
       }
-    });
+    },
+  );
 
 program.parse();
