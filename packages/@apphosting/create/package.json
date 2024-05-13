@@ -37,11 +37,13 @@
         "@npmcli/promise-spawn": "^7.0.2",
         "commander": "^11.1.0",
         "giget": "^1.2.3",
-        "ora": "^8.0.1"
+        "ora": "^8.0.1",
+        "tslib": "^2.3.1"
     },
     "devDependencies": {
         "@types/commander": "*",
         "@types/npmcli__promise-spawn": "^6.0.3",
-        "ts-node": "*"
+        "ts-node": "*",
+        "typescript": "*"
     }
 }
