@@ -4,6 +4,8 @@ import { downloadTemplate } from "giget";
 import { select, input } from "@inquirer/prompts";
 import spawn from "@npmcli/promise-spawn";
 import ora from "ora";
+import { rm } from "fs/promises";
+import { join } from "path";
 
 const contextIsNpmCreate = process.env.npm_command === "init";
 
@@ -96,6 +98,7 @@ program
           stdio: "inherit",
           cwd: directory,
         });
+        await rm(join(directory, "package-lock.json"));
       }
     },
   );
