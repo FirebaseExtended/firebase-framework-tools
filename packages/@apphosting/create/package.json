@@ -1,6 +1,6 @@
 {
     "name": "@apphosting/create",
-    "version": "0.1.0",
+    "version": "0.3.1",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": {
@@ -8,7 +8,7 @@
         "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
     },
     "bin": {
-        "@apphosting/create": "dist/bin/create.js"
+        "create": "dist/bin/create.js"
     },
     "author": {
         "name": "Firebase",
@@ -33,11 +33,16 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
+        "@inquirer/prompts": "^5.0.2",
+        "@npmcli/promise-spawn": "^7.0.2",
         "commander": "^11.1.0",
-        "semver": "^7.5.4"
+        "giget": "^1.2.3",
+        "ora": "^8.0.1",
+        "tslib": "^2.3.1"
     },
     "devDependencies": {
         "@types/commander": "*",
-        "ts-node": "*"
+        "@types/npmcli__promise-spawn": "^6.0.3",
+        "typescript": "*"
     }
 }

@@ -1,31 +1,29 @@
 # Angular on Firebase App Hosting
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.1.0-rc.0.
+This is a boilerplate [Angular](https://angular.dev/) project to showcase SSG, SSR, and Deferrable Views on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
 
-## Development server
+## Getting Started
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Run the development server:
 
-## Code scaffolding
+```bash
+npm run start
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Open [http://localhost:4200](http://localhost:4200) with your browser to see the result.
 
-## Build
+## Deploy to Firebase App Hosting
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+### 1. Get your project setup on GitHub
 
-## Running unit tests
+[Create a new GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) and push the newly-initialized sample code to it. E.g,
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+<pre>
+git remote add origin https://github.com/<b>$YOUR_NEW_REPOSITORY</b>.git
+git branch -M main
+git push -u origin main
+</pre>
 
-## Running end-to-end tests
+### 2. Setup Firebase App Hosting
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-
-## Deploy to Firebase
-
-Run `firebase init hosting`, then `firebase deploy`.
+Continue the [Firebase App Hosting Getting Started guide](https://firebase.google.com/docs/app-hosting/get-started#step-1:).
