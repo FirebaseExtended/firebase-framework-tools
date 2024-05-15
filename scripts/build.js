@@ -2,9 +2,24 @@
 const { spawn } = require("child_process");
 const { lernaScopeArgs } = require("./github.js");
 
-const buildProcess = spawn("lerna", ["run", "build", ...lernaScopeArgs], { stdio: "inherit" });
+const scopeArgs = [
+  "--scope",
+  "@apphosting/adapter-angular",
+  "--scope",
+  "@apphosting/adapter-nextjs",
+  "--scope",
+  "@apphosting/build",
+  "--scope",
+  "@apphosting/create",
+  "--scope",
+  "@apphosting/discover",
+  "--scope",
+  "create-next-on-firebase",
+  "--scope",
+  "firebase-frameworks",
+];
+const buildProcess = spawn("lerna", ["run", "build", ...scopeArgs], { stdio: "inherit" });
 
-console.log(lernaScopeArgs);
 buildProcess.on("close", (code) => {
   process.exit(code);
 });
