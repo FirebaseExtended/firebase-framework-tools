@@ -1,5 +1,6 @@
 {
-    "scripts": {
+  "name": "@apphosting/angular-server",  
+  "scripts": {
       "build": "rollup -c --bundleConfigAsCjs"
     },
     "dependencies": {
