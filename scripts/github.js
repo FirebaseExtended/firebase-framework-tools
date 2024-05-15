@@ -16,7 +16,6 @@ const lernaList = JSON.parse(
     stdio: ["ignore", "pipe", "ignore"],
   }).toString(),
 );
-console.log(lernaList);
 
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
