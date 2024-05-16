@@ -12,14 +12,14 @@ describe(`client-side (SSR ${ssr ? "enabled" : "disabled"})`, () => {
   it("/", async () => {
     const response = await fetch(host);
     assert.ok(response.ok);
-    assert.equal(response.headers.get("content-type"), "text/html; charset=utf-8");
+    assert.equal(response.headers.get("content-type")?.toLowerCase(), "text/html; charset=utf-8");
     assert.equal(response.headers.get("cache-control"), null);
   });
 
   it("/ssg", async () => {
     const response = await fetch(posix.join(host, "ssg"));
     assert.ok(response.ok);
-    assert.equal(response.headers.get("content-type"), "text/html; charset=utf-8");
+    assert.equal(response.headers.get("content-type")?.toLowerCase(), "text/html; charset=utf-8");
     assert.equal(response.headers.get("cache-control"), null);
   });
 
@@ -33,7 +33,7 @@ describe(`client-side (SSR ${ssr ? "enabled" : "disabled"})`, () => {
   it("/deferrable-views", async () => {
     const response = await fetch(posix.join(host, "deferrable-views"));
     assert.ok(response.ok);
-    assert.equal(response.headers.get("content-type"), "text/html; charset=utf-8");
+    assert.equal(response.headers.get("content-type")?.toLowerCase(), "text/html; charset=utf-8");
     assert.equal(response.headers.get("cache-control"), null);
   });
 });

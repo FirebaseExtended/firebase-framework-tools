@@ -22,8 +22,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const buildScript = join(__dirname, "../dist/bin/build.js");
 const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toString());
 
-try {
-  for (const enableSSR of [false, true]) {
+const errors = [];
+
+for (const enableSSR of [false, true]) {
+  try {
     angularJSON.projects["firebase-app-hosting-angular"].architect.build.options.ssr =
       enableSSR && {
         entry: "server.ts",
@@ -88,9 +90,13 @@ try {
       run.stdin.end();
       run.kill("SIGKILL");
     });
+  } catch (e) {
+    errors.push(e);
   }
-} catch (e) {
-  console.error(e);
+}
+
+if (errors.length) {
+  console.error(errors);
   process.exit(1);
 }
 
