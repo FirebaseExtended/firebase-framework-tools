@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const oneYear = 31_536_000_000;
 
 app.use(express.static(path.join(__dirname, "..", "browser"), { maxAge: oneYear }));
-app.get("*", function (request, response) {
+app.get("*", (request, response) => {
   response.sendFile(path.join(__dirname, "..", "browser", "index.html"));
 });
 var port = process.env.PORT || 3000;

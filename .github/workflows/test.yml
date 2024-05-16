@@ -39,7 +39,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-20-
       - name: Install deps
-        if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Build
         run: npm run build
