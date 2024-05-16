@@ -1,20 +1,11 @@
-import { cp, readFile, writeFile } from "fs/promises";
-import tmp from "tmp";
+import { readFile, writeFile } from "fs/promises";
 import promiseSpawn from "@npmcli/promise-spawn";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 
-let cwd = "../../../starters/angular/basic";
-
-if (!process.env.GITHUB_ACTION) {
-  tmp.setGracefulCleanup();
-  const { name: tmpDir } = tmp.dirSync();
-  await cp(cwd, tmpDir, { recursive: true });
-  cwd = tmpDir;
-  await promiseSpawn("npm", ["i"], { cwd, stdio: "inherit", shell: true });
-}
+const cwd = "../../../starters/angular/basic";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const buildScript = join(__dirname, "../dist/bin/build.js");

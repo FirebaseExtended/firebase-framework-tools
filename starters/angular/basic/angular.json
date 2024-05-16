@@ -64,7 +64,10 @@
               "sourceMap": true
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "production",
+          "ssr": {
+            "entry": "server.ts"
+          }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
