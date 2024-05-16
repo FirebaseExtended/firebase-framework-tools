@@ -6,23 +6,20 @@ import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 
-let cwd = "../../../starters/angular/basic";
+const starterTemplateDir = "../../../starters/angular/basic";
 
-//if (!process.env.GITHUB_ACTION) {
 tmp.setGracefulCleanup();
-const { name: tmpDir } = tmp.dirSync();
-console.log(`Copying ${cwd} to ${tmpDir}`);
-await cp(cwd, tmpDir, { recursive: true });
-cwd = tmpDir;
+const { name: cwd } = tmp.dirSync();
+console.log(`Copying ${starterTemplateDir} to ${cwd}`);
+await cp(starterTemplateDir, cwd, { recursive: true });
 console.log("> npm i");
 await promiseSpawn("npm", ["i"], { cwd, stdio: "inherit", shell: true });
-//}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const buildScript = join(__dirname, "../dist/bin/build.js");
 const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toString());
 
-const errors = [];
+const errors: any[] = [];
 
 for (const enableSSR of [false, true]) {
   try {

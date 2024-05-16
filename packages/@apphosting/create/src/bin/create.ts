@@ -98,7 +98,7 @@ program
           stdio: "inherit",
           cwd: directory,
         });
-        await rm(join(directory, "package-lock.json")).catch(() => undefined);
+        await rm(join(directory, "package-lock.json"));
       }
     },
   );
