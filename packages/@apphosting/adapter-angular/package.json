@@ -21,7 +21,7 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
+        "build": "rm -rf dist && tsc && rollup -c --bundleConfigAsCjs && chmod +x ./dist/bin/*",
         "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts"
     },
     "exports": {
@@ -59,6 +59,12 @@
         }
     },
     "devDependencies": {
+        "@rollup/plugin-json": "^6.1.0",
+        "express": "^4.18.2",
+        "rollup": "^4.12.0",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-node-resolve": "^5.2.0",
         "@angular-devkit/architect": "~0.1702.0",
         "@angular-devkit/core": "~17.2.0",
         "@angular/core": "~17.2.0",
