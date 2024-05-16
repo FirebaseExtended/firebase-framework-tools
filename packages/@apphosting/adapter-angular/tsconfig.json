@@ -8,8 +8,7 @@
   },
   "include": [
     "src/index.ts",
-    "src/bin/*.ts",
-    "src/simple-server/*",
+    "src/bin/*.ts"
   ],
   "exclude": [
     "src/*.spec.ts"
