@@ -16,5 +16,4 @@ if (process.env.SSR) {
       assert.equal(response.headers.get("cache-control"), null);
     });
   });
-
 }
