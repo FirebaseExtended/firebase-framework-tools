@@ -1,6 +1,10 @@
 import assert from "assert";
 import { posix } from "path";
 
+if (!process.env.SSR) {
+  process.exit(0);
+}
+
 const host = process.env.HOST;
 
 if (!host) {

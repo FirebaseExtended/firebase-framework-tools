@@ -11,7 +11,8 @@
     "lint:fix": "eslint packages/* scripts/* --fix"
   },
   "workspaces": [
-    "packages/**/*"
+    "packages/**/*",
+    "starters/**/*"
   ],
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.1.2",

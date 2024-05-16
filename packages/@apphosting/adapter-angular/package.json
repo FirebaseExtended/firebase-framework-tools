@@ -24,9 +24,7 @@
         "build": "rm -rf dist && tsc && rollup -c --silent && chmod +x ./dist/bin/*",
         "test": "npm run test:unit && npm run test:functional",
         "test:unit": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
-        "test:functional": "npm run test:functional:nossr && npm run test:functional:ssr",
-        "test:functional:nossr": "node --loader ts-node/esm ./e2e/run-local.ts",
-        "test:functional:ssr": "SSR=1 node --loader ts-node/esm ./e2e/run-local.ts"
+        "test:functional": "node --loader ts-node/esm ./e2e/run-local.ts"
     },
     "exports": {
         ".": {
