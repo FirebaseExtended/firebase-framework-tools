@@ -49,6 +49,7 @@ await new Promise((resolve, reject) => {
   });
   run.stderr.on("data", (data) => console.error(data.toString()));
   run.stdout.on("data", (data) => {
+    console.log(data.toString());
     if (data.toString() === `Node Express server listening on http://localhost:${port}\n`) {
       resolve(
         promiseSpawn(
@@ -68,11 +69,13 @@ await new Promise((resolve, reject) => {
             },
           },
         ).finally(() => {
-          run.kill();
+          run.stdin.end();
+          run.kill("SIGKILL");
         }),
       );
     } else {
-      console.log(JSON.stringify(data.toString()));
+      run.stdin.end();
+      run.kill("SIGKILL");
     }
   });
   run.on("close", (code) => {
