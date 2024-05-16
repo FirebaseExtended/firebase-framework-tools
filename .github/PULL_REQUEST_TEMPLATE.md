@@ -22,6 +22,8 @@ Please link the internal bug number if applicable here too.
 
 Write a list of all the user journeys and edge cases you've tested. 
 
+For framework adapters:
+
 At a minimum this should mean that you've run the code locally via 
 
 npx ts-node --esm=true  path/to/adapter/build/.../@apphosting/adapter${adapter name}/src/bin/build.ts
