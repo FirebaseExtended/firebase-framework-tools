@@ -24,9 +24,10 @@ const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toStr
 
 try {
   for (const enableSSR of [false, true]) {
-    angularJSON.projects["firebase-app-hosting-angular"].architect.build.ssr = enableSSR && {
-      entry: "server.ts",
-    };
+    angularJSON.projects["firebase-app-hosting-angular"].architect.build.options.ssr =
+      enableSSR && {
+        entry: "server.ts",
+      };
     await writeFile(join(cwd, "angular.json"), JSON.stringify(angularJSON, null, 2));
 
     await promiseSpawn("node", [buildScript], { cwd, stdio: "inherit", shell: true });
