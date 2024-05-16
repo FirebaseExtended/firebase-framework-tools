@@ -1,18 +1,29 @@
-import { readFile, writeFile } from "fs/promises";
+import { cp, readFile, writeFile } from "fs/promises";
+import tmp from "tmp";
 import promiseSpawn from "@npmcli/promise-spawn";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 
-const cwd = "../../../starters/angular/basic";
+let cwd = "../../../starters/angular/basic";
+
+if (!process.env.GITHUB_ACTION) {
+  tmp.setGracefulCleanup();
+  const { name: tmpDir } = tmp.dirSync();
+  console.log(`Copying ${cwd} to ${tmpDir}`);
+  await cp(cwd, tmpDir, { recursive: true });
+  cwd = tmpDir;
+  console.log("> npm i");
+  await promiseSpawn("npm", ["i"], { cwd, stdio: "inherit", shell: true });
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const buildScript = join(__dirname, "../dist/bin/build.js");
+const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toString());
 
-for (const SSR of [false, true]) {
-  const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toString());
-  angularJSON.projects["firebase-app-hosting-angular"].architect.build.ssr = SSR && {
+for (const enableSSR of [false, true]) {
+  angularJSON.projects["firebase-app-hosting-angular"].architect.build.ssr = enableSSR && {
     entry: "server.ts",
   };
   await writeFile(join(cwd, "angular.json"), JSON.stringify(angularJSON, null, 2));
@@ -30,45 +41,49 @@ for (const SSR of [false, true]) {
   console.log(`> ${runCommand}`);
 
   const [runScript, ...runArgs] = runCommand.split(" ");
-
-  await new Promise((resolve, reject) => {
-    const port = 8080 + Math.floor(Math.random() * 1000);
-    const run = spawn(runScript, runArgs, {
-      cwd,
-      shell: true,
-      env: {
-        NODE_ENV: "production",
-        LOCAL: "1",
-        PORT: port.toString(),
-      },
-    });
-    run.stderr.on("data", (data) => console.error(data.toString()));
-    run.stdout.on("data", (data) => {
-      console.log(data.toString());
-      if (data.toString() === `Node Express server listening on http://localhost:${port}\n`) {
-        resolve(
-          promiseSpawn("ts-mocha", ["-p", "tsconfig.json", "e2e/**/*.spec.ts"], {
-            shell: true,
-            stdio: "inherit",
-            env: {
-              ...process.env,
-              SSR: SSR ? "1" : undefined,
-              HOST: `http://localhost:${port}`,
-            },
-          }).finally(() => {
-            run.stdin.end();
-            run.kill("SIGKILL");
-          }),
-        );
-      } else {
-        run.stdin.end();
-        run.kill("SIGKILL");
-      }
-    });
-    run.on("close", (code) => {
-      if (code) {
-        reject();
-      }
-    });
+  let resolveHostname: (it: string) => void;
+  let rejectHostname: () => void;
+  const hostnamePromise = new Promise<string>((resolve, reject) => {
+    resolveHostname = resolve;
+    rejectHostname = reject;
+  });
+  const port = 8080 + Math.floor(Math.random() * 1000);
+  const run = spawn(runScript, runArgs, {
+    cwd,
+    shell: true,
+    env: {
+      NODE_ENV: "production",
+      LOCAL: "1",
+      PORT: port.toString(),
+    },
+  });
+  run.stderr.on("data", (data) => console.error(data.toString()));
+  run.stdout.on("data", (data) => {
+    console.log(data.toString());
+    if (data.toString() === `Node Express server listening on http://localhost:${port}\n`) {
+      resolveHostname(`http://localhost:${port}`);
+    } else {
+      run.stdin.end();
+      run.kill("SIGKILL");
+    }
+  });
+  run.on("close", (code) => {
+    if (code) {
+      rejectHostname();
+    }
+  });
+  const HOST = await hostnamePromise;
+  console.log("> ts-mocha -p tsconfig.json e2e/**/*.spec.ts");
+  await promiseSpawn("ts-mocha", ["-p", "tsconfig.json", "e2e/**/*.spec.ts"], {
+    shell: true,
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      SSR: enableSSR ? "1" : undefined,
+      HOST,
+    },
+  }).finally(() => {
+    run.stdin.end();
+    run.kill("SIGKILL");
   });
 }
