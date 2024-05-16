@@ -8,9 +8,5 @@ export default {
     file: "./dist/simple-server/bundled_server.mjs",
     format: "es",
   },
-  plugins: [
-    resolve({ preferBuiltins: true }),
-    json(),
-    commonjs(),
-  ],
+  plugins: [resolve({ preferBuiltins: true }), json(), commonjs()],
 };
