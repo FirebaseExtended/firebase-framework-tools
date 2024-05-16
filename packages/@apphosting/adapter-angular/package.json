@@ -21,7 +21,7 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-        "build": "rm -rf dist && tsc && rollup -c --bundleConfigAsCjs && chmod +x ./dist/bin/*",
+        "build": "rm -rf dist && tsc && rollup -c --silent && chmod +x ./dist/bin/*",
         "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts"
     },
     "exports": {
