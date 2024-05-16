@@ -3,7 +3,7 @@ import json from "@rollup/plugin-json";
 import commonjs from "rollup-plugin-commonjs";
 
 export default {
-  input: "./src/simple-server/server.mjs",
+  input: "./dist/simple-server/server.js",
   output: {
     file: "./dist/simple-server/bundled_server.mjs",
     format: "es",
