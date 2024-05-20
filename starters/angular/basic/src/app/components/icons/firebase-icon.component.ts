@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: "app-firebase-icon",
+  selector: 'app-firebase-icon',
   standalone: true,
   imports: [],
   template: `
