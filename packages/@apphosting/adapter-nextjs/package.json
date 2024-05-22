@@ -2,7 +2,7 @@
   "name": "@apphosting/adapter-nextjs",
   "version": "14.0.4",
   "main": "dist/index.js",
-  "description": "Experimental addon to the Firebase CLI to add web framework support",
+  "description": "Framework adapter to support nextjs in Firebase App Hosting",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
