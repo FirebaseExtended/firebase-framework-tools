@@ -23,7 +23,10 @@ const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
 
 export const DEFAULT_COMMAND = "npm";
-export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
+export const ALLOWED_BUILDERS = [
+  "@angular-devkit/build-angular:application",
+  "@analogjs/platform:vite"
+];
 
 /**
  * Check if the following build conditions are satisfied for the workspace:
@@ -60,9 +63,9 @@ export async function checkStandaloneBuildConditions(cwd: string): Promise<void>
   if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
 
   const { builder } = workspaceProject.targets.get(target)!;
-  if (builder !== REQUIRED_BUILDER) {
+  if (!ALLOWED_BUILDERS.includes(builder)) {
     throw new Error(
-      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/esbuild#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
+      `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(',')}.`,
     );
   }
 }
@@ -77,9 +80,9 @@ export function checkMonorepoBuildConditions(cmd: string, target: string) {
     const projectJson = JSON.parse(output.toString());
     builder = projectJson.targets.build.executor;
   }
-  if (builder !== REQUIRED_BUILDER) {
+  if (!ALLOWED_BUILDERS.includes(builder)) {
     throw new Error(
-      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/esbuild#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
+      `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(',')}.`,
     );
   }
 }
