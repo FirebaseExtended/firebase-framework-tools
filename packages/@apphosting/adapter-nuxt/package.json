@@ -1,0 +1,56 @@
+{
+  "name": "@apphosting/adapter-nuxt",
+  "version": "3.11.2",
+  "main": "dist/index.js",
+  "description": "Framework adapter to support Nuxt in Firebase App Hosting",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
+  },
+  "bin": {
+    "apphosting-adapter-nuxt-build": "dist/bin/build.js"
+  },
+  "author": {
+    "name": "Firebase",
+    "url": "https://firebase.google.com/"
+  },
+  "bugs": {
+    "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
+    "build:watch": "tsc --watch",
+    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts"
+  },
+  "exports": {
+    ".": {
+      "node": "./dist/index.js",
+      "default": null
+    },
+    "./dist/*": {
+      "node": "./dist/*",
+      "default": null
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "yaml": "^2.3.4"
+  },
+  "peerDependencies": {
+    "nuxt": "~3.11.0"
+  },
+  "peerDependenciesMeta": {},
+  "devDependencies": {
+    "@nuxt/schema": "~3.11.0",
+    "@types/fs-extra": "*",
+    "@types/node": "*",
+    "nuxt": "~3.11.0",
+    "typescript": "*"
+  }
+}
