@@ -49,21 +49,15 @@ export async function generateOutputDirectory(
 ): Promise<void> {
   const outDir = join(cwd, ".output");
 
-  if (!outputBundleOptions.wantsBackend) {
-    await fsExtra.copy(outDir, outputBundleOptions.clientDirectory, {
-      overwrite: true,
-    });
-  } else {
-    await fsExtra.copy(outDir, outputBundleOptions.outputDirectory, {
-      overwrite: true,
-    });
-    // TODO: review, is this needed? Currently having errors with this
-    // await fsExtra.copy(
-    //   join(cwd, "node_modules"),
-    //   join(outputBundleOptions.outputDirectory, "node_modules"),
-    //   { overwrite: true },
-    // );
-  }
+  await fsExtra.copy(outDir, outputBundleOptions.outputDirectory, {
+    overwrite: true,
+  });
+  // TODO: review, is this needed? Currently having errors with this
+  // await fsExtra.copy(
+  //   join(cwd, "node_modules"),
+  //   join(outputBundleOptions.outputDirectory, "node_modules"),
+  //   { overwrite: true },
+  // );
 
   await Promise.all([generateBundleYaml(outputBundleOptions, cwd)]);
 }
