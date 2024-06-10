@@ -45,10 +45,10 @@
       "semver": "*"
     },
     "peerDependencies": {
-      "next": "~14.0.0"
+      "astro": "~14.0.0"
     },
     "peerDependenciesMeta": {
-      "next": {
+      "astro": {
         "optional": true
       }
     },
