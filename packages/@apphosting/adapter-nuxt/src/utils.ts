@@ -25,15 +25,15 @@ async function getWantsBackend(cwd: string): Promise<boolean> {
 }
 
 export async function build(cwd: string, cmd = DEFAULT_COMMAND): Promise<void> {
-  const command = (await getWantsBackend(cwd)) ? "build" : "generate";
+  const buildOrGenerate = (await getWantsBackend(cwd)) ? "build" : "generate";
 
-  const build = spawnSync(cmd, ["run", command], {
+  const { status } = spawnSync(cmd, ["run", buildOrGenerate], {
     cwd,
     stdio: "inherit",
     env: { ...process.env, NITRO_PRESET: "node" },
   });
 
-  if (build.status !== 0) throw Error("Was unable to build your Nuxt application.");
+  if (status !== 0) throw Error("Was unable to build your Nuxt application.");
 }
 
 /**
@@ -49,17 +49,15 @@ export async function generateOutputDirectory(
 ): Promise<void> {
   const outDir = join(cwd, ".output");
 
-  await fsExtra.copy(outDir, outputBundleOptions.outputDirectory, {
-    overwrite: true,
-  });
-  // TODO: review, is this needed? Currently having errors with this
-  // await fsExtra.copy(
-  //   join(cwd, "node_modules"),
-  //   join(outputBundleOptions.outputDirectory, "node_modules"),
-  //   { overwrite: true },
-  // );
+  await fsExtra.mkdirp(outputBundleOptions.outputDirectory);
 
-  await Promise.all([generateBundleYaml(outputBundleOptions, cwd)]);
+  await Promise.all([
+    generateBundleYaml(outputBundleOptions, cwd),
+
+    fsExtra.copy(outDir, outputBundleOptions.outputDirectory, {
+      overwrite: true,
+    }),
+  ]);
 }
 
 async function generateBundleYaml(
