@@ -120,7 +120,7 @@ export async function validateOutputDirectory(
     !(await fsExtra.pathExists(outputBundleOptions.bundleYamlPath)) ||
     !(await fsExtra.pathExists(outputBundleOptions.clientDirectory)) ||
     (outputBundleOptions.wantsBackend &&
-      !(await fsExtra.pathExists(outputBundleOptions.serverDirectory)))
+      !(await fsExtra.pathExists(outputBundleOptions.serverFilePath)))
   ) {
     throw new Error("Output directory is not of expected structure");
   }
