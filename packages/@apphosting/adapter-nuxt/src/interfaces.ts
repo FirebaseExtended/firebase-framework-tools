@@ -7,7 +7,5 @@ export interface OutputBundleOptions {
   wantsBackend: boolean;
   clientDirectory: string;
   serverDirectory: string;
-
-  // TODO: review, could not find yet
-  // serverFilePath: string;
+  serverFilePath: string;
 }

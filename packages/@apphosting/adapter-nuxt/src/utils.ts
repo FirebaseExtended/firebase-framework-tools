@@ -105,6 +105,7 @@ export function populateOutputBundleOptions(
     clientDirectory: join(outputBundleDir, "public"),
     serverDirectory: join(outputBundleDir, "server"),
     wantsBackend,
+    serverFilePath: join(outputBundleDir, "server", "index.mjs"),
   };
 }
 
