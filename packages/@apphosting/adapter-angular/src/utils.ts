@@ -2,7 +2,7 @@ import fsExtra from "fs-extra";
 import logger from "firebase-functions/logger";
 
 import { fileURLToPath } from "url";
-import { spawn } from "child_process";
+import { spawn, execSync } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import {
@@ -32,14 +32,17 @@ export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
  */
 export async function checkStandaloneBuildConditions(cwd: string): Promise<void> {
   // dynamically load Angular so this can be used in an NPX context
+  const angularCorePath = require.resolve("@angular/core", { paths: [cwd] });
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
-    // TODO (sijinli): resolve paths under cwd to be safer later
-    require.resolve("@angular-devkit/core/node/index.js")
+    require.resolve("@angular-devkit/core/node", {
+      paths: [cwd, angularCorePath],
+    })
   );
   const { workspaces }: typeof import("@angular-devkit/core") = await import(
-    require.resolve("@angular-devkit/core/src/index.js")
+    require.resolve("@angular-devkit/core", {
+      paths: [cwd, angularCorePath],
+    })
   );
-
   const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
   const { workspace } = await workspaces.readWorkspace(cwd, host);
 
@@ -67,7 +70,13 @@ export async function checkStandaloneBuildConditions(cwd: string): Promise<void>
 /**
  * Check if the monorepo build system is using the Angular application builder.
  */
-export function checkMonorepoBuildConditions(builder: string): void {
+export function checkMonorepoBuildConditions(cmd: string, target: string) {
+  let builder;
+  if (cmd === "nx") {
+    const output = execSync(`npx nx show project ${target}`);
+    const projectJson = JSON.parse(output.toString());
+    builder = projectJson.targets.build.executor;
+  }
   if (builder !== REQUIRED_BUILDER) {
     throw new Error(
       "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
@@ -103,11 +112,12 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBun
 export const build = (
   projectRoot = process.cwd(),
   cmd = DEFAULT_COMMAND,
+  ...argv: string[]
 ): Promise<OutputBundleOptions> =>
   new Promise((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn(cmd, ["run", "build"], {
+    const childProcess = spawn(cmd, ["run", "build", ...argv], {
       cwd: projectRoot,
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],
