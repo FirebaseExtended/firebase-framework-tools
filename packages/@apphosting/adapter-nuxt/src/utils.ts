@@ -46,9 +46,8 @@ export async function build(cwd: string, cmd = DEFAULT_COMMAND): Promise<void> {
 export async function generateOutputDirectory(
   cwd: string,
   outputBundleOptions: OutputBundleOptions,
+  outDir: string,
 ): Promise<void> {
-  const outDir = join(cwd, ".output");
-
   await fsExtra.mkdirp(outputBundleOptions.outputDirectory);
 
   await Promise.all([
@@ -75,14 +74,17 @@ async function generateBundleYaml(
       serverDirectory: outputBundleOptions.wantsBackend
         ? normalize(relative(cwd, outputBundleOptions.serverDirectory))
         : null,
+      serverFilePath: outputBundleOptions.wantsBackend
+        ? normalize(relative(cwd, outputBundleOptions.serverFilePath))
+        : null,
       rewrites: outputBundleOptions.wantsBackend
-        ? []
-        : [
+        ? [
             {
               source: posix.join(baseURL, "**"),
               destination: posix.join(baseURL, "200.html"),
             },
-          ],
+          ]
+        : [],
     }),
   );
 }
