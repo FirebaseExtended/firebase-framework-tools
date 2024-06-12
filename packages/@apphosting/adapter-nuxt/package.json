@@ -22,7 +22,8 @@
   "scripts": {
     "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
     "build:watch": "tsc --watch",
-    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts"
+    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
+    "test:watch": "ts-mocha -p tsconfig.json src/**/*.spec.ts -w --watch-files '**/*.ts'"
   },
   "exports": {
     ".": {
