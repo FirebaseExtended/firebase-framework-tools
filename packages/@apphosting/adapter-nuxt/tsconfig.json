@@ -7,5 +7,5 @@
     "allowJs": true
   },
   "include": ["src/index.ts", "src/bin/*.ts"],
-  "exclude": ["src/*.spec.ts"]
+  "exclude": ["src/**/*.spec.ts"]
 }
