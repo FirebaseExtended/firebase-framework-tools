@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 
+import { join } from "node:path";
 import {
   build,
   populateOutputBundleOptions,
@@ -16,5 +17,5 @@ const { ssr: wantsBackend } = await getConfig(cwd);
 
 const outputBundleOptions = populateOutputBundleOptions(cwd, wantsBackend);
 
-await generateOutputDirectory(cwd, outputBundleOptions);
+await generateOutputDirectory(cwd, outputBundleOptions, join(cwd, ".output"));
 await validateOutputDirectory(outputBundleOptions);
