@@ -62,7 +62,7 @@ export async function checkStandaloneBuildConditions(cwd: string): Promise<void>
   const { builder } = workspaceProject.targets.get(target)!;
   if (builder !== REQUIRED_BUILDER) {
     throw new Error(
-      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/esbuild#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
+      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
     );
   }
 }
@@ -79,7 +79,7 @@ export function checkMonorepoBuildConditions(cmd: string, target: string) {
   }
   if (builder !== REQUIRED_BUILDER) {
     throw new Error(
-      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/esbuild#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
+      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
     );
   }
 }
