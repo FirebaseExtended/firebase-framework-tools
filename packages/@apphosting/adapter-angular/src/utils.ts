@@ -15,7 +15,7 @@ import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
+export const { writeFile, move, mkdir, copyFile } = fsExtra;
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
