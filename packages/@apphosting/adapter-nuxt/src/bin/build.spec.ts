@@ -178,9 +178,7 @@ function generateTmpDir(): string {
 }
 
 function generateTestFiles(baseDir: string, filesToGenerate: Record<string, string>): void {
-  Object.entries(filesToGenerate).forEach((file) => {
-    const fileName = file[0];
-    const contents = file[1];
+  Object.entries(filesToGenerate).forEach(([fileName, contents]) => {
     const fileToGenerate = join(baseDir, fileName);
     mkdirSync(dirname(fileToGenerate), { recursive: true });
     writeFileSync(fileToGenerate, contents);
