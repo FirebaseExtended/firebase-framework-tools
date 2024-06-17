@@ -13,6 +13,7 @@ import {
 } from "./interface.js";
 import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
+import { BuildOptions } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
@@ -22,7 +23,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
 
-export const DEFAULT_COMMAND = "npm";
 export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
 
 /**
@@ -70,7 +70,7 @@ export async function checkStandaloneBuildConditions(cwd: string): Promise<void>
 /**
  * Check if the monorepo build system is using the Angular application builder.
  */
-export function checkMonorepoBuildConditions(cmd: string, target: string) {
+export function checkMonorepoBuildConditions(cmd: string, target: string): void {
   let builder;
   if (cmd === "nx") {
     const output = execSync(`npx nx show project ${target}`);
@@ -111,13 +111,12 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBun
 // Run build command
 export const build = (
   projectRoot = process.cwd(),
-  cmd = DEFAULT_COMMAND,
-  ...argv: string[]
+  opts: BuildOptions,
 ): Promise<OutputBundleOptions> =>
   new Promise((resolve, reject) => {
     // enable JSON build logs for application builder
     process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn(cmd, ["run", "build", ...argv], {
+    const childProcess = spawn(opts.buildCommand, ["run", "build", ...opts.buildArgs], {
       cwd: projectRoot,
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],

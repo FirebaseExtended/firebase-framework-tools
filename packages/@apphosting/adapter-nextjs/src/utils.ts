@@ -9,6 +9,7 @@ import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 import { ROUTES_MANIFEST } from "./constants.js";
 import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
+import { BuildOptions } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir } = fsExtra;
@@ -71,12 +72,16 @@ export function populateOutputBundleOptions(rootDir: string, appDir: string): Ou
 }
 
 // Run build command
-export function build(cwd: string, cmd = DEFAULT_COMMAND, ...argv: string[]): void {
+export function build(cwd: string, opts: BuildOptions): void {
   // Set standalone mode
   process.env.NEXT_PRIVATE_STANDALONE = "true";
   // Opt-out sending telemetry to Vercel
   process.env.NEXT_TELEMETRY_DISABLED = "1";
-  spawnSync(cmd, ["run", "build", ...argv], { cwd, shell: true, stdio: "inherit" });
+  spawnSync(opts.buildCommand, ["run", "build", ...opts.buildArgs], {
+    cwd,
+    shell: true,
+    stdio: "inherit",
+  });
 }
 
 /**
