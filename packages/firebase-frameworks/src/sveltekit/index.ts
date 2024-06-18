@@ -26,21 +26,11 @@ export const handle = async (req: Request, res: Response) => {
     return res.writeHead(404, "Not Found").end();
   }
 
-  let body;
-  const contentType = rendered.headers.get("Content-Type");
-  if (
-    contentType.startsWith("text/") ||
-    contentType.startsWith("application/json") ||
-    contentType.startsWith("application/xml") ||
-    contentType.startsWith("application/javascript") ||
-    contentType.startsWith("application/vnd.ms-excel")
-  ) {
-    body = await rendered.text();
-  } else {
-    body = Buffer.from(await rendered.arrayBuffer());
-  }
+  const body = (await rendered.arrayBuffer()) as ArrayBuffer;
 
-  return res.writeHead(rendered.status, Object.fromEntries(rendered.headers)).end(body);
+  return res
+    .writeHead(rendered.status, Object.fromEntries(rendered.headers))
+    .end(Buffer.from(body));
 };
 
 // https://github.com/jthegedus/svelte-adapter-firebase/blob/main/src/files/firebase-to-svelte-kit.js
