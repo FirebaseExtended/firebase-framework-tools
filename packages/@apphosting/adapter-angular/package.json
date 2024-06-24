@@ -21,8 +21,10 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
-        "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts"
+        "build": "rm -rf dist && tsc && rollup -c --silent && chmod +x ./dist/bin/*",
+        "test": "npm run test:unit && npm run test:functional",
+        "test:unit": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
+        "test:functional": "node --loader ts-node/esm ./e2e/run-local.ts"
     },
     "exports": {
         ".": {
@@ -62,14 +64,21 @@
         "@angular-devkit/architect": "~0.1702.0",
         "@angular-devkit/core": "~17.2.0",
         "@angular/core": "~17.2.0",
+        "@npmcli/promise-spawn": "^7.0.2",
+        "@rollup/plugin-json": "^6.1.0",
+        "@rollup/plugin-node-resolve": "^15.2.3",
         "@types/fs-extra": "*",
         "@types/mocha": "*",
         "@types/tmp": "*",
+        "express": "^4.18.2",
         "mocha": "*",
+        "rollup": "^4.12.0",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-node-resolve": "^5.2.0",
         "semver": "*",
-        "tmp": "*",
+        "tmp": "^0.2.3",
         "ts-mocha": "*",
-        "ts-node": "*",
+        "ts-node": "^10.9.2",
         "typescript": "*"
     }
 }

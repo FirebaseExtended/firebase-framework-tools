@@ -9,7 +9,7 @@
   "include": [
     "src/index.ts",
     "src/bin/*.ts",
-    "src/simple-server/*",
+    "src/simple-server/*.ts",
   ],
   "exclude": [
     "src/*.spec.ts"
