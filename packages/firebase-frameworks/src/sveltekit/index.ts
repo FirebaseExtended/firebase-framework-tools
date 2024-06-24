@@ -26,7 +26,7 @@ export const handle = async (req: Request, res: Response) => {
     return res.writeHead(404, "Not Found").end();
   }
 
-  const body = (await rendered.arrayBuffer()) as ArrayBuffer;
+  const body: ArrayBuffer = await rendered.arrayBuffer();
 
   return res
     .writeHead(rendered.status, Object.fromEntries(rendered.headers))
