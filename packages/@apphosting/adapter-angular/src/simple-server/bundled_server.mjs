@@ -44630,6 +44630,9 @@ express$1.urlencoded;
 
 var express = express$1;
 
+// *** IMPORTANT NOTE ***
+// make sure to run "npm run build" after making any changes to this file
+// changes to this file will not be reflected unless that command is run
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path$2.dirname(__filename);

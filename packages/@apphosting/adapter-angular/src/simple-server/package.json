@@ -1,5 +1,6 @@
 {
-    "scripts": {
+  "name": "@apphosting/angular-server",  
+  "scripts": {
       "build": "rollup -c --bundleConfigAsCjs"
     },
     "dependencies": {
@@ -11,6 +12,7 @@
       "@rollup/plugin-node-resolve": "^15.2.3",
       "rollup-plugin-commonjs": "^10.1.0",
       "rollup-plugin-node-resolve": "^5.2.0"
-    }
-  }
+    },
+    "private": true
+}
   
