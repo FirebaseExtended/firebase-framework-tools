@@ -1,21 +1,21 @@
 #! /usr/bin/env node
 import {
   loadConfig,
-  build,
   populateOutputBundleOptions,
   generateOutputDirectory,
   validateOutputDirectory,
 } from "../utils.js";
 import { join } from "path";
-import { getBuildOptions } from "@apphosting/common";
+import { getBuildOptions, runBuild } from "@apphosting/common";
 
 const root = process.cwd();
 const opts = getBuildOptions();
 
-// Run build command from the subdirectory if specified.
-// N.B. We run the build command from the root for monorepo builds, so that the build process can
-// locate necessary files outside the project directory.
-build(root, opts);
+// Set standalone mode
+process.env.NEXT_PRIVATE_STANDALONE = "true";
+// Opt-out sending telemetry to Vercel
+process.env.NEXT_TELEMETRY_DISABLED = "1";
+await runBuild();
 
 const outputBundleOptions = populateOutputBundleOptions(root, opts.projectDirectory);
 const { distDir } = await loadConfig(root, opts.projectDirectory);
