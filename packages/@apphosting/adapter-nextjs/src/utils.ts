@@ -11,7 +11,7 @@ import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJson } = fsExtra;
+export const { move, exists, writeFile, readJson, readdir } = fsExtra;
 
 // The default fallback command prefix to run a build.
 export const DEFAULT_COMMAND = "npm";
@@ -55,31 +55,33 @@ export function populateOutputBundleOptions(rootDir: string, appDir: string): Ou
   const outputBundleDir = join(rootDir, ".apphosting");
   // In monorepo setups, the standalone directory structure will mirror the structure of the monorepo.
   // We find the relative path from the root to the app directory to correctly locate server.js.
-  const outputBundleAppDir = join(
+  const outputDirectoryAppPath = join(
     outputBundleDir,
     process.env.MONOREPO_COMMAND ? relative(rootDir, appDir) : "",
   );
 
   return {
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
-    outputDirectory: outputBundleDir,
-    serverFilePath: join(outputBundleAppDir, "server.js"),
-    outputPublicDirectory: join(outputBundleAppDir, "public"),
-    outputStaticDirectory: join(outputBundleAppDir, ".next", "static"),
+    outputDirectoryBasePath: outputBundleDir,
+    outputDirectoryAppPath,
+    serverFilePath: join(outputDirectoryAppPath, "server.js"),
+    outputPublicDirectoryPath: join(outputDirectoryAppPath, "public"),
+    outputStaticDirectoryPath: join(outputDirectoryAppPath, ".next", "static"),
   };
 }
 
 // Run build command
-export function build(cwd: string, cmd = DEFAULT_COMMAND): void {
+export function build(cwd: string, cmd = DEFAULT_COMMAND, ...argv: string[]): void {
   // Set standalone mode
   process.env.NEXT_PRIVATE_STANDALONE = "true";
   // Opt-out sending telemetry to Vercel
   process.env.NEXT_TELEMETRY_DISABLED = "1";
-  spawnSync(cmd, ["run", "build"], { cwd, shell: true, stdio: "inherit" });
+  spawnSync(cmd, ["run", "build", ...argv], { cwd, shell: true, stdio: "inherit" });
 }
 
 /**
- * Moves the standalone directory, the static directory and the public directory to apphosting output directory.
+ * Moves the standalone directory, the static directory and copies over all of the apps resources
+ * to the apphosting output directory.
  * Also generates the bundle.yaml file.
  * @param rootDir The root directory of the uploaded source code.
  * @param appDir The path to the application source code, relative to the root.
@@ -93,26 +95,30 @@ export async function generateOutputDirectory(
   nextBuildDirectory: string,
 ): Promise<void> {
   const standaloneDirectory = join(nextBuildDirectory, "standalone");
-  await move(standaloneDirectory, outputBundleOptions.outputDirectory, { overwrite: true });
+  await move(standaloneDirectory, outputBundleOptions.outputDirectoryBasePath, { overwrite: true });
 
   const staticDirectory = join(nextBuildDirectory, "static");
-  const publicDirectory = join(appDir, "public");
   await Promise.all([
-    move(staticDirectory, outputBundleOptions.outputStaticDirectory, { overwrite: true }),
-    movePublicDirectory(publicDirectory, outputBundleOptions.outputPublicDirectory),
+    move(staticDirectory, outputBundleOptions.outputStaticDirectoryPath, { overwrite: true }),
+    moveResources(appDir, outputBundleOptions.outputDirectoryAppPath),
     generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir),
   ]);
   return;
 }
 
-// move public directory to apphosting output public directory
-async function movePublicDirectory(
-  publicDirectory: string,
-  appHostingPublicDirectory: string,
-): Promise<void> {
-  const publicDirectoryExists = await exists(publicDirectory);
-  if (!publicDirectoryExists) return;
-  await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
+// Move all files and directories to apphosting output directory.
+// Files are skipped if there is already a file with the same name in the output directory
+async function moveResources(appDir: string, outputBundleAppDir: string): Promise<void> {
+  const appDirExists = await exists(appDir);
+  if (!appDirExists) return;
+  const pathsToMove = await readdir(appDir);
+  for (const path of pathsToMove) {
+    const isOutputBundleDir = join(appDir, path) === outputBundleAppDir;
+    const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
+    if (!isOutputBundleDir && !existsInOutputBundle) {
+      await move(join(appDir, path), join(outputBundleAppDir, path));
+    }
+  }
   return;
 }
 
@@ -138,8 +144,8 @@ async function generateBundleYaml(
       redirects,
       rewrites,
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
-      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
-      staticAssets: [normalize(relative(cwd, outputBundleOptions.outputPublicDirectory))],
+      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectoryBasePath))],
+      staticAssets: [normalize(relative(cwd, outputBundleOptions.outputPublicDirectoryPath))],
     }),
   );
   return;
@@ -150,7 +156,7 @@ export async function validateOutputDirectory(
   outputBundleOptions: OutputBundleOptions,
 ): Promise<void> {
   if (
-    !(await fsExtra.exists(outputBundleOptions.outputDirectory)) ||
+    !(await fsExtra.exists(outputBundleOptions.outputDirectoryBasePath)) ||
     !(await fsExtra.exists(outputBundleOptions.serverFilePath)) ||
     !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))
   ) {

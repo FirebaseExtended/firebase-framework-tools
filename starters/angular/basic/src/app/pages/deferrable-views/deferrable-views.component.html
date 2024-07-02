@@ -1,0 +1,57 @@
+<h1 class="heading">Deferrable Views</h1>
+
+<p>
+  Deferrable views can be used in a component template to defer the loading of
+  select dependencies within that template. Those dependencies include
+  components, directives, and pipes, and any associated CSS. To use this
+  feature, you can declaratively wrap a section of your template in a
+  <code>&#64;defer</code> block which specifies the loading conditions.
+  Deferrable views support a series of triggers, prefetching, and several sub
+  blocks used for placeholder, loading, and error state management. You can also
+  create custom conditions with <code>when</code> and <code>prefetch when</code>.
+</p>
+
+<article class="example">
+  <h2>
+    Display
+    <a href="https://angular.dev/guide/defer#placeholder">&#64;placeholder</a>
+    for 2 seconds
+  </h2>
+
+  @defer {
+  <app-card />
+  } @placeholder (minimum 2000ms) {
+  <p>Placeholder content visible for 2 seconds</p>
+  }
+</article>
+
+<article class="example">
+  <h2>
+    <a href="https://angular.dev/guide/defer#on-interaction"
+      >On interaction trigger</a
+    >
+    - lazy load component when user clicks button
+  </h2>
+
+  <button type="button" class="button regenerate-button" #triggerLoading>
+    Load Large Component
+  </button>
+
+  @defer (on interaction(triggerLoading)) {
+  <app-card />
+  } @placeholder {
+  <p>Lazy load component when user clicks button</p>
+  }
+</article>
+
+<article class="example">
+  <h2>
+    Lazy load component when it's on the
+    <a href="https://angular.dev/guide/defer#placeholder">viewport</a>
+  </h2>
+  @defer (on viewport) {
+  <app-card />
+  } @placeholder {
+  <p></p>
+  }
+</article>

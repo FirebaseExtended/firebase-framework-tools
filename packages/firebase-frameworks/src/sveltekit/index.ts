@@ -26,8 +26,11 @@ export const handle = async (req: Request, res: Response) => {
     return res.writeHead(404, "Not Found").end();
   }
 
-  const body = await rendered.text();
-  return res.writeHead(rendered.status, Object.fromEntries(rendered.headers)).end(body);
+  const body: ArrayBuffer = await rendered.arrayBuffer();
+
+  return res
+    .writeHead(rendered.status, Object.fromEntries(rendered.headers))
+    .end(Buffer.from(body));
 };
 
 // https://github.com/jthegedus/svelte-adapter-firebase/blob/main/src/files/firebase-to-svelte-kit.js

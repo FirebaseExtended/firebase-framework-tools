@@ -39,7 +39,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-20-
       - name: Install deps
-        if: steps.node_modules_cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Build
         run: npm run build
@@ -57,7 +56,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        node: [16, 18, 20]
+        node: [18, 20]
       fail-fast: false
     name: Test Node ${{ matrix.node }}
     steps:

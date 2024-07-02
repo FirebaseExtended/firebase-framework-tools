@@ -74,9 +74,30 @@ export interface RoutesManifest {
 
 // The output bundle options are specified here
 export interface OutputBundleOptions {
+  /**
+   * Path to the generated bundle.yaml file
+   */
   bundleYamlPath: string;
-  outputDirectory: string;
+  /**
+   *  Path to where the base output directory (.apphosting) is generated
+   */
+  outputDirectoryBasePath: string;
+  /**
+   * Path to where the App's code sits in the output directory.
+   * This will only be different from outputDirectoryPath in Monorepo scenerios.
+   * For example if the monorepo app sits under the apps/next-app directory, this value will be .apphosting/apps/next-app
+   */
+  outputDirectoryAppPath: string;
+  /**
+   * Path to the generated server.js file generated relative to the output directory
+   */
   serverFilePath: string;
-  outputPublicDirectory: string;
-  outputStaticDirectory: string;
+  /**
+   * Path to where the public directory is generated relative to the output directory
+   */
+  outputPublicDirectoryPath: string;
+  /**
+   * Path to where the static assets directory is generated relative to the output directory
+   */
+  outputStaticDirectoryPath: string;
 }
