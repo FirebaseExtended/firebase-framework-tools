@@ -35,14 +35,13 @@ describe("build commands", () => {
     const expectedFiles = {
       ".apphosting/dist/browser/browserfile": "",
       ".apphosting/dist/server/server.mjs": "",
-      ".apphosting/bundle.yaml": `headers: []
-redirects: []
-rewrites: []
+      ".apphosting/bundle.yaml": `
 runCommand: node .apphosting/dist/server/server.mjs
 neededDirs:
   - .apphosting
 staticAssets:
   - .apphosting/dist/browser
+env: []
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);

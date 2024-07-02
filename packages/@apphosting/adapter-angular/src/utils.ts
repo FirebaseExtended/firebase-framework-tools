@@ -222,7 +222,7 @@ async function generateBundleYaml(
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
-      runtimeEnv: runtimeEnvVars,
+      env: runtimeEnvVars,
     }),
   );
 }
