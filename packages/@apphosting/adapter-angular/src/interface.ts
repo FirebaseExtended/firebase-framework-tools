@@ -12,6 +12,19 @@ export interface OutputBundleOptions {
   needsServerGenerated: boolean;
 }
 
+export interface EnvironmentVariable {
+  variable: string;
+  value: string;
+  avalability: string[];
+}
+
+export interface BundleYamlSchema {
+  runCommand: string;
+  neededDirs: string[],
+  staticAssets: string[],
+  runtimeEnv: EnvironmentVariable[],
+}
+
 // valid manifest schema
 export interface ValidManifest {
   errors: string[];
