@@ -18,13 +18,6 @@ export interface EnvironmentVariable {
   avalability: string[];
 }
 
-export interface BundleYamlSchema {
-  runCommand: string;
-  neededDirs: string[],
-  staticAssets: string[],
-  runtimeEnv: EnvironmentVariable[],
-}
-
 // valid manifest schema
 export interface ValidManifest {
   errors: string[];

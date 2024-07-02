@@ -11,7 +11,6 @@ import {
   OutputPaths,
   buildManifestSchema,
   ValidManifest,
-  BundleYamlSchema,
 } from "./interface.js";
 import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
@@ -196,16 +195,20 @@ export async function generateOutputDirectory(
   await generateBundleYaml(outputBundleOptions, cwd);
 }
 
-let runtimeEnvVars: EnvironmentVariable[] = [];
+const runtimeEnvVars: EnvironmentVariable[] = [];
 
 // add environment variable to bundle.yaml if needed for specific versions
 function addBundleYamlEnvVar(): void {
-  let ssrPortEnvVar: EnvironmentVariable = {variable: "SSR_PORT", value: "8080", avalability: ["RUNTIME"]};
+  const ssrPortEnvVar: EnvironmentVariable = {
+    variable: "SSR_PORT",
+    value: "8080",
+    avalability: ["RUNTIME"],
+  };
 
-  if (process.env.ANGULAR_VERSION === "17.3.2"){ 
-    runtimeEnvVars.push(ssrPortEnvVar); 
+  if (process.env.ANGULAR_VERSION === "17.3.2") {
+    runtimeEnvVars.push(ssrPortEnvVar);
   }
-};
+}
 
 // Generate bundle.yaml
 async function generateBundleYaml(
