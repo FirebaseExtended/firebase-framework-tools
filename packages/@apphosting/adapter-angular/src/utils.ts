@@ -37,6 +37,7 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
         "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
       );
     }
+    return;
   }
 
   // dynamically load Angular so this can be used in an NPX context

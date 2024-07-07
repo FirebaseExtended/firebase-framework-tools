@@ -1,4 +1,4 @@
-import { exec } from "child_process";
+import { spawn } from "child_process";
 
 // Options to configure the build of a framework application
 export interface BuildOptions {
@@ -9,7 +9,7 @@ export interface BuildOptions {
   buildArgs: string[];
   // path to the project targeted by the build command
   projectDirectory: string;
-  // the name of the project to build, as specified in package.json
+  // the name of the project to build
   projectName?: string;
 }
 
@@ -20,14 +20,29 @@ export interface BuildResult {
 
 export const DEFAULT_COMMAND = "npm";
 
+// Run the build command in a spawned child process.
+// By default, "npm run build" will be used, or in monorepo cases,
+// the monorepo build command (e.g. "nx build").
 export async function runBuild(opts: BuildOptions = getBuildOptions()): Promise<BuildResult> {
-  const cmd = [opts.buildCommand, "run", "build", ...opts.buildArgs].join(" ");
   return new Promise((resolve, reject) => {
-    exec(cmd, (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
+    const child = spawn(opts.buildCommand, [...opts.buildArgs], {
+      cwd: process.cwd(),
+      shell: true,
+      stdio: ["inherit", "pipe", "pipe"],
+    });
+    let buildOutput = "";
+
+    child.stdout.on("data", (data: Buffer) => {
+      buildOutput += data.toString();
+    });
+    child.on("exit", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with error code ${code}. Output: ${buildOutput}`));
       }
-      resolve({ stdout, stderr });
+      if (!buildOutput) {
+        reject(new Error("Unable to locate build manifest with output paths."));
+      }
+      resolve({ stdout: buildOutput });
     });
   });
 }
@@ -38,14 +53,14 @@ export function getBuildOptions(): BuildOptions {
   if (process.env.MONOREPO_COMMAND) {
     return {
       buildCommand: process.env.MONOREPO_COMMAND,
-      buildArgs: process.env.MONOREPO_BUILD_ARGS?.split(".") || [],
-      projectDirectory: process.env.GOOGLE_BUILDABLE || ".",
+      buildArgs: ["run", "build"].concat(process.env.MONOREPO_BUILD_ARGS?.split(".") || []),
+      projectDirectory: process.env.GOOGLE_BUILDABLE || "",
       projectName: process.env.MONOREPO_PROJECT,
     };
   }
   return {
     buildCommand: DEFAULT_COMMAND,
-    buildArgs: [],
+    buildArgs: ["run", "build"],
     projectDirectory: process.cwd(),
   };
 }
