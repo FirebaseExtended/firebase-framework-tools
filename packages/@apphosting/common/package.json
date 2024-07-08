@@ -16,7 +16,9 @@
     "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "localregistry:start": "npx verdaccio --config ../publish-dev/verdaccio-config.yaml",
+    "localregistry:publish": "npm unpublish --@apphosting:registry=http://localhost:4873 --force && npm publish --@apphosting:registry=http://localhost:4873"
   },
   "bugs": {
     "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"

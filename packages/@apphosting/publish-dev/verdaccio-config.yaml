@@ -1,8 +1,4 @@
 #
-# This is the default configuration file. It allows all users to do anything,
-# please read carefully the documentation and best practices to
-# improve security.
-#
 # Look here for more config file examples:
 # https://github.com/verdaccio/verdaccio/tree/5.x/conf
 #
