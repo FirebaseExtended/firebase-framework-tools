@@ -1,5 +1,6 @@
 {
-    "scripts": {
+  "private": true,
+  "scripts": {
       "build": "rollup -c --bundleConfigAsCjs"
     },
     "dependencies": {
