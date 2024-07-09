@@ -13,7 +13,7 @@ const opts = getBuildOptions();
 // Check build conditions, which vary depending on your project structure (standalone or monorepo)
 await checkBuildConditions(opts);
 
-// Write a build manifest to stdout
+// enable JSON build logs for application builder
 process.env.NG_BUILD_LOGS_JSON = "1";
 const { stdout: output } = await runBuild();
 if (!output) {
