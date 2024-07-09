@@ -1,0 +1,26 @@
+{
+  "name": "@apphosting/common",
+  "version": "1.0.0",
+  "description": "Shared library code for App Hosting framework adapters",
+  "author": {
+    "name": "Firebase",
+    "url": "https://firebase.google.com/"
+  },
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "localregistry:start": "npx verdaccio --config ../publish-dev/verdaccio-config.yaml",
+    "localregistry:publish": "(npm view --registry=http://localhost:4873 @apphosting/common && npm unpublish --@apphosting:registry=http://localhost:4873 --force); npm publish --@apphosting:registry=http://localhost:4873"
+  },
+  "bugs": {
+    "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
+  }
+}

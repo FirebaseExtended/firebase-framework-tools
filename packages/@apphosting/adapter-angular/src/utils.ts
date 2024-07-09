@@ -2,17 +2,13 @@ import fsExtra from "fs-extra";
 import logger from "firebase-functions/logger";
 
 import { fileURLToPath } from "url";
-import { spawn, execSync } from "child_process";
+import { execSync } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
-import {
-  OutputBundleOptions,
-  OutputPaths,
-  buildManifestSchema,
-  ValidManifest,
-} from "./interface.js";
+import { OutputBundleOptions, OutputPaths, buildManifestSchema } from "./interface.js";
 import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
+import { BuildOptions } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
@@ -22,7 +18,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
 
-export const DEFAULT_COMMAND = "npm";
 export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
 
 /**
@@ -30,21 +25,35 @@ export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
  * - The workspace does not contain multiple angular projects.
  * - The angular project must be using the application builder.
  */
-export async function checkStandaloneBuildConditions(cwd: string): Promise<void> {
+export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
+  // Nx uses a project.json file in lieu of an angular.json file, so if the app is in an Nx workspace,
+  // we check if Nx's project.json configures the build to use the Angular application builder.
+  if (opts.buildCommand === "nx") {
+    const output = execSync(`npx nx show project ${opts.projectName}`);
+    const projectJson = JSON.parse(output.toString());
+    const builder = projectJson.targets.build.executor;
+    if (builder !== REQUIRED_BUILDER) {
+      throw new Error(
+        "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
+      );
+    }
+    return;
+  }
+
   // dynamically load Angular so this can be used in an NPX context
-  const angularCorePath = require.resolve("@angular/core", { paths: [cwd] });
+  const angularCorePath = require.resolve("@angular/core", { paths: [process.cwd()] });
   const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
     require.resolve("@angular-devkit/core/node", {
-      paths: [cwd, angularCorePath],
+      paths: [process.cwd(), angularCorePath],
     })
   );
   const { workspaces }: typeof import("@angular-devkit/core") = await import(
     require.resolve("@angular-devkit/core", {
-      paths: [cwd, angularCorePath],
+      paths: [process.cwd(), angularCorePath],
     })
   );
   const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
-  const { workspace } = await workspaces.readWorkspace(cwd, host);
+  const { workspace } = await workspaces.readWorkspace(opts.projectDirectory, host);
 
   const apps: string[] = [];
   workspace.projects.forEach((value, key) => {
@@ -60,23 +69,6 @@ export async function checkStandaloneBuildConditions(cwd: string): Promise<void>
   if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
 
   const { builder } = workspaceProject.targets.get(target)!;
-  if (builder !== REQUIRED_BUILDER) {
-    throw new Error(
-      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
-    );
-  }
-}
-
-/**
- * Check if the monorepo build system is using the Angular application builder.
- */
-export function checkMonorepoBuildConditions(cmd: string, target: string) {
-  let builder;
-  if (cmd === "nx") {
-    const output = execSync(`npx nx show project ${target}`);
-    const projectJson = JSON.parse(output.toString());
-    builder = projectJson.targets.build.executor;
-  }
   if (builder !== REQUIRED_BUILDER) {
     throw new Error(
       "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
@@ -108,57 +100,24 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBun
   };
 }
 
-// Run build command
-export const build = (
-  projectRoot = process.cwd(),
-  cmd = DEFAULT_COMMAND,
-  ...argv: string[]
-): Promise<OutputBundleOptions> =>
-  new Promise((resolve, reject) => {
-    // enable JSON build logs for application builder
-    process.env.NG_BUILD_LOGS_JSON = "1";
-    const childProcess = spawn(cmd, ["run", "build", ...argv], {
-      cwd: projectRoot,
-      shell: true,
-      stdio: ["inherit", "pipe", "pipe"],
+export function parseOutputBundleOptions(buildOutput: string): OutputBundleOptions {
+  const strippedManifest = extractManifestOutput(buildOutput);
+  const parsedManifest = JSON.parse(strippedManifest) as string;
+  const manifest = buildManifestSchema.parse(parsedManifest);
+  if (manifest["errors"].length > 0) {
+    // errors when extracting manifest
+    manifest.errors.forEach((error) => {
+      logger.error(error);
     });
-    let buildOutput = "";
-    let manifest = {} as ValidManifest;
-
-    childProcess.stdout.on("data", (data: Buffer) => {
-      buildOutput += data.toString();
+  }
+  if (manifest["warnings"].length > 0) {
+    // warnings when extracting manifest
+    manifest.warnings.forEach((warning) => {
+      logger.info(warning);
     });
-
-    childProcess.on("exit", (code) => {
-      if (code !== 0) {
-        reject(new Error(`Process exited with error code ${code}. Output: ${buildOutput}`));
-      }
-      if (!buildOutput) {
-        reject(new Error("Unable to locate build manifest with output paths."));
-      }
-      try {
-        const strippedManifest = extractManifestOutput(buildOutput);
-        const parsedManifest = JSON.parse(strippedManifest) as string;
-        // validate if the manifest is of the expected form
-        manifest = buildManifestSchema.parse(parsedManifest);
-        if (manifest["errors"].length > 0) {
-          // errors when extracting manifest
-          manifest.errors.forEach((error) => {
-            logger.error(error);
-          });
-        }
-        if (manifest["warnings"].length > 0) {
-          // warnings when extracting manifest
-          manifest.warnings.forEach((warning) => {
-            logger.info(warning);
-          });
-        }
-        resolve(populateOutputBundleOptions(manifest["outputPaths"]));
-      } catch (error) {
-        reject(new Error("Build manifest is not of expected structure: " + error));
-      }
-    });
-  });
+  }
+  return populateOutputBundleOptions(manifest["outputPaths"]);
+}
 
 /**
  * Extracts the build manifest from the build command's console output.
