@@ -12,9 +12,10 @@ const since = process.env.GITHUB_ACTION
   : "";
 
 const lernaList = JSON.parse(
-  execSync(`lerna list --json ${packageFromRef ? "" : since}`, {
-    stdio: ["ignore", "pipe", "ignore"],
-  }).toString(),
+  execSync(
+    `lerna list --json --include-dependencies --include-dependents ${packageFromRef ? "" : since}`,
+    { stdio: ["ignore", "pipe", "ignore"] },
+  ).toString(),
 );
 
 const ref = process.env.GITHUB_SHA ?? "HEAD";
