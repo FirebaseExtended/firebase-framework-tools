@@ -163,6 +163,7 @@ export async function generateOutputDirectory(
 // add environment variable to bundle.yaml if needed for specific versions
 function addBundleYamlEnvVar(): EnvironmentVariable[] {
   const runtimeEnvVars: EnvironmentVariable[] = [];
+  // add env var to solve angular port issue, existing only for Angular v17.3.2 (b/332896115)
   const ssrPortEnvVar: EnvironmentVariable = {
     variable: "SSR_PORT",
     value: "8080",

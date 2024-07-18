@@ -12,10 +12,11 @@ export interface OutputBundleOptions {
   needsServerGenerated: boolean;
 }
 
+// Environment variable schema for bundle.yaml outputted by angular adapter
 export interface EnvironmentVariable {
   variable: string;
   value: string;
-  availability: string[];
+  availability: string[]; // currently support RUNTIME only
 }
 
 // valid manifest schema
