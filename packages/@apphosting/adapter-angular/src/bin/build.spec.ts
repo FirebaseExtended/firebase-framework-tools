@@ -94,7 +94,7 @@ function generateTestFiles(baseDir: string, filesToGenerate: Object): void {
 }
 
 function ignoreBlankLines(text: string) {
-  return text.replace(/^\s*[\r\n]/gm, '');
+  return text.replace(/^\s*[\r\n]/gm, "");
 }
 
 function validateTestFiles(baseDir: string, expectedFiles: Object): void {
