@@ -10,7 +10,6 @@ import {
   OutputBundleOptions,
   OutputPaths,
   buildManifestSchema,
-  ValidManifest,
 } from "./interface.js";
 import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
@@ -159,7 +158,6 @@ export async function generateOutputDirectory(
   await generateBundleYaml(outputBundleOptions, cwd);
 }
 
-
 // add environment variable to bundle.yaml if needed for specific versions
 function addBundleYamlEnvVar(): EnvironmentVariable[] {
   const runtimeEnvVars: EnvironmentVariable[] = [];
@@ -181,7 +179,7 @@ async function generateBundleYaml(
   outputBundleOptions: OutputBundleOptions,
   cwd: string,
 ): Promise<void> {
-  let runtimeEnvVars = addBundleYamlEnvVar();
+  const runtimeEnvVars = addBundleYamlEnvVar();
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({
