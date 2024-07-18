@@ -1,4 +1,3 @@
-import { spawnSync } from "child_process";
 import fsExtra from "fs-extra";
 import { createRequire } from "node:module";
 import { join, relative, normalize } from "path";
@@ -68,15 +67,6 @@ export function populateOutputBundleOptions(rootDir: string, appDir: string): Ou
     outputPublicDirectoryPath: join(outputDirectoryAppPath, "public"),
     outputStaticDirectoryPath: join(outputDirectoryAppPath, ".next", "static"),
   };
-}
-
-// Run build command
-export function build(cwd: string, cmd = DEFAULT_COMMAND, ...argv: string[]): void {
-  // Set standalone mode
-  process.env.NEXT_PRIVATE_STANDALONE = "true";
-  // Opt-out sending telemetry to Vercel
-  process.env.NEXT_TELEMETRY_DISABLED = "1";
-  spawnSync(cmd, ["run", "build", ...argv], { cwd, shell: true, stdio: "inherit" });
 }
 
 /**

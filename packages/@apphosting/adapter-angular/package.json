@@ -1,75 +1,79 @@
 {
-    "name": "@apphosting/adapter-angular",
-    "version": "17.2.5",
-    "main": "dist/index.js",
-    "description": "Experimental addon to the Firebase CLI to add web framework support",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
+  "name": "@apphosting/adapter-angular",
+  "version": "17.2.6",
+  "main": "dist/index.js",
+  "description": "Experimental addon to the Firebase CLI to add web framework support",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
+  },
+  "bin": {
+    "apphosting-adapter-angular-build": "dist/bin/build.js",
+    "apphosting-adapter-angular-create": "dist/bin/create.js"
+  },
+  "author": {
+    "name": "Firebase",
+    "url": "https://firebase.google.com/"
+  },
+  "bugs": {
+    "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
+    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
+    "localregistry:start": "npx verdaccio --config ../publish-dev/verdaccio-config.yaml",
+    "localregistry:publish": "(npm view --registry=http://localhost:4873 @apphosting/adapter-angular && npm unpublish --@apphosting:registry=http://localhost:4873 --force); npm publish --@apphosting:registry=http://localhost:4873"
+  },
+  "exports": {
+    ".": {
+      "node": "./dist/index.js",
+      "default": null
     },
-    "bin": {
-        "apphosting-adapter-angular-build": "dist/bin/build.js",
-        "apphosting-adapter-angular-create": "dist/bin/create.js"
-    },
-    "author": {
-        "name": "Firebase",
-        "url": "https://firebase.google.com/"
-    },
-    "bugs": {
-        "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
-    },
-    "type": "module",
-    "sideEffects": false,
-    "scripts": {
-        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
-        "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts"
-    },
-    "exports": {
-        ".": {
-            "node": "./dist/index.js",
-            "default": null
-        },
-        "./dist/*": {
-            "node": "./dist/*",
-            "default": null
-        }
-    },
-    "files": [
-        "dist"
-    ],
-    "license": "Apache-2.0",
-    "dependencies": {
-        "firebase-functions": "^4.3.1",
-        "fs-extra": "^11.1.1",
-        "strip-ansi": "^7.1.0",
-        "tslib": "^2.3.1",
-        "yaml": "^2.3.4",
-        "zod": "^3.22.4"
-    },
-    "peerDependencies": {
-        "@angular-devkit/architect": "~0.1702.0",
-        "@angular-devkit/core": "~17.2.0"
-    },
-    "peerDependenciesMeta": {
-        "@angular-devkit/architect": {
-            "optional": true
-        },
-        "@angular-devkit/core": {
-            "optional": true
-        }
-    },
-    "devDependencies": {
-        "@angular-devkit/architect": "~0.1702.0",
-        "@angular-devkit/core": "~17.2.0",
-        "@angular/core": "~17.2.0",
-        "@types/fs-extra": "*",
-        "@types/mocha": "*",
-        "@types/tmp": "*",
-        "mocha": "*",
-        "semver": "*",
-        "tmp": "*",
-        "ts-mocha": "*",
-        "ts-node": "*",
-        "typescript": "*"
+    "./dist/*": {
+      "node": "./dist/*",
+      "default": null
     }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@apphosting/common": "^0.0.1",
+    "firebase-functions": "^4.3.1",
+    "fs-extra": "^11.1.1",
+    "strip-ansi": "^7.1.0",
+    "tslib": "^2.3.1",
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
+  },
+  "peerDependencies": {
+    "@angular-devkit/architect": "~0.1702.0",
+    "@angular-devkit/core": "~17.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular-devkit/architect": {
+      "optional": true
+    },
+    "@angular-devkit/core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@angular-devkit/architect": "~0.1702.0",
+    "@angular-devkit/core": "~17.2.0",
+    "@angular/core": "~17.2.0",
+    "@types/fs-extra": "*",
+    "@types/mocha": "*",
+    "@types/tmp": "*",
+    "mocha": "*",
+    "semver": "*",
+    "tmp": "*",
+    "ts-mocha": "*",
+    "ts-node": "*",
+    "typescript": "*",
+    "verdaccio": "^5.30.3"
+  }
 }

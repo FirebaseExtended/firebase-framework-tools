@@ -1,0 +1,72 @@
+#
+# Look here for more config file examples:
+# https://github.com/verdaccio/verdaccio/tree/5.x/conf
+#
+# Read about the best practices
+# https://verdaccio.org/docs/best
+
+# path to a directory with all packages
+storage: ./.local/share/verdaccio/storage
+# path to a directory with plugins to include
+plugins: ./plugins
+
+# https://verdaccio.org/docs/webui
+web:
+  title: Verdaccio
+
+# https://verdaccio.org/docs/configuration#authentication
+auth:
+  htpasswd:
+    file: ./htpasswd
+
+# https://verdaccio.org/docs/configuration#uplinks
+# a list of other known repositories we can talk to
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+
+# Learn how to protect your packages
+# https://verdaccio.org/docs/protect-your-dependencies/
+# https://verdaccio.org/docs/configuration#packages
+packages:
+  '@apphosting/*':
+    access: $all
+    publish: $all
+    unpublish: $all
+
+  '@*/*':
+    # scoped packages
+    access: $all
+    publish: $all
+    unpublish: $all
+    proxy: npmjs
+
+  '**':
+    # allow all users (including non-authenticated users) to read and
+    # publish all packages
+    #
+    # you can specify usernames/groupnames (depending on your auth plugin)
+    # and three keywords: "$all", "$anonymous", "$authenticated"
+    access: $all
+
+    # allow all known users to publish/publish packages
+    # (anyone can register by default, remember?)
+    publish: $all
+    unpublish: $all
+
+    # if package is not available locally, proxy requests to 'npmjs' registry
+    proxy: npmjs
+
+server:
+  keepAliveTimeout: 60
+
+middlewares:
+  audit:
+    enabled: true
+
+listen:
+  - http://localhost:4873
+
+# https://verdaccio.org/docs/logger
+# log settings
+log: { type: stdout, format: pretty, level: http }
