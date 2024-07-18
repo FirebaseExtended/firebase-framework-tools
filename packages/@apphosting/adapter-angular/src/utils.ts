@@ -195,19 +195,20 @@ export async function generateOutputDirectory(
   await generateBundleYaml(outputBundleOptions, cwd);
 }
 
-const runtimeEnvVars: EnvironmentVariable[] = [];
 
 // add environment variable to bundle.yaml if needed for specific versions
-function addBundleYamlEnvVar(): void {
+function addBundleYamlEnvVar(): EnvironmentVariable[] {
+  const runtimeEnvVars: EnvironmentVariable[] = [];
   const ssrPortEnvVar: EnvironmentVariable = {
     variable: "SSR_PORT",
     value: "8080",
-    avalability: ["RUNTIME"],
+    availability: ["RUNTIME"],
   };
 
   if (process.env.ANGULAR_VERSION === "17.3.2") {
     runtimeEnvVars.push(ssrPortEnvVar);
   }
+  return runtimeEnvVars;
 }
 
 // Generate bundle.yaml
@@ -215,7 +216,7 @@ async function generateBundleYaml(
   outputBundleOptions: OutputBundleOptions,
   cwd: string,
 ): Promise<void> {
-  addBundleYamlEnvVar();
+  let runtimeEnvVars = addBundleYamlEnvVar();
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({

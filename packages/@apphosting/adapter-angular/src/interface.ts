@@ -15,7 +15,7 @@ export interface OutputBundleOptions {
 export interface EnvironmentVariable {
   variable: string;
   value: string;
-  avalability: string[];
+  availability: string[];
 }
 
 // valid manifest schema
