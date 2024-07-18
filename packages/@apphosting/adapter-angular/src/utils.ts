@@ -148,6 +148,7 @@ function extractManifestOutput(output: string): string {
 export async function generateOutputDirectory(
   cwd: string,
   outputBundleOptions: OutputBundleOptions,
+  angularVersion?: string,
 ): Promise<void> {
   await move(outputBundleOptions.baseDirectory, outputBundleOptions.outputBaseDirectory, {
     overwrite: true,
@@ -155,20 +156,19 @@ export async function generateOutputDirectory(
   if (outputBundleOptions.needsServerGenerated) {
     await generateServer(outputBundleOptions);
   }
-  await generateBundleYaml(outputBundleOptions, cwd);
+  await generateBundleYaml(outputBundleOptions, cwd, angularVersion);
 }
 
 // add environment variable to bundle.yaml if needed for specific versions
-function addBundleYamlEnvVar(): EnvironmentVariable[] {
+function addBundleYamlEnvVar(angularVersion?: string): EnvironmentVariable[] {
   const runtimeEnvVars: EnvironmentVariable[] = [];
   // add env var to solve angular port issue, existing only for Angular v17.3.2 (b/332896115)
-  const ssrPortEnvVar: EnvironmentVariable = {
-    variable: "SSR_PORT",
-    value: "8080",
-    availability: ["RUNTIME"],
-  };
-
-  if (process.env.ANGULAR_VERSION === "17.3.2") {
+  if (angularVersion && angularVersion === "17.3.2") {
+    const ssrPortEnvVar: EnvironmentVariable = {
+      variable: "SSR_PORT",
+      value: "8080",
+      availability: ["RUNTIME"],
+    };
     runtimeEnvVars.push(ssrPortEnvVar);
   }
   return runtimeEnvVars;
@@ -178,8 +178,9 @@ function addBundleYamlEnvVar(): EnvironmentVariable[] {
 async function generateBundleYaml(
   outputBundleOptions: OutputBundleOptions,
   cwd: string,
+  angualrVersion?: string,
 ): Promise<void> {
-  const runtimeEnvVars = addBundleYamlEnvVar();
+  const runtimeEnvVars = addBundleYamlEnvVar(angualrVersion);
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({

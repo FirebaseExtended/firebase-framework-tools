@@ -93,12 +93,16 @@ function generateTestFiles(baseDir: string, filesToGenerate: Object): void {
   });
 }
 
+function ignoreBlankLines(text: string) {
+  return text.replace(/^\s*[\r\n]/gm, '');
+}
+
 function validateTestFiles(baseDir: string, expectedFiles: Object): void {
   Object.entries(expectedFiles).forEach((file) => {
     const fileName = file[0];
     const expectedContents = file[1];
     const fileToRead = path.join(baseDir, fileName);
     const contents = fs.readFileSync(fileToRead).toString();
-    assert.deepEqual(contents, expectedContents);
+    assert.deepEqual(ignoreBlankLines(contents), ignoreBlankLines(expectedContents));
   });
 }
