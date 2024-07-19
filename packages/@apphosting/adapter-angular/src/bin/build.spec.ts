@@ -46,6 +46,35 @@ env: []
     };
     validateTestFiles(tmpDir, expectedFiles);
   });
+
+  it("expects SSR_PORT variable is added to bundle.yaml for Angular v17.3.2", async () => {
+    const { generateOutputDirectory } = await importUtils;
+    const files = {
+      "dist/test/browser/browserfile": "",
+      "dist/test/server/server.mjs": "",
+    };
+    generateTestFiles(tmpDir, files);
+    await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.2");
+
+    const expectedFiles = {
+      ".apphosting/dist/browser/browserfile": "",
+      ".apphosting/dist/server/server.mjs": "",
+      ".apphosting/bundle.yaml": `
+runCommand: node .apphosting/dist/server/server.mjs
+neededDirs:
+  - .apphosting
+staticAssets:
+  - .apphosting/dist/browser
+env:
+  - variable: SSR_PORT
+    value: "8080"
+    availability:
+      - RUNTIME
+`,
+    };
+    validateTestFiles(tmpDir, expectedFiles);
+  });
+
   it("test failed validateOutputDirectory", async () => {
     const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
     const files = {
@@ -103,6 +132,8 @@ function validateTestFiles(baseDir: string, expectedFiles: Object): void {
     const expectedContents = file[1];
     const fileToRead = path.join(baseDir, fileName);
     const contents = fs.readFileSync(fileToRead).toString();
+    console.log("actual: " + contents);
+    console.log("expected: " + expectedContents);
     assert.deepEqual(ignoreBlankLines(contents), ignoreBlankLines(expectedContents));
   });
 }
