@@ -16,7 +16,13 @@ export interface OutputBundleOptions {
 export interface EnvironmentVariable {
   variable: string;
   value: string;
-  availability: string[]; // currently support RUNTIME only
+  availability: availability[]; // currently support RUNTIME only
+}
+
+// defines whether the environment variable is buildtime, runtime or both
+enum availability {
+  BUILDTIME,
+  RUNTIME,
 }
 
 // valid manifest schema
