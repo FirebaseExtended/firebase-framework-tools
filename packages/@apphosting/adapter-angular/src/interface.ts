@@ -20,9 +20,9 @@ export interface EnvironmentVariable {
 }
 
 // defines whether the environment variable is buildtime, runtime or both
-enum availability {
-  BUILDTIME,
-  RUNTIME,
+export enum availability {
+  BUILDTIME = "BUILDTIME",
+  RUNTIME = "RUNTIME",
 }
 
 // valid manifest schema
