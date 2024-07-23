@@ -132,8 +132,6 @@ function validateTestFiles(baseDir: string, expectedFiles: Object): void {
     const expectedContents = file[1];
     const fileToRead = path.join(baseDir, fileName);
     const contents = fs.readFileSync(fileToRead).toString();
-    console.log("actual: " + contents);
-    console.log("expected: " + expectedContents);
     assert.deepEqual(ignoreBlankLines(contents), ignoreBlankLines(expectedContents));
   });
 }
