@@ -68,8 +68,7 @@ staticAssets:
 env:
   - variable: SSR_PORT
     value: "8080"
-    availability:
-      - RUNTIME
+    availability: RUNTIME
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);

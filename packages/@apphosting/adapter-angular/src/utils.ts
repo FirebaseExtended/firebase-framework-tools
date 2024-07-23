@@ -168,7 +168,7 @@ function addBundleYamlEnvVar(angularVersion?: string): EnvironmentVariable[] {
     const ssrPortEnvVar: EnvironmentVariable = {
       variable: "SSR_PORT",
       value: "8080",
-      availability: [availability.RUNTIME],
+      availability: availability.RUNTIME,
     };
     runtimeEnvVars.push(ssrPortEnvVar);
   }
