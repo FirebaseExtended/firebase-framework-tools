@@ -16,7 +16,7 @@ export interface OutputBundleOptions {
 export interface EnvironmentVariable {
   variable: string;
   value: string;
-  availability: availability[]; // currently support RUNTIME only
+  availability: availability.RUNTIME[]; // currently support RUNTIME only
 }
 
 // defines whether the environment variable is buildtime, runtime or both
