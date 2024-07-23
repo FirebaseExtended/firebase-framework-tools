@@ -179,9 +179,9 @@ function addBundleYamlEnvVar(angularVersion?: string): EnvironmentVariable[] {
 async function generateBundleYaml(
   outputBundleOptions: OutputBundleOptions,
   cwd: string,
-  angualrVersion?: string,
+  angularVersion?: string,
 ): Promise<void> {
-  const runtimeEnvVars = addBundleYamlEnvVar(angualrVersion);
+  const runtimeEnvVars = addBundleYamlEnvVar(angularVersion);
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({
