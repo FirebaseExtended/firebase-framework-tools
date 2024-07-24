@@ -16,11 +16,11 @@ export interface OutputBundleOptions {
 export interface EnvironmentVariable {
   variable: string;
   value: string;
-  availability: availability.RUNTIME; // currently support RUNTIME only
+  availability: Availability.RUNTIME; // currently support RUNTIME only
 }
 
 // defines whether the environment variable is buildtime, runtime or both
-export enum availability {
+export enum Availability {
   BUILDTIME = "BUILDTIME",
   RUNTIME = "RUNTIME",
 }

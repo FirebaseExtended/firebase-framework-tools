@@ -6,7 +6,7 @@ import { execSync } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import {
-  availability,
+  Availability,
   EnvironmentVariable,
   OutputBundleOptions,
   OutputPaths,
@@ -168,7 +168,7 @@ function addBundleYamlEnvVar(angularVersion?: string): EnvironmentVariable[] {
     const ssrPortEnvVar: EnvironmentVariable = {
       variable: "SSR_PORT",
       value: "8080",
-      availability: availability.RUNTIME,
+      availability: Availability.RUNTIME,
     };
     runtimeEnvVars.push(ssrPortEnvVar);
   }
