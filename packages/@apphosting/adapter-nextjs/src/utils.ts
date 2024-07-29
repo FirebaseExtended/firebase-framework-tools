@@ -6,7 +6,7 @@ import { stringify as yamlStringify } from "yaml";
 
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 import { ROUTES_MANIFEST } from "./constants.js";
-import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
+import { OutputBundleOptions, RoutesManifest, Availability } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
@@ -136,6 +136,7 @@ async function generateBundleYaml(
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectoryBasePath))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.outputPublicDirectoryPath))],
+      env: [{variable: `HOSTNAME`, value: "0.0.0.0", availability: Availability.Runtime}],
     }),
   );
   return;

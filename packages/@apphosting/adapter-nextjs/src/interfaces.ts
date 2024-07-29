@@ -101,3 +101,16 @@ export interface OutputBundleOptions {
    */
   outputStaticDirectoryPath: string;
 }
+
+// Environment variable schema for bundle.yaml outputted by nextjs adapter
+export interface EnvironmentVariable {
+  variable: string;
+  value: string;
+  availability: Availability.Runtime; // currently support runtime only
+}
+
+// defines whether the environment variable is buildtime, runtime or both
+export enum Availability {
+  Buildtime = "BUILD",
+  Runtime = "RUNTIME",
+}
