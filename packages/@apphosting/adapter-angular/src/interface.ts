@@ -21,7 +21,7 @@ export interface EnvironmentVariable {
 
 // defines whether the environment variable is buildtime, runtime or both
 export enum Availability {
-  BUILDTIME = "BUILDTIME",
+  BUILDTIME = "BUILD",
   RUNTIME = "RUNTIME",
 }
 
