@@ -12,6 +12,19 @@ export interface OutputBundleOptions {
   needsServerGenerated: boolean;
 }
 
+// Environment variable schema for bundle.yaml outputted by angular adapter
+export interface EnvironmentVariable {
+  variable: string;
+  value: string;
+  availability: Availability.RUNTIME; // currently support RUNTIME only
+}
+
+// defines whether the environment variable is buildtime, runtime or both
+export enum Availability {
+  BUILDTIME = "BUILDTIME",
+  RUNTIME = "RUNTIME",
+}
+
 // valid manifest schema
 export interface ValidManifest {
   errors: string[];
