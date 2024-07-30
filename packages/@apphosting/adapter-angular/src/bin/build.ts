@@ -20,6 +20,6 @@ if (!output) {
   throw new Error("No output from Angular build command, expecting a build manifest file.");
 }
 const outputBundleOptions = parseOutputBundleOptions(output);
-await generateOutputDirectory(root, outputBundleOptions, process.env.ANGULAR_VERSION);
+await generateOutputDirectory(root, outputBundleOptions, process.env.FRAMEWORK_VERSION);
 
 await validateOutputDirectory(outputBundleOptions);
