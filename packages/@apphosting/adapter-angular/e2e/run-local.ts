@@ -5,33 +5,50 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
+import fsExtra from "fs-extra";
+
+const { readFileSync } = fsExtra;
 
 const starterTemplateDir = "../../../starters/angular/basic";
 
 tmp.setGracefulCleanup();
-const { name: cwd } = tmp.dirSync();
-console.log(`Copying ${starterTemplateDir} to ${cwd}`);
-await cp(starterTemplateDir, cwd, { recursive: true });
-console.log("> npm i");
-await promiseSpawn("npm", ["i"], { cwd, stdio: "inherit", shell: true });
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const buildScript = join(__dirname, "../dist/bin/build.js");
-const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toString());
 
 const errors: any[] = [];
 
-for (const enableSSR of [false, true]) {
-  try {
-    angularJSON.projects["firebase-app-hosting-angular"].architect.build.options.ssr =
-      enableSSR && {
-        entry: "server.ts",
-      };
+const tests = await Promise.all(
+  [
+    [false, false],
+    [false, true],
+    [true, false],
+    [true, true],
+  ].map(async ([enableSSR, enableSSG]) => {
+    const { name: cwd } = tmp.dirSync();
+    console.log(`Copying ${starterTemplateDir} to ${cwd}`);
+    await cp(starterTemplateDir, cwd, { recursive: true });
+    console.log("> npm i");
+    await promiseSpawn("npm", ["i"], { cwd, stdio: "inherit", shell: true });
+
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const buildScript = join(__dirname, "../dist/bin/build.js");
+    const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toString());
+
+    if (!enableSSR) {
+      angularJSON.projects["firebase-app-hosting-angular"].architect.build.options.ssr = false;
+    }
+    if (!enableSSG) {
+      angularJSON.projects["firebase-app-hosting-angular"].architect.build.options.prerender =
+        false;
+    }
     await writeFile(join(cwd, "angular.json"), JSON.stringify(angularJSON, null, 2));
 
     await promiseSpawn("node", [buildScript], { cwd, stdio: "inherit", shell: true });
+    return [cwd, enableSSR, enableSSG] as const;
+  }),
+);
 
-    const bundleYaml = parseYaml((await readFile(join(cwd, ".apphosting/bundle.yaml"))).toString());
+for (const [cwd, enableSSR, enableSSG] of tests) {
+  try {
+    const bundleYaml = parseYaml(readFileSync(join(cwd, ".apphosting/bundle.yaml")).toString());
 
     const runCommand = bundleYaml.runCommand;
 
@@ -81,6 +98,8 @@ for (const enableSSR of [false, true]) {
       env: {
         ...process.env,
         SSR: enableSSR ? "1" : undefined,
+        SSG: enableSSG ? "1" : undefined,
+        SAUCE: cwd,
         HOST,
       },
     }).finally(() => {
