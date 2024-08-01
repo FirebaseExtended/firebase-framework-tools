@@ -195,7 +195,7 @@ async function generateBundleYaml(
 
 // Generate server file for CSR apps
 async function generateServer(outputBundleOptions: OutputBundleOptions): Promise<void> {
-  await mkdir(dirname(outputBundleOptions.serverFilePath));
+  await mkdir(dirname(outputBundleOptions.serverFilePath)).catch(() => undefined);
   await copyFile(SIMPLE_SERVER_FILE_PATH, outputBundleOptions.serverFilePath);
 }
 
