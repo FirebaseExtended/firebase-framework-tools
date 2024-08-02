@@ -25,8 +25,12 @@ const tests = await Promise.all(
     const { name: cwd } = tmp.dirSync();
     console.log(`Copying ${starterTemplateDir} to ${cwd}`);
     await cp(starterTemplateDir, cwd, { recursive: true });
-    console.log("> npm i");
-    await promiseSpawn("npm", ["i"], { cwd, stdio: "inherit", shell: true });
+    console.log("> npm ci --silent --no-progress");
+    await promiseSpawn("npm", ["ci", "--silent", "--no-progress"], {
+      cwd,
+      stdio: "inherit",
+      shell: true,
+    });
 
     const __dirname = dirname(fileURLToPath(import.meta.url));
     const buildScript = join(__dirname, "../dist/bin/build.js");
@@ -92,6 +96,7 @@ for (const [cwd, enableSSR, enableSSG] of tests) {
     });
     const HOST = await hostnamePromise;
     console.log("> ts-mocha -p tsconfig.json e2e/**/*.spec.ts");
+    console.log(`  SSR ${enableSSR ? "✅" : "❌"} | SSG ${enableSSG ? "✅" : "❌"}`);
     await promiseSpawn("ts-mocha", ["-p", "tsconfig.json", "e2e/**/*.spec.ts"], {
       shell: true,
       stdio: "inherit",
