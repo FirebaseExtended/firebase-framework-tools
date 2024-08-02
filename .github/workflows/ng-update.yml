@@ -10,6 +10,6 @@ jobs:
         uses: fast-facts/ng-update@v1
         with:
           project-path: ./starters/angular
-          base-branch: main
+          base-branch: ngUpdate
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           pr-title: Update starters/angular
