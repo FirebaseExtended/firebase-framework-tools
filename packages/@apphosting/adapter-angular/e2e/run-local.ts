@@ -95,16 +95,16 @@ for (const [cwd, enableSSR, enableSSG] of tests) {
       }
     });
     const HOST = await hostnamePromise;
-    console.log("> ts-mocha -p tsconfig.json e2e/**/*.spec.ts");
+    console.log("> ts-mocha -p tsconfig.json e2e/*.spec.ts");
     console.log(`  SSR ${enableSSR ? "✅" : "❌"} | SSG ${enableSSG ? "✅" : "❌"}`);
-    await promiseSpawn("ts-mocha", ["-p", "tsconfig.json", "e2e/**/*.spec.ts"], {
+    console.log(`  ${cwd}`);
+    await promiseSpawn("ts-mocha", ["-p", "tsconfig.json", "e2e/*.spec.ts"], {
       shell: true,
       stdio: "inherit",
       env: {
         ...process.env,
         SSR: enableSSR ? "1" : undefined,
         SSG: enableSSG ? "1" : undefined,
-        SAUCE: cwd,
         HOST,
       },
     }).finally(() => {
