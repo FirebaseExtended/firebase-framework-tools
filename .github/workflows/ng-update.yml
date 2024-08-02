@@ -1,0 +1,14 @@
+name: "Update Angular Action"
+on: # when the action should run. Can also be a CRON or in response to external events. see https://git.io/JeBz1
+  push
+
+jobs:
+  ngxUptodate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Updating ng dependencies # the magic happens here !
+        uses: tinesoft/ngx-uptodate@v1.1.1
+        with:
+          project-path: ./starters/angular
+          base-branch: main
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
