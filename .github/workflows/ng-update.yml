@@ -9,7 +9,7 @@ jobs:
       - name: Updating ng dependencies # the magic happens here !
         uses: fast-facts/ng-update@v1
         with:
-          project-path: ./starters/angular
+          project-path: ./starters/angular/basic
           base-branch: ngUpdate
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          pr-title: Update starters/angular
+          pr-title: Update starters/angular/basic
