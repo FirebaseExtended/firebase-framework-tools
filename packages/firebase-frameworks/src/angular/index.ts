@@ -14,10 +14,14 @@ const NG_BROWSER_OUTPUT_PATH = process.env.__NG_BROWSER_OUTPUT_PATH__;
 const expressHandle = new Promise<[(typeof import("../express/index.js"))["handle"]?, string?]>(
   (resolve) => {
     setTimeout(() => {
+      // We could just change the PORT to something else, but it seems you can't fire up two
+      // Angular Express servers listening to the same port for whatever reason... maybe we can
+      // find the root cause.
+      // In the meantime use a socket.
       const port = process.env.PORT;
       const socket = `express.sock`;
       process.env.PORT = socket;
-      // can't import from express, it's too lazy. alt we could export app from bootstrap
+      // can't import from express, it's too lazy. alt we could export/import app from bootstrap
       import(
         `${pathToFileURL(process.cwd())}/dist/firebase-app-hosting-angular/server/server.mjs`
       ).then(({ app }) => {
@@ -26,7 +30,7 @@ const expressHandle = new Promise<[(typeof import("../express/index.js"))["handl
             resolve([undefined, socket]);
           }
           resolve([app()]);
-        }, 10);
+        }, 10); // don't like the arbitrary wait here, is there a better way?
         process.env.PORT = port;
       });
     }, 0);
@@ -75,6 +79,7 @@ export const handle = async (req: Request, res: Response) => {
         res.end(500);
       });
     } else {
+      // TODO fix the types
       handle!(req, res);
     }
   }
