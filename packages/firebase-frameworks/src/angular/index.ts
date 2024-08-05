@@ -2,40 +2,27 @@ import type { Request } from "firebase-functions/v2/https";
 import type { Response } from "express";
 
 import { basename, join, normalize, relative } from "path";
-import { createReadStream, existsSync } from "fs";
+import { createReadStream } from "fs";
 import { mediaTypes } from "@hapi/accept";
 import { pathToFileURL } from "url";
-import { incomingMessageFromExpress } from "../utils.js";
-import { request as httpRequest } from "http";
 
 const LOCALE_FORMATS = [/^ALL_[a-z]+$/, /^[a-z]+_ALL$/, /^[a-z]+(_[a-z]+)?$/];
 const NG_BROWSER_OUTPUT_PATH = process.env.__NG_BROWSER_OUTPUT_PATH__;
 
-const expressHandle = new Promise<[(typeof import("../express/index.js"))["handle"]?, string?]>(
-  (resolve) => {
-    setTimeout(() => {
-      // We could just change the PORT to something else, but it seems you can't fire up two
-      // Angular Express servers on the same directory for whatever reason... maybe we can
-      // find the root cause.
-      // In the meantime use a socket.
-      const port = process.env.PORT;
-      const socket = `express.sock`;
-      process.env.PORT = socket;
-      // can't import from express, it's too lazy. alt we could export/import app from bootstrap
-      import(
-        `${pathToFileURL(process.cwd())}/dist/firebase-app-hosting-angular/server/server.mjs`
-      ).then(({ app }) => {
-        setTimeout(() => {
-          if (existsSync(socket)) {
-            resolve([undefined, socket]);
-          }
-          resolve([app()]);
-        }, 10); // don't like the arbitrary wait here, is there a better way?
-        process.env.PORT = port;
-      });
-    }, 0);
-  },
-);
+const expressHandle = new Promise<(typeof import("../express/index.js"))["handle"]>((resolve) => {
+  setTimeout(() => {
+    const port = process.env.PORT;
+    const socket = `express.sock`;
+    process.env.PORT = socket;
+    // can't import from express, it's too lazy. alt we could export/import app from bootstrap
+    import(
+      `${pathToFileURL(process.cwd())}/dist/firebase-app-hosting-angular/server/server.mjs`
+    ).then(({ app }) => {
+      process.env.PORT = port;
+      resolve(app());
+    });
+  }, 0);
+});
 
 export const handle = async (req: Request, res: Response) => {
   if (basename(req.path) === "__image__") {
@@ -61,26 +48,7 @@ export const handle = async (req: Request, res: Response) => {
     res.setHeader("Vary", "Accept, Accept-Encoding");
     createReadStream(normalizedPath).pipe(pipeline).pipe(res);
   } else {
-    const [handle, socketPath] = await expressHandle;
-    if (socketPath) {
-      const incomingMessage = incomingMessageFromExpress(req);
-      const proxyRequest = httpRequest({ ...incomingMessage, socketPath }, (response) => {
-        const { statusCode, statusMessage, headers } = response;
-        if (!statusCode) {
-          console.error("No status code.");
-          res.end(500);
-        }
-        res.writeHead(statusCode!, statusMessage, headers);
-        response.pipe(res);
-      });
-      req.pipe(proxyRequest);
-      proxyRequest.on("error", (err) => {
-        console.error(err);
-        res.end(500);
-      });
-    } else {
-      // TODO fix the types
-      handle!(req, res);
-    }
+    const handle = await expressHandle;
+    await handle(req, res);
   }
 };
