@@ -5,11 +5,13 @@ import { basename, join, normalize, relative } from "path";
 import { createReadStream, existsSync } from "fs";
 import { mediaTypes } from "@hapi/accept";
 import { pathToFileURL } from "url";
+import { incomingMessageFromExpress } from "../utils.js";
+import { request as httpRequest } from "http";
 
 const LOCALE_FORMATS = [/^ALL_[a-z]+$/, /^[a-z]+_ALL$/, /^[a-z]+(_[a-z]+)?$/];
 const NG_BROWSER_OUTPUT_PATH = process.env.__NG_BROWSER_OUTPUT_PATH__;
 
-const expressHandle = new Promise<[(typeof import("../express/index.js"))["handle"], string?]>(
+const expressHandle = new Promise<[(typeof import("../express/index.js"))["handle"]?, string?]>(
   (resolve) => {
     setTimeout(() => {
       const port = process.env.PORT;
@@ -21,11 +23,11 @@ const expressHandle = new Promise<[(typeof import("../express/index.js"))["handl
       ).then(({ app }) => {
         setTimeout(() => {
           if (existsSync(socket)) {
-            resolve([app, socket]);
+            resolve([undefined, socket]);
           }
-          resolve([app]);
-          process.env.PORT = port;
-        }, 0);
+          resolve([app()]);
+        }, 10);
+        process.env.PORT = port;
       });
     }, 0);
   },
@@ -55,10 +57,25 @@ export const handle = async (req: Request, res: Response) => {
     res.setHeader("Vary", "Accept, Accept-Encoding");
     createReadStream(normalizedPath).pipe(pipeline).pipe(res);
   } else {
-    const [handle, socket] = await expressHandle;
-    if (socket) {
-      throw new Error("TODO proxy to express.sock");
+    const [handle, socketPath] = await expressHandle;
+    if (socketPath) {
+      const incomingMessage = incomingMessageFromExpress(req);
+      const proxyRequest = httpRequest({ ...incomingMessage, socketPath }, (response) => {
+        const { statusCode, statusMessage, headers } = response;
+        if (!statusCode) {
+          console.error("No status code.");
+          res.end(500);
+        }
+        res.writeHead(statusCode!, statusMessage, headers);
+        response.pipe(res);
+      });
+      req.pipe(proxyRequest);
+      proxyRequest.on("error", (err) => {
+        console.error(err);
+        res.end(500);
+      });
+    } else {
+      handle!(req, res);
     }
-    handle(req, res);
   }
 };
