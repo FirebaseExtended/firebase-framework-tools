@@ -15,7 +15,7 @@ const expressHandle = new Promise<[(typeof import("../express/index.js"))["handl
   (resolve) => {
     setTimeout(() => {
       // We could just change the PORT to something else, but it seems you can't fire up two
-      // Angular Express servers listening to the same port for whatever reason... maybe we can
+      // Angular Express servers on the same directory for whatever reason... maybe we can
       // find the root cause.
       // In the meantime use a socket.
       const port = process.env.PORT;
