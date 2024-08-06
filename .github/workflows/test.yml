@@ -36,7 +36,7 @@ jobs:
         id: node_modules_cache
         with:
           path: ./node_modules
-          key: ${{ runner.os }}-20-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-20-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-20-
       - name: Install deps
@@ -79,7 +79,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./node_modules
-          key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.node }}-
       - name: Install deps
@@ -114,7 +114,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./node_modules
-          key: ${{ runner.os }}-20-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-20-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-20-
       - name: Install deps
