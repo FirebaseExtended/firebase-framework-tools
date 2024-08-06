@@ -30,19 +30,27 @@ export async function runBuild(opts: BuildOptions = getBuildOptions()): Promise<
       shell: true,
       stdio: ["inherit", "pipe", "pipe"],
     });
-    let buildOutput = "";
+    let stdout = "";
+    let stderr = "";
 
     child.stdout.on("data", (data: Buffer) => {
-      buildOutput += data.toString();
+      stdout += data.toString();
     });
+
+    child.stderr.on("data", (data: Buffer) => {
+      stderr += data.toString();
+    });
+
+    // Re-connect the child process's stdout and stderr to the console so that
+    // build messages and errors are still logged in Cloud Build.
+    child.stdout.pipe(process.stdout);
+    child.stderr.pipe(process.stderr);
+
     child.on("exit", (code) => {
       if (code !== 0) {
-        reject(new Error(`Process exited with error code ${code}. Output: ${buildOutput}`));
+        reject(new Error(`Build process exited with error code ${code}.`));
       }
-      if (!buildOutput) {
-        reject(new Error("Unable to locate build manifest with output paths."));
-      }
-      resolve({ stdout: buildOutput });
+      resolve({ stdout: stdout, stderr: stderr });
     });
   });
 }
