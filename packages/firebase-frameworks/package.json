@@ -68,7 +68,6 @@
   "devDependencies": {
     "@sveltejs/kit": "^1.0.1",
     "@types/cookie": "*",
-    "@types/lru-cache": "*",
     "@types/node": "*",
     "firebase": "^10.0.0",
     "firebase-admin": "^11.0.1",
