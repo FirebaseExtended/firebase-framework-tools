@@ -5,7 +5,7 @@ import { getAuth as getAdminAuth } from "firebase-admin/auth";
 import { initializeApp, deleteApp, FirebaseApp } from "firebase/app";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
 import cookie from "cookie";
-import LRU from "lru-cache";
+import { LRUCache } from "lru-cache";
 
 import { COOKIE_MAX_AGE, ID_TOKEN_MAX_AGE, LRU_MAX_INSTANCES, LRU_TTL } from "./constants.js";
 
@@ -15,7 +15,7 @@ const adminApp =
   initializeAdminApp(undefined, ADMIN_APP_NAME);
 const adminAuth = getAdminAuth(adminApp);
 
-const firebaseAppsLRU = new LRU<string, FirebaseApp>({
+const firebaseAppsLRU = new LRUCache<string, FirebaseApp>({
   max: LRU_MAX_INSTANCES,
   ttl: LRU_TTL,
   allowStale: true,
