@@ -46,7 +46,7 @@
     "yaml": "^2.3.4"
   },
   "peerDependencies": {
-    "next": "~14.0.0"
+    "next": "~14.1.1"
   },
   "peerDependenciesMeta": {
     "next": {
@@ -56,7 +56,7 @@
   "devDependencies": {
     "@types/fs-extra": "*",
     "@types/tmp": "*",
-    "next": "~14.0.0",
+    "next": "~14.1.1",
     "semver": "*",
     "tmp": "*",
     "ts-node": "*",
