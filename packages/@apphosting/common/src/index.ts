@@ -1,5 +1,58 @@
 import { spawn } from "child_process";
 
+// Output bundle specifications to be written to bundle.yaml
+export interface OutputBundle {
+  version: "v1alpha";
+  serverConfig: ServerConfig;
+  metadata: Metadata;
+}
+
+// Fields needed to configure the App Hosting server
+interface ServerConfig {
+  // Command to start the server (e.g. ["node", "dist/index.js"]) assume this command is run from the root dir of the workspace
+  runCommand: string[];
+  // Environment variable present in the server execution environment.
+  environmentVariables?: EnvVarConfig[];
+  // The maximum number of concurrent requests that each server instance can receive.
+  // Defaults to 80.
+  concurrency?: number;
+  // The number of CPUs used in a single server instance.
+  // Defaults to 1.
+  cpu?: "fractional" | 1 | 2 | 4 | 6 | 8;
+  // The amount of memory available for a server instance.
+  // Commonly one of: "256" | "512" | "1024" | "2048" | "4096" | "8192" | "16384"
+  // Defaults to 512MiB.
+  memoryMiB?: string;
+  // The limit on the minimum number of function instances that may coexist at a given time.
+  // Defaults to 0.
+  minInstances?: number;
+  // The limit on the maximum number of function instances that may coexist at a given time.
+  // Defaults to 100.
+  maxInstances?: number;
+}
+
+// Additonal fields needed for adapter identification
+interface Metadata {
+  // Name of the adapter (this should be the npm package name)
+  adapterNpmPackageName: string;
+  // Version of the adapter
+  adapterVersion?: string;
+  // Name of the framework that is being supported
+  framework: string;
+  // Version of the framework that is being supported
+  frameworkVersion?: string;
+}
+
+// Configs necessary to define environment variables
+interface EnvVarConfig {
+  // Name of the variable
+  variable: string;
+  // Value associated with the variable
+  value: string;
+  // Where the variable will be available, for now this will always be RUNTIME
+  availability: "RUNTIME"[];
+}
+
 // Options to configure the build of a framework application
 export interface BuildOptions {
   // command to run build script (e.g. "npm", "nx", etc.)
