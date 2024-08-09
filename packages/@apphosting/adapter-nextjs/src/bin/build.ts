@@ -2,7 +2,7 @@
 import {
   loadConfig,
   populateOutputBundleOptions,
-  generateOutputDirectory,
+  generateBuildOutput,
   validateOutputDirectory,
 } from "../utils.js";
 import { join } from "path";
@@ -17,9 +17,14 @@ process.env.NEXT_PRIVATE_STANDALONE = "true";
 process.env.NEXT_TELEMETRY_DISABLED = "1";
 await runBuild();
 
-const outputBundleOptions = populateOutputBundleOptions(root, opts.projectDirectory);
 const { distDir } = await loadConfig(root, opts.projectDirectory);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
 
-await generateOutputDirectory(root, opts.projectDirectory, outputBundleOptions, nextBuildDirectory);
-await validateOutputDirectory(outputBundleOptions);
+const outputBundleOptions = populateOutputBundleOptions(
+  root,
+  opts.projectDirectory,
+  nextBuildDirectory,
+);
+
+await generateBuildOutput(root, opts.projectDirectory, outputBundleOptions, nextBuildDirectory);
+await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);
