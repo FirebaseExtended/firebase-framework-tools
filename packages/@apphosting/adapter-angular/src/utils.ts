@@ -17,12 +17,17 @@ import stripAnsi from "strip-ansi";
 import { BuildOptions } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { writeFile, move, readJson, mkdir, copyFile } = fsExtra;
+export const { writeFile, move, readJson, mkdir, copyFile, readFileSync } = fsExtra;
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
+
+const packageJson = JSON.parse(readFileSync(`${__dirname}/../package.json`, "utf-8"));
+const adapterVersion = packageJson.version;
+const adapterName = packageJson.name;
+const frameworkName = "angular";
 
 export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
 
@@ -182,6 +187,12 @@ async function generateBundleYaml(
   angularVersion?: string,
 ): Promise<void> {
   const runtimeEnvVars = addBundleYamlEnvVar(angularVersion);
+  const metadataMap = new Map<string, string>([
+    ["adapterNpmPackageName", adapterName],
+    ["adapterVersion", adapterVersion],
+    ["framework", frameworkName],
+    ["frameworkVersion", angularVersion ? angularVersion : ""],
+  ]);
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({
@@ -189,6 +200,7 @@ async function generateBundleYaml(
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
       env: runtimeEnvVars,
+      buildMetadata: metadataMap,
     }),
   );
 }
