@@ -13,7 +13,7 @@ const since = process.env.GITHUB_ACTION
 const lernaList = JSON.parse(
   execSync(
     `lerna list --json --include-dependencies --include-dependents ${
-      packageFromRef ? `--scope={,*/}${packageFromRef}` : since
+      packageFromRef ? `--scope='{,*/}${packageFromRef}'` : since
     }`,
     { stdio: ["ignore", "pipe", "ignore"] },
   ).toString(),

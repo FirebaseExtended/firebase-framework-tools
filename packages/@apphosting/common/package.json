@@ -1,6 +1,6 @@
 {
   "name": "@apphosting/common",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Shared library code for App Hosting framework adapters",
   "author": {
     "name": "Firebase",
