@@ -146,10 +146,10 @@ function extractManifestOutput(output: string): string {
 export function populateMetadata(angularVersion?: string): Metadata {
   const packageJson = JSON.parse(readFileSync(`${__dirname}/../package.json`, "utf-8"));
   return {
-    adapterNpmPackageName: packageJson.name.replace(/([\@])/g, "\\$1"), // escape @ for yaml stringify
+    adapterNpmPackageName: packageJson.name.replace(/([@])/g, "\\$1"), // escape @ for yaml stringify
     adapterVersion: packageJson.version,
     framework: "angular",
-    frameworkVersion: angularVersion,
+    frameworkVersion: angularVersion ? angularVersion : "",
   };
 }
 
@@ -194,12 +194,6 @@ async function generateBundleYaml(
 ): Promise<void> {
   const runtimeEnvVars = addBundleYamlEnvVar(angularVersion);
   const metadata = populateMetadata(angularVersion);
-  const metadataMap = new Map<string, string>([
-    ["adapterNpmPackageName", metadata.adapterNpmPackageName],
-    ["adapterVersion", metadata.adapterVersion ? metadata.adapterVersion : ""],
-    ["framework", metadata.framework],
-    ["frameworkVersion", metadata.frameworkVersion ? metadata.frameworkVersion : ""],
-  ]);
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({
@@ -207,7 +201,7 @@ async function generateBundleYaml(
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
       env: runtimeEnvVars,
-      metadata: metadataMap,
+      metadata: metadata,
     }),
   );
 }
