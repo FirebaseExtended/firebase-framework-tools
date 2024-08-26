@@ -146,7 +146,7 @@ function extractManifestOutput(output: string): string {
 export function populateMetadata(angularVersion?: string): Metadata {
   const packageJson = JSON.parse(readFileSync(`${__dirname}/../package.json`, "utf-8"));
   return {
-    adapterNpmPackageName: packageJson.name.replace(/([@])/g, "\\$1"), // escape @ for yaml stringify
+    adapterNpmPackageName: packageJson.name.replace(/([\@])/g, "\\$1"), // escape @ for yaml stringify
     adapterVersion: packageJson.version,
     framework: "angular",
     frameworkVersion: angularVersion ? angularVersion : "",
