@@ -29,7 +29,7 @@ describe("build commands", () => {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
-    const metadata = populateMetadata("17.3.8");
+    const packageVersion = populateMetadata("17.3.8").adapterVersion;
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.8");
     await validateOutputDirectory(outputBundleOptions);
@@ -46,7 +46,7 @@ staticAssets:
 env: []
 metadata:
   adapterNpmPackageName: \\@apphosting/adapter-angular
-  adapterVersion: ${metadata.adapterVersion}
+  adapterVersion: ${packageVersion}
   framework: angular
   frameworkVersion: 17.3.8
 `,
@@ -60,7 +60,7 @@ metadata:
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
-    const metadata = populateMetadata("17.3.2");
+    const packageVersion = populateMetadata("17.3.2").adapterVersion;
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.2");
 
@@ -79,7 +79,7 @@ env:
     availability: RUNTIME
 metadata:
   adapterNpmPackageName: \\@apphosting/adapter-angular
-  adapterVersion: ${metadata.adapterVersion}
+  adapterVersion: ${packageVersion}
   framework: angular
   frameworkVersion: 17.3.2
 `,
