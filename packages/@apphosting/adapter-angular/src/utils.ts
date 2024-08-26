@@ -8,6 +8,7 @@ import { stringify as yamlStringify } from "yaml";
 import {
   Availability,
   EnvironmentVariable,
+  Metadata,
   OutputBundleOptions,
   OutputPaths,
   buildManifestSchema,
@@ -23,11 +24,6 @@ const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
-
-const packageJson = JSON.parse(readFileSync(`${__dirname}/../package.json`, "utf-8"));
-const adapterVersion = packageJson.version;
-const adapterName = packageJson.name;
-const frameworkName = "angular";
 
 export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
 
@@ -147,6 +143,16 @@ function extractManifestOutput(output: string): string {
   return stripAnsi(output.substring(start, end + 1));
 }
 
+export function populateMetadata(angularVersion?: string): Metadata {
+  const packageJson = JSON.parse(readFileSync(`${__dirname}/../package.json`, "utf-8"));
+  return {
+    adapterNpmPackageName: packageJson.name.replace(/([\@])/g, "\\$1"), // escape @ for yaml stringify
+    adapterVersion: packageJson.version,
+    framework: "angular",
+    frameworkVersion: angularVersion,
+  };
+}
+
 /**
  * Move the base output directory, which contains the server and browser bundle directory, and prerendered routes
  * as well as generating bundle.yaml.
@@ -187,11 +193,12 @@ async function generateBundleYaml(
   angularVersion?: string,
 ): Promise<void> {
   const runtimeEnvVars = addBundleYamlEnvVar(angularVersion);
+  const metadata = populateMetadata(angularVersion);
   const metadataMap = new Map<string, string>([
-    ["adapterNpmPackageName", adapterName],
-    ["adapterVersion", adapterVersion],
-    ["framework", frameworkName],
-    ["frameworkVersion", angularVersion ? angularVersion : ""],
+    ["adapterNpmPackageName", metadata.adapterNpmPackageName],
+    ["adapterVersion", metadata.adapterVersion ? metadata.adapterVersion : ""],
+    ["framework", metadata.framework],
+    ["frameworkVersion", metadata.frameworkVersion ? metadata.frameworkVersion : ""],
   ]);
   await writeFile(
     outputBundleOptions.bundleYamlPath,
@@ -200,7 +207,7 @@ async function generateBundleYaml(
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
       env: runtimeEnvVars,
-      buildMetadata: metadataMap,
+      metadata: metadataMap,
     }),
   );
 }
