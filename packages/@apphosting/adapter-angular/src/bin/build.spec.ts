@@ -45,10 +45,10 @@ staticAssets:
   - .apphosting/dist/browser
 env: []
 metadata:
-  adapterNpmPackageName: ${metadata.adapterNpmPackageName}
+  adapterNpmPackageName: \\@apphosting/adapter-angular
   adapterVersion: ${metadata.adapterVersion}
-  framework: ${metadata.framework}
-  frameworkVersion: ${metadata.frameworkVersion}
+  framework: angular
+  frameworkVersion: 17.3.8
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
@@ -78,10 +78,10 @@ env:
     value: "8080"
     availability: RUNTIME
 metadata:
-  adapterNpmPackageName: ${metadata.adapterNpmPackageName}
+  adapterNpmPackageName: \\@apphosting/adapter-angular
   adapterVersion: ${metadata.adapterVersion}
-  framework: ${metadata.framework}
-  frameworkVersion: ${metadata.frameworkVersion}
+  framework: angular
+  frameworkVersion: 17.3.2
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
