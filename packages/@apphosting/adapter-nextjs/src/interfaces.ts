@@ -101,11 +101,3 @@ export interface OutputBundleOptions {
    */
   outputStaticDirectoryPath: string;
 }
-
-// Metadata schema for bundle.yaml outputted by next.js adapter
-export interface Metadata {
-  adapterNpmPackageName: string;
-  adapterVersion: string;
-  framework: string;
-  frameworkVersion: string;
-}
