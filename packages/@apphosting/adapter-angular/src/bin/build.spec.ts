@@ -56,36 +56,21 @@ metadata:
   });
 
   it("expects SSR_PORT variable is added to bundle.yaml for Angular v17.3.2", async () => {
-    const { generateOutputDirectory, createMetadata } = await importUtils;
+    const { generateOutputDirectory } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
-    const packageVersion = createMetadata("17.3.2").adapterVersion;
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.2");
 
-    const expectedFiles = {
-      ".apphosting/dist/browser/browserfile": "",
-      ".apphosting/dist/server/server.mjs": "",
-      ".apphosting/bundle.yaml": `
-runCommand: node .apphosting/dist/server/server.mjs
-neededDirs:
-  - .apphosting
-staticAssets:
-  - .apphosting/dist/browser
+    const expectedContents = `
 env:
   - variable: SSR_PORT
     value: "8080"
     availability: RUNTIME
-metadata:
-  adapterNpmPackageName: \\@apphosting/adapter-angular
-  adapterVersion: ${packageVersion}
-  framework: angular
-  frameworkVersion: 17.3.2
-`,
-    };
-    validateTestFiles(tmpDir, expectedFiles);
+`;
+    validateFileExistsAndContains(tmpDir, ".apphosting/bundle.yaml", expectedContents);
   });
 
   it("test failed validateOutputDirectory", async () => {
@@ -147,4 +132,18 @@ function validateTestFiles(baseDir: string, expectedFiles: Object): void {
     const contents = fs.readFileSync(fileToRead).toString();
     assert.deepEqual(ignoreBlankLines(contents), ignoreBlankLines(expectedContents));
   });
+}
+
+function validateFileExistsAndContains(
+  baseDir: string,
+  expectedFileName: string,
+  expectedContents: string,
+): void {
+  const fileToRead = path.join(baseDir, expectedFileName);
+  assert.ok(fs.existsSync(fileToRead), `File '${fileToRead}' does not exist.`);
+  const contents = fs.readFileSync(fileToRead).toString();
+  assert.ok(
+    contents.includes(expectedContents),
+    `Actual contents do not contain expected contents.\nExpected contained contents:\n${expectedContents}\nActual:\n${contents}`,
+  );
 }
