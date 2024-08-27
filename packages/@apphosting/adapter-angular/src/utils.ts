@@ -153,7 +153,8 @@ export function createMetadata(angularVersion: string): Metadata {
   }
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
   return {
-    adapterNpmPackageName: packageJson.name,
+    // escape @ for yamlStringify, e.g. "@apphosting/adapter-angular" -> "\@apphosting/adapter-angular"
+    adapterNpmPackageName: packageJson.name.replace(/([@\\])/g, "\\$1"),
     adapterVersion: packageJson.version,
     framework: "angular",
     frameworkVersion: angularVersion,

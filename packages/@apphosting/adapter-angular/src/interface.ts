@@ -30,7 +30,7 @@ export interface Metadata {
   adapterNpmPackageName: string;
   adapterVersion: string;
   framework: string;
-  frameworkVersion?: string;
+  frameworkVersion: string;
 }
 
 // valid manifest schema
