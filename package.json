@@ -13,7 +13,7 @@
   "workspaces": [
     "packages/@apphosting/*",
     "packages/create-next-on-firebase/*",
-    "packages/firebase-frameworks/*"
+    "packages/firebase-frameworks"
   ],
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.1.2",
