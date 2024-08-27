@@ -46,7 +46,7 @@ staticAssets:
   - .apphosting/dist/browser
 env: []
 metadata:
-  adapterNpmPackageName: "@apphosting/adapter-angular"
+  adapterNpmPackageName: \\@apphosting/adapter-angular
   adapterVersion: ${packageVersion}
   framework: angular
   frameworkVersion: 17.3.8
@@ -79,7 +79,7 @@ env:
     value: "8080"
     availability: RUNTIME
 metadata:
-  adapterNpmPackageName: "@apphosting/adapter-angular"
+  adapterNpmPackageName: \\@apphosting/adapter-angular
   adapterVersion: ${packageVersion}
   framework: angular
   frameworkVersion: 17.3.2
