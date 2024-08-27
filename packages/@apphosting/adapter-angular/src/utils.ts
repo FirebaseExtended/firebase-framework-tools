@@ -168,7 +168,7 @@ export function createMetadata(angularVersion: string): Metadata {
 export async function generateOutputDirectory(
   cwd: string,
   outputBundleOptions: OutputBundleOptions,
-  angularVersion?: string,
+  angularVersion: string,
 ): Promise<void> {
   await move(outputBundleOptions.baseDirectory, outputBundleOptions.outputBaseDirectory, {
     overwrite: true,
@@ -176,12 +176,11 @@ export async function generateOutputDirectory(
   if (outputBundleOptions.needsServerGenerated) {
     await generateServer(outputBundleOptions);
   }
-  if (!angularVersion) throw new Error("Could not find the angular version of the application");
   await generateBundleYaml(outputBundleOptions, cwd, angularVersion);
 }
 
 // add environment variable to bundle.yaml if needed for specific versions
-function addBundleYamlEnvVar(angularVersion: string): EnvironmentVariable[] {
+function generateEnvVars(angularVersion: string): EnvironmentVariable[] {
   const runtimeEnvVars: EnvironmentVariable[] = [];
   // add env var to solve angular port issue, existing only for Angular v17.3.2 (b/332896115)
   if (angularVersion === "17.3.2") {
@@ -207,7 +206,7 @@ async function generateBundleYaml(
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
-      env: addBundleYamlEnvVar(angularVersion),
+      env: generateEnvVars(angularVersion),
       metadata: createMetadata(angularVersion),
     }),
   );

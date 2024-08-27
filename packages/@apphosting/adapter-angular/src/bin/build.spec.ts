@@ -64,8 +64,7 @@ metadata:
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.2");
 
-    const expectedContents = `
-env:
+    const expectedContents = `env:
   - variable: SSR_PORT
     value: "8080"
     availability: RUNTIME
