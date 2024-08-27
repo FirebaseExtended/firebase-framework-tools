@@ -9,6 +9,7 @@ import { OutputBundleOptions } from "../interface.js";
 describe("build commands", () => {
   let tmpDir: string;
   let outputBundleOptions: OutputBundleOptions;
+  let defaultAngularVersion: string;
   beforeEach(() => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
@@ -20,6 +21,7 @@ describe("build commands", () => {
       serverFilePath: resolve(tmpDir, ".apphosting", "dist", "server", "server.mjs"),
       needsServerGenerated: false,
     };
+    defaultAngularVersion = "17.3.8";
   });
 
   it("expects all output bundle files to be generated", async () => {
@@ -28,9 +30,9 @@ describe("build commands", () => {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
-    const packageVersion = createMetadata("17.3.8").adapterVersion;
+    const packageVersion = createMetadata(defaultAngularVersion).adapterVersion;
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.8");
+    await generateOutputDirectory(tmpDir, outputBundleOptions, defaultAngularVersion);
     await validateOutputDirectory(outputBundleOptions);
 
     const expectedFiles = {
@@ -44,7 +46,7 @@ staticAssets:
   - .apphosting/dist/browser
 env: []
 metadata:
-  adapterNpmPackageName: \\@apphosting/adapter-angular
+  adapterNpmPackageName: "@apphosting/adapter-angular"
   adapterVersion: ${packageVersion}
   framework: angular
   frameworkVersion: 17.3.8
@@ -77,7 +79,7 @@ env:
     value: "8080"
     availability: RUNTIME
 metadata:
-  adapterNpmPackageName: \\@apphosting/adapter-angular
+  adapterNpmPackageName: "@apphosting/adapter-angular"
   adapterVersion: ${packageVersion}
   framework: angular
   frameworkVersion: 17.3.2
@@ -93,7 +95,7 @@ metadata:
       "dist/test/server/notserver.mjs": "",
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions);
+    await generateOutputDirectory(tmpDir, outputBundleOptions, defaultAngularVersion);
     assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
   });
 

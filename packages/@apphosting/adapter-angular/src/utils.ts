@@ -145,20 +145,18 @@ function extractManifestOutput(output: string): string {
 
 /**
  * Create metadata needed for outputting adapter and framework metrics in bundle.yaml.
- * Includes adapter name, adapter version, framework name and framework version.
  */
-export function createMetadata(angularVersion?: string): Metadata {
+export function createMetadata(angularVersion: string): Metadata {
   const packageJsonPath = `${__dirname}/../package.json`;
   if (!existsSync(packageJsonPath)) {
-    throw new Error(`Angular adapter package.json file does not exists at ${packageJsonPath}`);
+    throw new Error(`Angular adapter package.json file does not exist at ${packageJsonPath}`);
   }
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
   return {
-    // escape @ for yamlStringify, e.g. "@apphosting/adapter-angular" -> "\@apphosting/adapter-angular"
-    adapterNpmPackageName: packageJson.name.replace(/([@])/g, "\\$1"),
+    adapterNpmPackageName: packageJson.name,
     adapterVersion: packageJson.version,
     framework: "angular",
-    frameworkVersion: angularVersion ? angularVersion : "",
+    frameworkVersion: angularVersion,
   };
 }
 
@@ -177,14 +175,15 @@ export async function generateOutputDirectory(
   if (outputBundleOptions.needsServerGenerated) {
     await generateServer(outputBundleOptions);
   }
+  if (!angularVersion) throw new Error("Could not find the angular version of the application");
   await generateBundleYaml(outputBundleOptions, cwd, angularVersion);
 }
 
 // add environment variable to bundle.yaml if needed for specific versions
-function addBundleYamlEnvVar(angularVersion?: string): EnvironmentVariable[] {
+function addBundleYamlEnvVar(angularVersion: string): EnvironmentVariable[] {
   const runtimeEnvVars: EnvironmentVariable[] = [];
   // add env var to solve angular port issue, existing only for Angular v17.3.2 (b/332896115)
-  if (angularVersion && angularVersion === "17.3.2") {
+  if (angularVersion === "17.3.2") {
     const ssrPortEnvVar: EnvironmentVariable = {
       variable: "SSR_PORT",
       value: "8080",
@@ -199,18 +198,16 @@ function addBundleYamlEnvVar(angularVersion?: string): EnvironmentVariable[] {
 async function generateBundleYaml(
   outputBundleOptions: OutputBundleOptions,
   cwd: string,
-  angularVersion?: string,
+  angularVersion: string,
 ): Promise<void> {
-  const runtimeEnvVars = addBundleYamlEnvVar(angularVersion);
-  const metadata = createMetadata(angularVersion);
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
-      env: runtimeEnvVars,
-      metadata: metadata,
+      env: addBundleYamlEnvVar(angularVersion),
+      metadata: createMetadata(angularVersion),
     }),
   );
 }
