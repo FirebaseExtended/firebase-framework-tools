@@ -20,8 +20,8 @@ if (!output) {
   throw new Error("No output from Angular build command, expecting a build manifest file.");
 }
 if (!process.env.FRAMEWORK_VERSION) {
-  throw new Error("Could not find the angular version of the application")
-};
+  throw new Error("Could not find the angular version of the application");
+}
 const outputBundleOptions = parseOutputBundleOptions(output);
 await generateOutputDirectory(root, outputBundleOptions, process.env.FRAMEWORK_VERSION);
 
