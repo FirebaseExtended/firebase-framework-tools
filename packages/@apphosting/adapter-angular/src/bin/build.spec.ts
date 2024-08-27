@@ -23,13 +23,12 @@ describe("build commands", () => {
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateOutputDirectory, validateOutputDirectory, populateMetadata } =
-      await importUtils;
+    const { generateOutputDirectory, validateOutputDirectory, createMetadata } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
-    const packageVersion = populateMetadata("17.3.8").adapterVersion;
+    const packageVersion = createMetadata("17.3.8").adapterVersion;
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.8");
     await validateOutputDirectory(outputBundleOptions);
@@ -55,12 +54,12 @@ metadata:
   });
 
   it("expects SSR_PORT variable is added to bundle.yaml for Angular v17.3.2", async () => {
-    const { generateOutputDirectory, populateMetadata } = await importUtils;
+    const { generateOutputDirectory, createMetadata } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
-    const packageVersion = populateMetadata("17.3.2").adapterVersion;
+    const packageVersion = createMetadata("17.3.2").adapterVersion;
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.2");
 

@@ -18,7 +18,7 @@ import stripAnsi from "strip-ansi";
 import { BuildOptions } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { writeFile, move, readJson, mkdir, copyFile, readFileSync } = fsExtra;
+export const { writeFile, move, readJson, mkdir, copyFile, readFileSync, existsSync } = fsExtra;
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -143,10 +143,19 @@ function extractManifestOutput(output: string): string {
   return stripAnsi(output.substring(start, end + 1));
 }
 
-export function populateMetadata(angularVersion?: string): Metadata {
-  const packageJson = JSON.parse(readFileSync(`${__dirname}/../package.json`, "utf-8"));
+/**
+ * Create metadata needed for outputting adapter and framework metrics in bundle.yaml.
+ * Includes adapter name, adapter version, framework name and framework version.
+ */
+export function createMetadata(angularVersion?: string): Metadata {
+  const packageJsonPath = `${__dirname}/../package.json`;
+  if (!existsSync(packageJsonPath)) {
+    throw new Error(`Angular adapter package.json file does not exists at ${packageJsonPath}`);
+  }
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
   return {
-    adapterNpmPackageName: packageJson.name.replace(/([@])/g, "\\$1"), // escape @ for yamlStringify
+    // escape @ for yamlStringify, e.g. "@apphosting/adapter-angular" -> "\@apphosting/adapter-angular"
+    adapterNpmPackageName: packageJson.name.replace(/([@])/g, "\\$1"),
     adapterVersion: packageJson.version,
     framework: "angular",
     frameworkVersion: angularVersion ? angularVersion : "",
@@ -193,7 +202,7 @@ async function generateBundleYaml(
   angularVersion?: string,
 ): Promise<void> {
   const runtimeEnvVars = addBundleYamlEnvVar(angularVersion);
-  const metadata = populateMetadata(angularVersion);
+  const metadata = createMetadata(angularVersion);
   await writeFile(
     outputBundleOptions.bundleYamlPath,
     yamlStringify({
