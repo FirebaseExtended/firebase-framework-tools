@@ -1,7 +1,7 @@
 const importUtils = import("@apphosting/adapter-nextjs/dist/utils.js");
 import assert from "assert";
 import fs from "fs";
-import yaml from "yaml"
+import yaml from "yaml";
 import path from "path";
 import os from "os";
 import { OutputBundleOptions } from "../interfaces.js";
@@ -178,9 +178,9 @@ metadata:
       ".apphosting/server.js": "",
     };
     const expectedPartialYaml = {
-      headers: [{"source":"source", "headers":["header1"]}],
-      rewrites: [{"source":"source", "destination":"destination"}],
-      redirects: [{"source":"source", "destination":"destination"}],
+      headers: [{ source: "source", headers: ["header1"] }],
+      rewrites: [{ source: "source", destination: "destination" }],
+      redirects: [{ source: "source", destination: "destination" }],
     };
     validateTestFiles(tmpDir, expectedFiles);
     validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
@@ -252,9 +252,9 @@ function validatePartialYamlContents(
   expectedPartialYaml: any,
 ): void {
   const yamlFilePath = path.join(baseDir, yamlFileName);
-  const yamlContents = fs.readFileSync(yamlFilePath, 'utf8');
+  const yamlContents = fs.readFileSync(yamlFilePath, "utf8");
   const parsedYaml = yaml.parse(yamlContents) as { [key: string]: any };
-  Object.keys(expectedPartialYaml).forEach(key => {
+  Object.keys(expectedPartialYaml).forEach((key) => {
     assert.deepEqual(parsedYaml[key], expectedPartialYaml[key]);
   });
 }
