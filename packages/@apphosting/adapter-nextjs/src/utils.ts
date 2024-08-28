@@ -117,8 +117,8 @@ async function moveResources(appDir: string, outputBundleAppDir: string): Promis
  * Create metadata needed for outputting adapter and framework metrics in bundle.yaml.
  */
 export function createMetadata(nextVersion: string): Metadata {
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const packageJsonPath = `${__dirname}/../package.json`;
+  const directoryName = dirname(fileURLToPath(import.meta.url));
+  const packageJsonPath = `${directoryName}/../package.json`;
   if (!existsSync(packageJsonPath)) {
     throw new Error(`Next.js adapter package.json file does not exist at ${packageJsonPath}`);
   }

@@ -15,7 +15,6 @@ const opts = getBuildOptions();
 process.env.NEXT_PRIVATE_STANDALONE = "true";
 // Opt-out sending telemetry to Vercel
 process.env.NEXT_TELEMETRY_DISABLED = "1";
-// Assert framework version exists
 if (!process.env.FRAMEWORK_VERSION) {
   throw new Error("Could not find the nextjs version of the application");
 }
