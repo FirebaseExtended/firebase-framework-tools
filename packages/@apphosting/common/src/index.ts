@@ -1,17 +1,17 @@
 import { spawn } from "child_process";
 
-// Output bundle specifications to be written to bundle.yaml
-export interface OutputBundle {
-  version: "v1alpha";
+// Output bundle metadata specifications to be written to bundle.yaml
+export interface OutputBundleConfigs{
+  version: "v1";
   serverConfig: ServerConfig;
   metadata: Metadata;
 }
 
 // Fields needed to configure the App Hosting server
 interface ServerConfig {
-  // Command to start the server (e.g. ["node", "dist/index.js"]) assume this command is run from the root dir of the workspace
+  // Command to start the server (e.g. ["node", "dist/index.js"]). Assume this command is run from the root dir of the workspace
   runCommand: string[];
-  // Environment variable present in the server execution environment.
+  // Environment variables set when the app is run
   environmentVariables?: EnvVarConfig[];
   // The maximum number of concurrent requests that each server instance can receive.
   // Defaults to 80.
@@ -31,26 +31,31 @@ interface ServerConfig {
   maxInstances?: number;
 }
 
-// Additonal fields needed for adapter identification
+// Additonal fields needed for identifying the framework and adapter being used
 interface Metadata {
-  // Name of the adapter (this should be the npm package name)
-  adapterNpmPackageName: string;
-  // Version of the adapter
+  // Name of the adapter (this should be the official package name)
+  adapterPackageName: string;
+  // Version of the adapter 
   adapterVersion?: string;
-  // Name of the framework that is being supported
+  // Name of the framework that is being supported, e.g. "angular"
   framework: string;
-  // Version of the framework that is being supported
+  // Version of the framework that is being supported, e.g. "18.0.1"
   frameworkVersion?: string;
 }
 
-// Configs necessary to define environment variables
+// Represents a single environment variable.
 interface EnvVarConfig {
   // Name of the variable
   variable: string;
   // Value associated with the variable
   value: string;
-  // Where the variable will be available, for now this will always be RUNTIME
-  availability: "RUNTIME"[];
+  // Where the variable will be available, for now only RUNTIME is supported
+  availability: Availabilities.Runtime[];
+}
+
+// Represents where environment variables are available from
+enum Availabilities {
+  Runtime,
 }
 
 // Options to configure the build of a framework application
