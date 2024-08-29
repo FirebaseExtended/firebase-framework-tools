@@ -104,7 +104,7 @@ export interface OutputBundleOptions {
 
 // Metadata schema for bundle.yaml outputted by next.js adapter
 export interface Metadata {
-  adapterNpmPackageName: string;
+  adapterPackageName: string;
   adapterVersion: string;
   framework: string;
   frameworkVersion: string;

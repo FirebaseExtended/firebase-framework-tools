@@ -58,7 +58,7 @@ staticAssets:
   - .apphosting/public
 env: []
 metadata:
-  adapterNpmPackageName: "@apphosting/adapter-nextjs"
+  adapterPackageName: "@apphosting/adapter-nextjs"
   adapterVersion: ${packageVersion}
   framework: nextjs
   frameworkVersion: ${defaultNextVersion}

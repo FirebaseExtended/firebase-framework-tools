@@ -124,7 +124,7 @@ export function createMetadata(nextVersion: string): Metadata {
   }
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
   return {
-    adapterNpmPackageName: packageJson.name,
+    adapterPackageName: packageJson.name,
     adapterVersion: packageJson.version,
     framework: "nextjs",
     frameworkVersion: nextVersion,
