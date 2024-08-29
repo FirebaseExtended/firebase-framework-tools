@@ -33,9 +33,9 @@ interface ServerConfig {
 
 // Additonal fields needed for identifying the framework and adapter being used
 interface Metadata {
-  // Name of the adapter (this should be the official package name)
+  // Name of the adapter (this should be the official package name) e.g. "@apphosting/adapter-nextjs"
   adapterPackageName: string;
-  // Version of the adapter
+  // Version of the adapter, e.g. "18.0.1"
   adapterVersion?: string;
   // Name of the framework that is being supported, e.g. "angular"
   framework: string;
