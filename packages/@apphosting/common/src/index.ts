@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 
 // Output bundle metadata specifications to be written to bundle.yaml
-export interface OutputBundleConfigs{
+export interface OutputBundleConfigs {
   version: "v1";
   serverConfig: ServerConfig;
   metadata: Metadata;
@@ -35,7 +35,7 @@ interface ServerConfig {
 interface Metadata {
   // Name of the adapter (this should be the official package name)
   adapterPackageName: string;
-  // Version of the adapter 
+  // Version of the adapter
   adapterVersion?: string;
   // Name of the framework that is being supported, e.g. "angular"
   framework: string;
