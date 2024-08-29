@@ -153,7 +153,7 @@ export function createMetadata(angularVersion: string): Metadata {
   }
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
   return {
-    adapterNpmPackageName: packageJson.name,
+    adapterPackageName: packageJson.name,
     adapterVersion: packageJson.version,
     framework: "angular",
     frameworkVersion: angularVersion,

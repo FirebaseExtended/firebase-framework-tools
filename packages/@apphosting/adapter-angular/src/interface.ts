@@ -27,7 +27,7 @@ export enum Availability {
 
 // Metadata schema for bundle.yaml outputted by angular adapter
 export interface Metadata {
-  adapterNpmPackageName: string;
+  adapterPackageName: string;
   adapterVersion: string;
   framework: string;
   frameworkVersion: string;
