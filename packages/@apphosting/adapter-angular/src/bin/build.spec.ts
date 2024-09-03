@@ -46,7 +46,7 @@ staticAssets:
   - .apphosting/dist/browser
 env: []
 metadata:
-  adapterNpmPackageName: "@apphosting/adapter-angular"
+  adapterPackageName: "@apphosting/adapter-angular"
   adapterVersion: ${packageVersion}
   framework: angular
   frameworkVersion: 17.3.8
