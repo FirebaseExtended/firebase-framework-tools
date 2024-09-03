@@ -50,7 +50,7 @@ interface EnvVarConfig {
 
 // Represents where environment variables are made available
 enum Availability {
-  // Runtime environment variables are available on the server when the app is run 
+  // Runtime environment variables are available on the server when the app is run
   Runtime,
 }
 
