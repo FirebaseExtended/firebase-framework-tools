@@ -25,6 +25,14 @@ export enum Availability {
   Runtime = "RUNTIME",
 }
 
+// Metadata schema for bundle.yaml outputted by angular adapter
+export interface Metadata {
+  adapterPackageName: string;
+  adapterVersion: string;
+  framework: string;
+  frameworkVersion: string;
+}
+
 // valid manifest schema
 export interface ValidManifest {
   errors: string[];
