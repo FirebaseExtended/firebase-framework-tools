@@ -1,6 +1,7 @@
 const importUtils = import("@apphosting/adapter-nextjs/dist/utils.js");
 import assert from "assert";
 import fs from "fs";
+import yaml from "yaml";
 import path from "path";
 import os from "os";
 import { OutputBundleOptions } from "../interfaces.js";
@@ -8,6 +9,7 @@ import { OutputBundleOptions } from "../interfaces.js";
 describe("build commands", () => {
   let tmpDir: string;
   let outputBundleOptions: OutputBundleOptions;
+  let defaultNextVersion: string;
   beforeEach(() => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
@@ -18,10 +20,11 @@ describe("build commands", () => {
       outputStaticDirectoryPath: path.join(tmpDir, ".next", "standalone", ".next", "static"),
       serverFilePath: path.join(tmpDir, ".next", "standalone", "server.js"),
     };
+    defaultNextVersion = "14.0.3";
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateBuildOutput, validateOutputDirectory } = await importUtils;
+    const { generateBuildOutput, validateOutputDirectory, createMetadata } = await importUtils;
     const files = {
       ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
@@ -31,8 +34,15 @@ describe("build commands", () => {
         "redirects":[]
       }`,
     };
+    const packageVersion = createMetadata(defaultNextVersion).adapterVersion;
     generateTestFiles(tmpDir, files);
-    await generateBuildOutput(tmpDir, tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await generateBuildOutput(
+      tmpDir,
+      tmpDir,
+      outputBundleOptions,
+      path.join(tmpDir, ".next"),
+      defaultNextVersion,
+    );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
     const expectedFiles = {
@@ -45,8 +55,10 @@ describe("build commands", () => {
       - node
       - .next/standalone/server.js
   metadata:
-    adapterNpmPackageName: "@apphosting/adapter-nextjs"
+    adapterPackageName: "@apphosting/adapter-nextjs"
+    adapterVersion: ${packageVersion}
     framework: nextjs
+    frameworkVersion: ${defaultNextVersion}
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
@@ -92,23 +104,23 @@ describe("build commands", () => {
         serverFilePath: path.join(tmpDir, ".next", "standalone", "apps", "next-app", "server.js"),
       },
       path.join(tmpDir, ".next"),
+      defaultNextVersion,
     );
 
     const expectedFiles = {
-      ".next/standalone/apps/next-app/.next/static/staticfile": "",
-      ".next/standalone/apps/next-app/standalonefile": "",
-      ".apphosting/bundle.yaml": `outputBundle:
-  version: v1alpha
-  serverConfig:
-    runCommand:
-      - node
-      - .next/standalone/apps/next-app/server.js
-  metadata:
-    adapterNpmPackageName: "@apphosting/adapter-nextjs"
-    framework: nextjs
-`,
+      ".apphosting/apps/next-app/.next/static/staticfile": "",
+      ".apphosting/apps/next-app/standalonefile": "",
+    };
+    const expectedPartialYaml = {
+      headers: [],
+      rewrites: [],
+      redirects: [],
+      runCommand: "node .apphosting/apps/next-app/server.js",
+      neededDirs: [".apphosting"],
+      staticAssets: [".apphosting/apps/next-app/public"],
     };
     validateTestFiles(tmpDir, expectedFiles);
+    validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
   });
 
   it("expects directories and other files to be copied over", async () => {
@@ -124,64 +136,77 @@ describe("build commands", () => {
         }`,
     };
     generateTestFiles(tmpDir, files);
-    await generateBuildOutput(tmpDir, tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await generateBuildOutput(
+      tmpDir,
+      tmpDir,
+      outputBundleOptions,
+      path.join(tmpDir, ".next"),
+      defaultNextVersion,
+    );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
     const expectedFiles = {
-      ".next/standalone/.next/static/staticfile": "",
+      ".apphosting/.next/static/staticfile": "",
+      ".apphosting/server.js": "",
+      ".apphosting/public/publicfile": "",
+      ".apphosting/extrafile": "",
+    };
+    const expectedPartialYaml = {
+      headers: [],
+      rewrites: [],
+      redirects: [],
+      runCommand: "node .apphosting/server.js",
+      neededDirs: [".apphosting"],
+      staticAssets: [".apphosting/public"],
+    };
+    validateTestFiles(tmpDir, expectedFiles);
+    validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
+  });
+
+  it("expects bundle.yaml headers/rewrites/redirects to be generated", async () => {
+    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
+    const files = {
       ".next/standalone/server.js": "",
-      ".next/standalone/public/publicfile": "",
-      ".apphosting/bundle.yaml": `outputBundle:
-  version: v1alpha
-  serverConfig:
-    runCommand:
-      - node
-      - .next/standalone/server.js
-  metadata:
-    adapterNpmPackageName: "@apphosting/adapter-nextjs"
-    framework: nextjs
+      ".next/static/staticfile": "",
+      ".next/routes-manifest.json": `{
+        "headers":[{"source":"source", "headers":["header1"]}], 
+        "rewrites":[{"source":"source", "destination":"destination"}], 
+        "redirects":[{"source":"source", "destination":"destination"}]
+      }`,
+    };
+    generateTestFiles(tmpDir, files);
+    await generateOutputDirectory(
+      tmpDir,
+      tmpDir,
+      outputBundleOptions,
+      path.join(tmpDir, ".next"),
+      defaultNextVersion,
+    );
+    await validateOutputDirectory(outputBundleOptions);
+
+    const expectedFiles = {
+      ".apphosting/.next/static/staticfile": "",
+      ".apphosting/server.js": "",
+      ".apphosting/bundle.yaml": `headers:
+  - source: source
+    headers:
+      - header1
+redirects:
+  - source: source
+    destination: destination
+rewrites:
+  - source: source
+    destination: destination
+runCommand: node .apphosting/server.js
+neededDirs:
+  - .apphosting
+staticAssets:
+  - .apphosting/public
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
+    validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
   });
-
-  //   it("expects bundle.yaml headers/rewrites/redirects to be generated", async () => {
-  //     const { generateBuildOutput, validateOutputDirectory } = await importUtils;
-  //     const files = {
-  //       ".next/standalone/server.js": "",
-  //       ".next/static/staticfile": "",
-  //       ".next/routes-manifest.json": `{
-  //         "headers":[{"source":"source", "headers":["header1"]}],
-  //         "rewrites":[{"source":"source", "destination":"destination"}],
-  //         "redirects":[{"source":"source", "destination":"destination"}]
-  //       }`,
-  //     };
-  //     generateTestFiles(tmpDir, files);
-  //     await generateBuildOutput(tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
-  //     await validateOutputDirectory(outputBundleOptions, ".next");
-
-  //     const expectedFiles = {
-  //       ".apphosting/.next/static/staticfile": "",
-  //       ".apphosting/server.js": "",
-  //       ".apphosting/bundle.yaml": `headers:
-  //   - source: source
-  //     headers:
-  //       - header1
-  // redirects:
-  //   - source: source
-  //     destination: destination
-  // rewrites:
-  //   - source: source
-  //     destination: destination
-  // runCommand: node .apphosting/server.js
-  // neededDirs:
-  //   - .apphosting
-  // staticAssets:
-  //   - .apphosting/public
-  // `,
-  //     };
-  //     validateTestFiles(tmpDir, expectedFiles);
-  //   });
   it("test failed validateOutputDirectory", async () => {
     const { generateBuildOutput, validateOutputDirectory } = await importUtils;
     const files = {
@@ -194,7 +219,13 @@ describe("build commands", () => {
       }`,
     };
     generateTestFiles(tmpDir, files);
-    await generateBuildOutput(tmpDir, tmpDir, outputBundleOptions, path.join(tmpDir, ".next"));
+    await generateBuildOutput(
+      tmpDir,
+      tmpDir,
+      outputBundleOptions,
+      path.join(tmpDir, ".next"),
+      defaultNextVersion,
+    );
     assert.rejects(
       async () => await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next")),
     );
@@ -239,5 +270,18 @@ function validateTestFiles(baseDir: string, expectedFiles: Object): void {
     const fileToRead = path.join(baseDir, fileName);
     const contents = fs.readFileSync(fileToRead).toString();
     assert.deepEqual(contents, expectedContents);
+  });
+}
+
+function validatePartialYamlContents(
+  baseDir: string,
+  yamlFileName: string,
+  expectedPartialYaml: any,
+): void {
+  const yamlFilePath = path.join(baseDir, yamlFileName);
+  const yamlContents = fs.readFileSync(yamlFilePath, "utf8");
+  const parsedYaml = yaml.parse(yamlContents) as { [key: string]: any };
+  Object.keys(expectedPartialYaml).forEach((key) => {
+    assert.deepEqual(parsedYaml[key], expectedPartialYaml[key]);
   });
 }
