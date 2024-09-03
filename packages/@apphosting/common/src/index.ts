@@ -31,7 +31,7 @@ interface Metadata {
   // Name of the adapter (this should be the official package name) e.g. "@apphosting/adapter-nextjs"
   adapterPackageName: string;
   // Version of the adapter, e.g. "18.0.1"
-  adapterVersion?: string;
+  adapterVersion: string;
   // Name of the framework that is being supported, e.g. "angular"
   framework: string;
   // Version of the framework that is being supported, e.g. "18.0.1"
