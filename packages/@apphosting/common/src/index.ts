@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 
 // Output bundle metadata specifications to be written to bundle.yaml
-export interface OutputBundleConfigs {
+export interface OutputBundleConfig {
   version: "v1";
   serverConfig: ServerConfig;
   metadata: Metadata;
@@ -9,25 +9,20 @@ export interface OutputBundleConfigs {
 
 // Fields needed to configure the App Hosting server
 interface ServerConfig {
-  // Command to start the server (e.g. ["node", "dist/index.js"]). Assume this command is run from the root dir of the workspace
-  runCommand: string[];
+  // Command to start the server (e.g. "node dist/index.js"). Assume this command is run from the root dir of the workspace
+  runCommand: string;
   // Environment variables set when the app is run
   environmentVariables?: EnvVarConfig[];
+  // See https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig for documentation on the next fields
   // The maximum number of concurrent requests that each server instance can receive.
-  // Defaults to 80.
   concurrency?: number;
   // The number of CPUs used in a single server instance.
-  // Defaults to 1.
-  cpu?: "fractional" | 1 | 2 | 4 | 6 | 8;
+  cpu?: number;
   // The amount of memory available for a server instance.
-  // Commonly one of: "256" | "512" | "1024" | "2048" | "4096" | "8192" | "16384"
-  // Defaults to 512MiB.
   memoryMiB?: string;
   // The limit on the minimum number of function instances that may coexist at a given time.
-  // Defaults to 0.
   minInstances?: number;
   // The limit on the maximum number of function instances that may coexist at a given time.
-  // Defaults to 100.
   maxInstances?: number;
 }
 
@@ -50,11 +45,12 @@ interface EnvVarConfig {
   // Value associated with the variable
   value: string;
   // Where the variable will be available, for now only RUNTIME is supported
-  availability: Availabilities.Runtime[];
+  availability: Availability.Runtime[];
 }
 
-// Represents where environment variables are available from
-enum Availabilities {
+// Represents where environment variables are made available
+enum Availability {
+  // Runtime environment variables are available on the server when the app is run 
   Runtime,
 }
 
