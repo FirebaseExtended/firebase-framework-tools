@@ -19,7 +19,7 @@ interface ServerConfig {
   // The number of CPUs used in a single server instance.
   cpu?: number;
   // The amount of memory available for a server instance.
-  memoryMiB?: string;
+  memoryMiB?: number;
   // The limit on the minimum number of function instances that may coexist at a given time.
   minInstances?: number;
   // The limit on the maximum number of function instances that may coexist at a given time.
