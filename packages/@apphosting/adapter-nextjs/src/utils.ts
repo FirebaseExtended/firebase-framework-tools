@@ -1,16 +1,16 @@
 import fsExtra from "fs-extra";
 import { createRequire } from "node:module";
-import { join, relative, normalize } from "path";
+import { join, dirname, relative, normalize } from "path";
 import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 import { ROUTES_MANIFEST } from "./constants.js";
-import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
+import { Metadata, OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJson, readdir } = fsExtra;
+export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync } = fsExtra;
 
 // The default fallback command prefix to run a build.
 export const DEFAULT_COMMAND = "npm";
@@ -83,6 +83,7 @@ export async function generateOutputDirectory(
   appDir: string,
   outputBundleOptions: OutputBundleOptions,
   nextBuildDirectory: string,
+  nextVersion: string,
 ): Promise<void> {
   const standaloneDirectory = join(nextBuildDirectory, "standalone");
   await move(standaloneDirectory, outputBundleOptions.outputDirectoryBasePath, { overwrite: true });
@@ -91,7 +92,7 @@ export async function generateOutputDirectory(
   await Promise.all([
     move(staticDirectory, outputBundleOptions.outputStaticDirectoryPath, { overwrite: true }),
     moveResources(appDir, outputBundleOptions.outputDirectoryAppPath),
-    generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir),
+    generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir, nextVersion),
   ]);
   return;
 }
@@ -112,11 +113,30 @@ async function moveResources(appDir: string, outputBundleAppDir: string): Promis
   return;
 }
 
+/**
+ * Create metadata needed for outputting adapter and framework metrics in bundle.yaml.
+ */
+export function createMetadata(nextVersion: string): Metadata {
+  const directoryName = dirname(fileURLToPath(import.meta.url));
+  const packageJsonPath = `${directoryName}/../package.json`;
+  if (!existsSync(packageJsonPath)) {
+    throw new Error(`Next.js adapter package.json file does not exist at ${packageJsonPath}`);
+  }
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+  return {
+    adapterPackageName: packageJson.name,
+    adapterVersion: packageJson.version,
+    framework: "nextjs",
+    frameworkVersion: nextVersion,
+  };
+}
+
 // generate bundle.yaml
 async function generateBundleYaml(
   outputBundleOptions: OutputBundleOptions,
   nextBuildDirectory: string,
   cwd: string,
+  nextVersion: string,
 ): Promise<void> {
   const manifest = await readRoutesManifest(nextBuildDirectory);
   const headers = manifest.headers.map((it) => ({ ...it, regex: undefined }));
@@ -136,6 +156,8 @@ async function generateBundleYaml(
       runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
       neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectoryBasePath))],
       staticAssets: [normalize(relative(cwd, outputBundleOptions.outputPublicDirectoryPath))],
+      env: [],
+      metadata: createMetadata(nextVersion),
     }),
   );
   return;
