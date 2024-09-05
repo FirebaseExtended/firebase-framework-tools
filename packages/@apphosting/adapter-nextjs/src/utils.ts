@@ -8,7 +8,7 @@ import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 import { ROUTES_MANIFEST } from "./constants.js";
 import { Metadata, OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
-import { OutputBundle } from "@apphosting/common/dist/index.js";
+import { OutputBundleConfig } from "@apphosting/common/dist/index.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } = fsExtra;
@@ -136,27 +136,21 @@ export function createMetadata(nextVersion: string): Metadata {
 }
 
 // generate bundle.yaml
-async function generateBundleYaml(opts: OutputBundleOptions, cwd: string  nextVersion: string,
+async function generateBundleYaml(opts: OutputBundleOptions, cwd: string, nextVersion: string,
 ): Promise<void> {
   await mkdir(opts.outputDirectoryBasePath);
-  const outputBundle: OutputBundle = {
-    version: "v1alpha",
+  const outputBundle: OutputBundleConfig = {
+    version: "v1",
     serverConfig: {
-      runCommand: ["node", normalize(relative(cwd, opts.serverFilePath))],
+      runCommand: `node ${normalize(relative(cwd, opts.serverFilePath))}`,
     },
-    metadata: {
-      adapterNpmPackageName: "@apphosting/adapter-nextjs",
-      framework: "nextjs",
-    },
+    metadata: createMetadata(nextVersion),
   };
   await writeFile(
     opts.bundleYamlPath,
-    yamlStringify({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      outputBundle,
-      env: [],
-      metadata: createMetadata(nextVersion),
-    }),
+    yamlStringify(
+      outputBundle
+    ),
   );
   return;
 }

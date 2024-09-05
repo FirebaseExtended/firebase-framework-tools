@@ -48,17 +48,14 @@ describe("build commands", () => {
     const expectedFiles = {
       ".next/standalone/.next/static/staticfile": "",
       ".next/standalone/server.js": "",
-      ".apphosting/bundle.yaml": `outputBundle:
-  version: v1alpha
-  serverConfig:
-    runCommand:
-      - node
-      - .next/standalone/server.js
-  metadata:
-    adapterPackageName: "@apphosting/adapter-nextjs"
-    adapterVersion: ${packageVersion}
-    framework: nextjs
-    frameworkVersion: ${defaultNextVersion}
+      ".apphosting/bundle.yaml": `version: v1
+serverConfig:
+  runCommand: node .next/standalone/server.js
+metadata:
+  adapterPackageName: "@apphosting/adapter-nextjs"
+  adapterVersion: ${packageVersion}
+  framework: nextjs
+  frameworkVersion: ${defaultNextVersion}
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
@@ -70,11 +67,6 @@ describe("build commands", () => {
       ".next/standalone/apps/next-app/standalonefile": "",
       ".next/static/staticfile": "",
       "public/publicfile": "",
-      ".next/routes-manifest.json": `{
-        "headers":[], 
-        "rewrites":[], 
-        "redirects":[]
-      }`,
     };
     generateTestFiles(tmpDir, files);
     await generateBuildOutput(
@@ -108,105 +100,18 @@ describe("build commands", () => {
     );
 
     const expectedFiles = {
-      ".apphosting/apps/next-app/.next/static/staticfile": "",
-      ".apphosting/apps/next-app/standalonefile": "",
+      ".next/standalone/apps/next-app/.next/static/staticfile": "",
+      ".next/standalone/apps/next-app/standalonefile": "",
     };
     const expectedPartialYaml = {
-      headers: [],
-      rewrites: [],
-      redirects: [],
-      runCommand: "node .apphosting/apps/next-app/server.js",
-      neededDirs: [".apphosting"],
-      staticAssets: [".apphosting/apps/next-app/public"],
-    };
+  version: "v1",
+  serverConfig:
+    {runCommand: "node .next/standalone/apps/next-app/server.js"},
+  };
     validateTestFiles(tmpDir, expectedFiles);
     validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
   });
 
-  it("expects directories and other files to be copied over", async () => {
-    const { generateBuildOutput, validateOutputDirectory } = await importUtils;
-    const files = {
-      ".next/standalone/server.js": "",
-      ".next/static/staticfile": "",
-      "public/publicfile": "",
-      ".next/routes-manifest.json": `{
-          "headers":[],
-          "rewrites":[],
-          "redirects":[]
-        }`,
-    };
-    generateTestFiles(tmpDir, files);
-    await generateBuildOutput(
-      tmpDir,
-      tmpDir,
-      outputBundleOptions,
-      path.join(tmpDir, ".next"),
-      defaultNextVersion,
-    );
-    await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
-
-    const expectedFiles = {
-      ".apphosting/.next/static/staticfile": "",
-      ".apphosting/server.js": "",
-      ".apphosting/public/publicfile": "",
-      ".apphosting/extrafile": "",
-    };
-    const expectedPartialYaml = {
-      headers: [],
-      rewrites: [],
-      redirects: [],
-      runCommand: "node .apphosting/server.js",
-      neededDirs: [".apphosting"],
-      staticAssets: [".apphosting/public"],
-    };
-    validateTestFiles(tmpDir, expectedFiles);
-    validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
-  });
-
-  it("expects bundle.yaml headers/rewrites/redirects to be generated", async () => {
-    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
-    const files = {
-      ".next/standalone/server.js": "",
-      ".next/static/staticfile": "",
-      ".next/routes-manifest.json": `{
-        "headers":[{"source":"source", "headers":["header1"]}], 
-        "rewrites":[{"source":"source", "destination":"destination"}], 
-        "redirects":[{"source":"source", "destination":"destination"}]
-      }`,
-    };
-    generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(
-      tmpDir,
-      tmpDir,
-      outputBundleOptions,
-      path.join(tmpDir, ".next"),
-      defaultNextVersion,
-    );
-    await validateOutputDirectory(outputBundleOptions);
-
-    const expectedFiles = {
-      ".apphosting/.next/static/staticfile": "",
-      ".apphosting/server.js": "",
-      ".apphosting/bundle.yaml": `headers:
-  - source: source
-    headers:
-      - header1
-redirects:
-  - source: source
-    destination: destination
-rewrites:
-  - source: source
-    destination: destination
-runCommand: node .apphosting/server.js
-neededDirs:
-  - .apphosting
-staticAssets:
-  - .apphosting/public
-`,
-    };
-    validateTestFiles(tmpDir, expectedFiles);
-    validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
-  });
   it("test failed validateOutputDirectory", async () => {
     const { generateBuildOutput, validateOutputDirectory } = await importUtils;
     const files = {
