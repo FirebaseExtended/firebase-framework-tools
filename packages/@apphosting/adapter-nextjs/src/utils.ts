@@ -85,7 +85,7 @@ export async function generateBuildOutput(
   const publicDirectory = join(appDir, "public");
   await Promise.all([
     move(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
-    movePublicDirectory(publicDirectory, opts.outputPublicDirectoryPath),
+    moveResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
     generateBundleYaml(opts, rootDir, nextVersion),
   ]);
   return;
@@ -93,27 +93,17 @@ export async function generateBuildOutput(
 
 // Move all files and directories to apphosting output directory.
 // Files are skipped if there is already a file with the same name in the output directory
-async function moveResources(appDir: string, outputBundleAppDir: string): Promise<void> {
+async function moveResources(appDir: string, outputBundleAppDir: string, bundleYamlPath : string): Promise<void> {
   const appDirExists = await exists(appDir);
   if (!appDirExists) return;
   const pathsToMove = await readdir(appDir);
   for (const path of pathsToMove) {
-    const isOutputBundleDir = join(appDir, path) === outputBundleAppDir;
+    const isbundleYamlDir = join(appDir, path) === dirname(bundleYamlPath);
     const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
-    if (!isOutputBundleDir && !existsInOutputBundle) {
+    if (!isbundleYamlDir && !existsInOutputBundle) {
       await move(join(appDir, path), join(outputBundleAppDir, path));
     }
   }
-  return;
-}
-// move public directory to apphosting output public directory
-async function movePublicDirectory(
-  publicDirectory: string,
-  appHostingPublicDirectory: string,
-): Promise<void> {
-  const publicDirectoryExists = await exists(publicDirectory);
-  if (!publicDirectoryExists) return;
-  await move(publicDirectory, appHostingPublicDirectory, { overwrite: true });
   return;
 }
 
@@ -157,14 +147,14 @@ async function generateBundleYaml(opts: OutputBundleOptions, cwd: string, nextVe
 
 // Validate output directory includes all necessary parts
 export async function validateOutputDirectory(
-  outputBundleOptions: OutputBundleOptions,
+  opts: OutputBundleOptions,
   nextBuildDirectory: string,
 ): Promise<void> {
   const standaloneDirectory = join(nextBuildDirectory, "standalone");
   if (
     !(await fsExtra.exists(nextBuildDirectory)) ||
     !(await fsExtra.exists(standaloneDirectory)) ||
-    !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))
+    !(await fsExtra.exists(opts.bundleYamlPath))
   ) {
     throw new Error("Output directory is not of expected structure");
   }

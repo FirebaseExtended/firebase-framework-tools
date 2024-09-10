@@ -135,6 +135,37 @@ metadata:
       async () => await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next")),
     );
   });
+  it("expects directories and other files to be copied over", async () => {
+    const { generateBuildOutput, validateOutputDirectory } = await importUtils;
+    const files = {
+      ".next/standalone/server.js": "",
+      ".next/static/staticfile": "",
+      "public/publicfile": "",
+      extrafile: "",
+      ".next/routes-manifest.json": `{
+        "headers":[], 
+        "rewrites":[], 
+        "redirects":[]
+      }`,
+    };
+    generateTestFiles(tmpDir, files);
+    await generateBuildOutput(
+      tmpDir,
+      tmpDir,
+      outputBundleOptions,
+      path.join(tmpDir, ".next"),
+      defaultNextVersion,
+    );
+    await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
+
+    const expectedFiles = {
+      ".next/standalone/.next/static/staticfile": "",
+      ".next/standalone/server.js": "",
+      ".next/standalone/public/publicfile": "",
+      ".next/standalone/extrafile": "",
+    };
+    validateTestFiles(tmpDir, expectedFiles);
+  });
   it("test populate output bundle options", async () => {
     const { populateOutputBundleOptions } = await importUtils;
     const expectedOutputBundleOptions = {
