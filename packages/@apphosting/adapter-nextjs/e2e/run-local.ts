@@ -34,14 +34,16 @@ await promiseSpawn("npm", ["ci", "--silent", "--no-progress"], {
 
 const buildScript = relative(cwd, join(__dirname, "../dist/bin/build.js"));
 console.log(`[${runId}] > node ${buildScript}`);
+
+const packageJson = JSON.parse(readFileSync(join(cwd, "package.json"), "utf-8"));
+const frameworkVersion = packageJson.dependencies.next.replace("^", "");
 await promiseSpawn("node", [buildScript], {
   cwd,
   stdio: "inherit",
   shell: true,
   env: {
     ...process.env,
-    // TODO set FRAMEWORK_VERSION from package.json
-    FRAMEWORK_VERSION: "14.1.4",
+    FRAMEWORK_VERSION: frameworkVersion,
   },
 });
 
@@ -74,7 +76,7 @@ run.stderr.on("data", (data) => console.error(data.toString()));
 run.stdout.once("data", (data) => {
   console.log(data.toString());
   // TODO come up with a better check here
-  if (data.toString().includes(`Next.js 14.1.4`)) {
+  if (data.toString().includes(`Next.js ${frameworkVersion}`)) {
     resolveHostname(`http://localhost:${port}`);
   } else {
     run.stdin.end();
