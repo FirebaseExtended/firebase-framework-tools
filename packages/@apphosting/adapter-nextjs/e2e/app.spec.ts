@@ -95,6 +95,29 @@ describe("app", () => {
     assert.ok(text.includes("Regenerate page"));
   });
 
+  it("/isr/demand/revalidate", async () => {
+    // First, fetch the initial page
+    const initialResponse = await fetch(posix.join(host, "isr", "demand"));
+    assert.ok(initialResponse.ok);
+    const initialText = await initialResponse.text();
+    const initialUUID = initialText.match(/UUID<\/p>\s*<h2>([^<]+)<\/h2>/)?.[1];
+
+    // Trigger revalidation
+    const revalidateResponse = await fetch(posix.join(host, "isr", "demand", "revalidate"), {
+      method: "POST",
+    });
+    assert.equal(revalidateResponse.status, 200);
+
+    // Fetch the page again
+    const newResponse = await fetch(posix.join(host, "isr", "demand"));
+    assert.ok(newResponse.ok);
+    const newText = await newResponse.text();
+    const newUUID = newText.match(/UUID<\/p>\s*<h2>([^<]+)<\/h2>/)?.[1];
+
+    // Check if the UUID has changed, indicating successful revalidation
+    assert.notEqual(initialUUID, newUUID, "UUID should change after revalidation");
+  });
+
   it(`404`, async () => {
     const response = await fetch(posix.join(host, Math.random().toString()));
     assert.equal(response.status, 404);
