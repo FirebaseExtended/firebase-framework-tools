@@ -41,7 +41,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@apphosting/common": "^0.0.2",
+    "@apphosting/common": "^0.0.3",
     "fs-extra": "^11.1.1",
     "yaml": "^2.3.4"
   },

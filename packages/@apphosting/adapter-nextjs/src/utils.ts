@@ -5,7 +5,6 @@ import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
-import { ROUTES_MANIFEST } from "./constants.js";
 import { Metadata, OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common/dist/index.js";
@@ -69,7 +68,7 @@ export function populateOutputBundleOptions(
 }
 
 /**
- * Moves static assets into the standlone directory and generates the bundle.yaml
+ * Moves static assets and other resources into the standlone directory, also generates the bundle.yaml
  * @param rootDir The root directory of the uploaded source code.
  * @param outputBundleOptions The target location of built artifacts in the output bundle.
  * @param nextBuildDirectory The location of the .next directory.
