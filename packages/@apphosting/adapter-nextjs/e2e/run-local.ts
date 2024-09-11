@@ -6,6 +6,8 @@ import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 import fsExtra from "fs-extra";
 
+process.env.NODE_OPTIONS = "--dns-result-order=ipv4first";
+
 const { readFileSync, mkdirp, rmdir } = fsExtra;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
