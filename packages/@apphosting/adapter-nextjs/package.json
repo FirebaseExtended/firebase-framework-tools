@@ -43,7 +43,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@apphosting/common": "^0.0.2",
+    "@apphosting/common": "^0.0.3",
     "fs-extra": "^11.1.1",
     "yaml": "^2.3.4"
   },
@@ -57,11 +57,15 @@
   },
   "devDependencies": {
     "@types/fs-extra": "*",
+    "@types/mocha": "*",
     "@types/tmp": "*",
+    "mocha": "*",
     "next": "~14.0.0",
     "semver": "*",
     "tmp": "*",
+    "ts-mocha": "*",
     "ts-node": "*",
+    "typescript": "*",
     "verdaccio": "^5.30.3"
   }
 }
