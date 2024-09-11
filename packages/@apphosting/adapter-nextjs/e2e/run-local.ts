@@ -73,14 +73,11 @@ const run = spawn(runScript, runArgs, {
   },
 });
 run.stderr.on("data", (data) => console.error(data.toString()));
-run.stdout.once("data", (data) => {
+run.stdout.on("data", (data) => {
   console.log(data.toString());
-  // TODO come up with a better check here
-  if (data.toString().includes(`Next.js ${frameworkVersion}`)) {
+  // Check for the "Ready in" message to determine when the server is fully started
+  if (data.toString().includes(`Ready in`)) {
     resolveHostname(`http://localhost:${port}`);
-  } else {
-    run.stdin.end();
-    run.kill("SIGKILL");
   }
 });
 run.on("close", (code) => {
