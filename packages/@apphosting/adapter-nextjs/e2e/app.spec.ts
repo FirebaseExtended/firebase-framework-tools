@@ -9,11 +9,7 @@ if (!host) {
 
 describe("app", () => {
   it("/", async () => {
-    console.log("host", host);
-    const response = await fetch(host).catch((e) => {
-      console.log("error", e);
-      return null;
-    });
+    const response = await fetch(host);
     assert.ok(response.ok);
     assert.equal(response.headers.get("content-type")?.toLowerCase(), "text/html; charset=utf-8");
     assert.equal(
