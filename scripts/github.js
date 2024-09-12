@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 const { execSync } = require("child_process");
 
-const [, packageFromRef, versionFromRef, , prerelease] =
+const [, packagePatternFromRef, versionFromRef, , prereleaseFromRef] =
   /^refs\/tags\/(.+)-v(\d\d*\.\d\d*(\.\d\d*)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
 
 const since = process.env.GITHUB_ACTION
@@ -17,30 +17,36 @@ const lernaList = JSON.parse(
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
-const filteredLernaList = JSON.parse(
+const scopedLernaList = JSON.parse(
   execSync(
-    `lerna list --json --toposort --include-dependents ${
-      packageFromRef ? `--scope='{,*/}${packageFromRef}'` : since
+    `lerna list --json --no-private --toposort --include-dependents ${
+      packagePatternFromRef ? `--scope='{,*/}${packagePatternFromRef}'` : since
     }`,
     { stdio: ["ignore", "pipe", "ignore"] },
   ).toString(),
-).filter((lerna) => {
-  if (lerna.private) return false;
-  return true;
-});
+);
 
-if (packageFromRef && filteredLernaList.length === 0) {
+const packagesFromRef = packagePatternFromRef && JSON.parse(
+  execSync(
+    `lerna list --json --no-private --scope='{,*/}${packagePatternFromRef}'`,
+    { stdio: ["ignore", "pipe", "ignore"] },
+  ).toString(),
+);
+if (packagePatternFromRef && packagesFromRef.length !== 1) {
   throw new Error(`Lerna didn't find ${packageFromRef} in this workspace`);
 }
+const packageFromRef = packagesFromRef?.[0].name;
 
-const lernaScopeArgs = filteredLernaList.map(({ name }) => ["--scope", name]).flat();
+const lernaScopes = scopedLernaList.map(({ name }) => ["--scope", name]).flat();
 
 module.exports = {
-  packageFromRef,
-  versionFromRef,
-  prerelease: !packageFromRef || !!prerelease,
+  taggedRelease: packageFromRef ? {
+    name: packageFromRef,
+    version: versionFromRef,
+    tag: prereleaseFromRef ? "next" : "latest",
+  } : undefined,
   lernaList,
-  filteredLernaList,
+  scopedLernaList,
   shortSHA,
-  lernaScopeArgs,
+  lernaScopes,
 };

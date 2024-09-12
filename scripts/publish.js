@@ -3,12 +3,11 @@ const { execSync } = require("child_process");
 const { writeFileSync, readFileSync } = require("fs");
 const { join } = require("path");
 const {
-  filteredLernaList,
+  scopedLernaList,
   lernaList,
   versionFromRef,
   shortSHA,
-  prerelease,
-  packageFromRef,
+  taggedRelease,
 } = require("./github.js");
 
 const wombatDressingRoomTokens = new Map([
@@ -24,18 +23,18 @@ wombatDressingRoomTokens.forEach((token, pkg) => {
   });
 });
 
-const packagesToPublish = filteredLernaList.map((lerna) => {
-  const useVersionFromRef = versionFromRef && lerna.name.endsWith(packageFromRef);
-  if (useVersionFromRef && versionFromRef.split("-")[0] !== lerna.version) {
+const packagesToPublish = scopedLernaList.map((lerna) => {
+  const isTaggedRelease = lerna.name === taggedRelease?.name;
+  if (isTaggedRelease && taggedRelease.version.split("-")[0] !== lerna.version) {
     throw new Error(
       `Cowardly refusing to publish ${lerna.name}@${versionFromRef} from ${lerna.version}, version needs to be bumped in source.`,
     );
   }
-  const newVersion = useVersionFromRef ? versionFromRef : `${lerna.version}-canary.${shortSHA}`;
+  const newVersion = isTaggedRelease ? taggedRelease.version : `${lerna.version}-canary.${shortSHA}`;
   const registry = wombatDressingRoomTokens.get(lerna.name)
     ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`
     : "https://registry.npmjs.org";
-  const tag = useVersionFromRef ? (prerelease ? "next" : "latest") : "canary";
+  const tag = isTaggedRelease ? taggedRelease.tag : "canary";
   const packageJsonPath = join(lerna.location, "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
   packageJson.version = newVersion;
