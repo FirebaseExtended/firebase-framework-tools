@@ -2,7 +2,14 @@
 const { execSync } = require("child_process");
 const { writeFileSync, readFileSync } = require("fs");
 const { join } = require("path");
-const { filteredLernaList, lernaList, versionFromRef, shortSHA, prerelease, packageFromRef } = require("./github.js");
+const {
+  filteredLernaList,
+  lernaList,
+  versionFromRef,
+  shortSHA,
+  prerelease,
+  packageFromRef,
+} = require("./github.js");
 
 const wombatDressingRoomTokens = new Map([
   // ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
@@ -24,24 +31,25 @@ const packagesToPublish = filteredLernaList.map((lerna) => {
       `Cowardly refusing to publish ${lerna.name}@${versionFromRef} from ${lerna.version}, version needs to be bumped in source.`,
     );
   }
-  const version = useVersionFromRef && versionFromRef || `${lerna.version}-canary.${shortSHA}`;
+  const version = (useVersionFromRef && versionFromRef) || `${lerna.version}-canary.${shortSHA}`;
   const packageJsonPath = join(lerna.location, "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
   packageJson.version = version;
   return packageJson;
 });
 
-for (packageJson of packagesToPublish) {
+for (const packageJson of packagesToPublish) {
   for (const dependency in packageJson.dependencies) {
-    const lernaPackage = lernaList.find(it => it.name === dependency);
-    if (lernaPackage) {
-      const changedPackage = packagesToPublish.find(it => it.name === dependency);
-      const version = changedPackage?.version || lernaPackage.version;
-      packageJson.dependencies[dependency] = version;
+    if (dependency) {
+      const lernaPackage = lernaList.find((it) => it.name === dependency);
+      if (lernaPackage) {
+        const changedPackage = packagesToPublish.find((it) => it.name === dependency);
+        const version = changedPackage?.version || lernaPackage.version;
+        packageJson.dependencies[dependency] = version;
+      }
     }
   }
-  const lerna = lernaList.find(it => it.name === packageJson.name);
-  if (!lerna) { throw packageJson.name }
+  const lerna = lernaList.find((it) => it.name === packageJson.name);
   const packageJsonPath = join(lerna.location, "package.json");
   writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
   const registry = wombatDressingRoomTokens.get(lerna.name)
