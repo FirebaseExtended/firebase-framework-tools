@@ -19,8 +19,8 @@ const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
 const filteredLernaList = JSON.parse(
   execSync(
-    `lerna list --json --include-dependencies --include-dependents ${
-      packageFromRef ? `--scope='{,*/}${packageFromRef}'` : since
+    `lerna list --json --toposort --include-dependents ${
+      packageFromRef ? `--scope='{,*/}${packageFromRef}'` : `${since} --include-dependencies`
     }`,
     { stdio: ["ignore", "pipe", "ignore"] },
   ).toString(),

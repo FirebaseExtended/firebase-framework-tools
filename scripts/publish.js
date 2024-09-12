@@ -2,7 +2,7 @@
 const { execSync } = require("child_process");
 const { writeFileSync, readFileSync } = require("fs");
 const { join } = require("path");
-const { filteredLernaList, lernaList, versionFromRef, shortSHA, prerelease } = require("./github.js");
+const { filteredLernaList, lernaList, versionFromRef, shortSHA, prerelease, packageFromRef } = require("./github.js");
 
 const wombatDressingRoomTokens = new Map([
   // ['firebase-frameworks', process.env.FIREBASE_FRAMEWORKS_NPM_TOKEN],
@@ -18,14 +18,13 @@ wombatDressingRoomTokens.forEach((token, pkg) => {
 });
 
 const packagesToPublish = filteredLernaList.map((lerna) => {
-  if (versionFromRef && versionFromRef.split("-")[0] !== lerna.version) {
+  const useVersionFromRef = versionFromRef && lerna.name.endsWith(packageFromRef);
+  if (useVersionFromRef && versionFromRef && versionFromRef.split("-")[0] !== lerna.version) {
     throw new Error(
       `Cowardly refusing to publish ${lerna.name}@${versionFromRef} from ${lerna.version}, version needs to be bumped in source.`,
     );
   }
-  const version = versionFromRef || `${lerna.version}-canary.${shortSHA}`;
-  const cwd = lerna.location;
-  const tag = versionFromRef ? (prerelease ? "next" : "latest") : "canary";
+  const version = useVersionFromRef && versionFromRef || `${lerna.version}-canary.${shortSHA}`;
   const packageJsonPath = join(lerna.location, "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
   packageJson.version = version;
@@ -37,7 +36,8 @@ for (packageJson of packagesToPublish) {
     const lernaPackage = lernaList.find(it => it.name === dependency);
     if (lernaPackage) {
       const changedPackage = packagesToPublish.find(it => it.name === dependency);
-      packageJson.dependencies[dependency] = changedPackage?.version || lernaPackage.version;
+      const version = changedPackage?.version || lernaPackage.version;
+      packageJson.dependencies[dependency] = version;
     }
   }
   const lerna = lernaList.find(it => it.name === packageJson.name);
@@ -48,6 +48,7 @@ for (packageJson of packagesToPublish) {
     ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`
     : "https://registry.npmjs.org";
   const cwd = lerna.location;
-  const tag = versionFromRef ? (prerelease ? "next" : "latest") : "canary";
+  const usedVersionFromRef = packageJson.version === versionFromRef;
+  const tag = usedVersionFromRef ? (prerelease ? "next" : "latest") : "canary";
   execSync(`npm publish --registry ${registry} --access public --tag ${tag} --provenance`, { cwd });
 }
