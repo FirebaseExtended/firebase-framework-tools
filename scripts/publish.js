@@ -39,12 +39,19 @@ const packagesToPublish = filteredLernaList.map((lerna) => {
 });
 
 for (const packageJson of packagesToPublish) {
+  const usedVersionFromRef = packageJson.version === versionFromRef;
+  const tag = usedVersionFromRef ? (prerelease ? "next" : "latest") : "canary";
   for (const dependency in packageJson.dependencies) {
     if (dependency) {
       const lernaPackage = lernaList.find((it) => it.name === dependency);
       if (lernaPackage) {
         const changedPackage = packagesToPublish.find((it) => it.name === dependency);
         const version = changedPackage?.version || lernaPackage.version;
+        if (tag === "latest" && version.includes("-")) {
+          throw new Error(
+            `Cowardly refusing to publish ${packageJson.name}@${packageJson.version} with dependency on a pre-release ${dependency}@${version}`,
+          );
+        }
         packageJson.dependencies[dependency] = version;
       }
     }
@@ -56,7 +63,5 @@ for (const packageJson of packagesToPublish) {
     ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`
     : "https://registry.npmjs.org";
   const cwd = lerna.location;
-  const usedVersionFromRef = packageJson.version === versionFromRef;
-  const tag = usedVersionFromRef ? (prerelease ? "next" : "latest") : "canary";
   execSync(`npm publish --registry ${registry} --access public --tag ${tag} --provenance`, { cwd });
 }
