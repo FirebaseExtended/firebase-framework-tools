@@ -56,9 +56,8 @@ for (const package of packagesToPublish) {
       }
     }
   }
-  const lerna = lernaList.find((it) => it.name === package.name);
-  const packageJsonPath = join(lerna.location, "package.json");
+  const { location } = lernaList.find((it) => it.name === package.name);
+  const packageJsonPath = join(location, "package.json");
   writeFileSync(packageJsonPath, JSON.stringify(package, undefined, 2));
-  const cwd = lerna.location;
-  execSync(`npm publish`, { cwd });
+  execSync(`npm publish`, { cwd: location });
 }
