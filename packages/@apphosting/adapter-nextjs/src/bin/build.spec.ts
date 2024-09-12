@@ -104,10 +104,9 @@ metadata:
       ".next/standalone/apps/next-app/standalonefile": "",
     };
     const expectedPartialYaml = {
-  version: "v1",
-  serverConfig:
-    {runCommand: "node .next/standalone/apps/next-app/server.js"},
-  };
+      version: "v1",
+      serverConfig: { runCommand: "node .next/standalone/apps/next-app/server.js" },
+    };
     validateTestFiles(tmpDir, expectedFiles);
     validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);
   });

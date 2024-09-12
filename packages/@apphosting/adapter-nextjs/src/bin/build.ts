@@ -30,7 +30,7 @@ const outputBundleOptions = populateOutputBundleOptions(
 );
 
 await generateBuildOutput(
-  root, 
+  root,
   opts.projectDirectory,
   outputBundleOptions,
   nextBuildDirectory,

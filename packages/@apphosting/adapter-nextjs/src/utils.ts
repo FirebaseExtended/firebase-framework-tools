@@ -5,12 +5,13 @@ import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
-import { Metadata, OutputBundleOptions, RoutesManifest } from "./interfaces.js";
+import { Metadata, OutputBundleOptions } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common/dist/index.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } = fsExtra;
+export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
+  fsExtra;
 
 // Loads the user's next.config.js file.
 export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
@@ -81,7 +82,6 @@ export async function generateBuildOutput(
   nextVersion: string,
 ): Promise<void> {
   const staticDirectory = join(nextBuildDirectory, "static");
-  const publicDirectory = join(appDir, "public");
   await Promise.all([
     move(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
     moveResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
@@ -92,7 +92,11 @@ export async function generateBuildOutput(
 
 // Move all files and directories to apphosting output directory.
 // Files are skipped if there is already a file with the same name in the output directory
-async function moveResources(appDir: string, outputBundleAppDir: string, bundleYamlPath : string): Promise<void> {
+async function moveResources(
+  appDir: string,
+  outputBundleAppDir: string,
+  bundleYamlPath: string,
+): Promise<void> {
   const appDirExists = await exists(appDir);
   if (!appDirExists) return;
   const pathsToMove = await readdir(appDir);
@@ -125,7 +129,10 @@ export function createMetadata(nextVersion: string): Metadata {
 }
 
 // generate bundle.yaml
-async function generateBundleYaml(opts: OutputBundleOptions, cwd: string, nextVersion: string,
+async function generateBundleYaml(
+  opts: OutputBundleOptions,
+  cwd: string,
+  nextVersion: string,
 ): Promise<void> {
   await mkdir(opts.outputDirectoryBasePath);
   const outputBundle: OutputBundleConfig = {
@@ -135,12 +142,7 @@ async function generateBundleYaml(opts: OutputBundleOptions, cwd: string, nextVe
     },
     metadata: createMetadata(nextVersion),
   };
-  await writeFile(
-    opts.bundleYamlPath,
-    yamlStringify(
-      outputBundle
-    ),
-  );
+  await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
   return;
 }
 
