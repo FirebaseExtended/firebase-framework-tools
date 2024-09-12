@@ -29,9 +29,16 @@ for (const lerna of filteredLernaList) {
   const packageJsonPath = join(lerna.location, "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
   packageJson.version = version;
+  for (const dependency of packageJson.dependencies) {
+    const lernaPackage = filteredLernaList.find(it => it.name === dependency[0]);
+    if (lernaPackage) {
+      dependency[1] = lernaPackage.version;
+    }
+  }
   writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
   const registry = wombatDressingRoomTokens.get(lerna.name)
     ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`
     : "https://registry.npmjs.org";
-  execSync(`npm publish --registry ${registry} --access public --tag ${tag} --provenance`, { cwd });
+  console.log(`npm publish --registry ${registry} --access public --tag ${tag} --provenance`, { cwd });
+    // execSync(`npm publish --registry ${registry} --access public --tag ${tag} --provenance`, { cwd });
 }
