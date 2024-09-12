@@ -11,18 +11,20 @@ const since = process.env.GITHUB_ACTION
   : "";
 
 const lernaList = JSON.parse(
+  execSync("lerna list --json", { stdio: ["ignore", "pipe", "ignore"] }).toString(),
+);
+
+const ref = process.env.GITHUB_SHA ?? "HEAD";
+const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
+
+const filteredLernaList = JSON.parse(
   execSync(
     `lerna list --json --include-dependencies --include-dependents ${
       packageFromRef ? `--scope='{,*/}${packageFromRef}'` : since
     }`,
     { stdio: ["ignore", "pipe", "ignore"] },
   ).toString(),
-);
-
-const ref = process.env.GITHUB_SHA ?? "HEAD";
-const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
-
-const filteredLernaList = lernaList.filter((lerna) => {
+).filter((lerna) => {
   if (lerna.private) return false;
   return true;
 });
@@ -37,6 +39,7 @@ module.exports = {
   packageFromRef,
   versionFromRef,
   prerelease: !packageFromRef || !!prerelease,
+  lernaList,
   filteredLernaList,
   shortSHA,
   lernaScopeArgs,
