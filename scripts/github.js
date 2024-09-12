@@ -31,7 +31,7 @@ const packagesFromRef =
     ),
   );
 if (packagePatternFromRef && packagesFromRef.length !== 1) {
-  throw new Error(`Lerna didn't find ${packageFromRef} in this workspace`);
+  throw new Error(`Tag pattern matched more than one package...`);
 }
 const packageFromRef = packagesFromRef?.[0].name;
 
