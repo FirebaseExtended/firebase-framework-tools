@@ -30,7 +30,9 @@ const packagesToPublish = scopedLernaList.map((lerna) => {
       `Cowardly refusing to publish ${lerna.name}@${versionFromRef} from ${lerna.version}, version needs to be bumped in source.`,
     );
   }
-  const newVersion = isTaggedRelease ? taggedRelease.version : `${lerna.version}-canary.${shortSHA}`;
+  const newVersion = isTaggedRelease
+    ? taggedRelease.version
+    : `${lerna.version}-canary.${shortSHA}`;
   const registry = wombatDressingRoomTokens.get(lerna.name)
     ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`
     : "https://registry.npmjs.org";

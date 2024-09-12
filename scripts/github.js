@@ -10,28 +10,26 @@ const since = process.env.GITHUB_ACTION
     }`
   : "";
 
-const lernaList = JSON.parse(
-  execSync("lerna list --json", { stdio: ["ignore", "pipe", "ignore"] }).toString(),
-);
+const lernaList = JSON.parse(execSync("lerna list --json --loglevel error"));
 
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
 const scopedLernaList = JSON.parse(
   execSync(
-    `lerna list --json --no-private --toposort --include-dependents ${
+    `lerna list --json --no-private --toposort --loglevel error --include-dependents ${
       packagePatternFromRef ? `--scope='{,*/}${packagePatternFromRef}'` : since
     }`,
-    { stdio: ["ignore", "pipe", "ignore"] },
-  ).toString(),
+  ),
 );
 
-const packagesFromRef = packagePatternFromRef && JSON.parse(
-  execSync(
-    `lerna list --json --no-private --scope='{,*/}${packagePatternFromRef}'`,
-    { stdio: ["ignore", "pipe", "ignore"] },
-  ).toString(),
-);
+const packagesFromRef =
+  packagePatternFromRef &&
+  JSON.parse(
+    execSync(
+      `lerna list --json --no-private --loglevel error --scope='{,*/}${packagePatternFromRef}'`,
+    ),
+  );
 if (packagePatternFromRef && packagesFromRef.length !== 1) {
   throw new Error(`Lerna didn't find ${packageFromRef} in this workspace`);
 }
@@ -40,11 +38,11 @@ const packageFromRef = packagesFromRef?.[0].name;
 const lernaScopes = scopedLernaList.map(({ name }) => ["--scope", name]).flat();
 
 module.exports = {
-  taggedRelease: packageFromRef ? {
+  taggedRelease: packageFromRef && {
     name: packageFromRef,
     version: versionFromRef,
     tag: prereleaseFromRef ? "next" : "latest",
-  } : undefined,
+  },
   lernaList,
   scopedLernaList,
   shortSHA,
