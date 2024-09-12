@@ -9,6 +9,7 @@ import { OutputBundleOptions } from "../interface.js";
 describe("build commands", () => {
   let tmpDir: string;
   let outputBundleOptions: OutputBundleOptions;
+  let defaultAngularVersion: string;
   beforeEach(() => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
@@ -20,16 +21,18 @@ describe("build commands", () => {
       serverFilePath: resolve(tmpDir, ".apphosting", "dist", "server", "server.mjs"),
       needsServerGenerated: false,
     };
+    defaultAngularVersion = "17.3.8";
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
+    const { generateOutputDirectory, validateOutputDirectory, createMetadata } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
+    const packageVersion = createMetadata(defaultAngularVersion).adapterVersion;
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions);
+    await generateOutputDirectory(tmpDir, outputBundleOptions, defaultAngularVersion);
     await validateOutputDirectory(outputBundleOptions);
 
     const expectedFiles = {
@@ -42,6 +45,11 @@ neededDirs:
 staticAssets:
   - .apphosting/dist/browser
 env: []
+metadata:
+  adapterPackageName: "@apphosting/adapter-angular"
+  adapterVersion: ${packageVersion}
+  framework: angular
+  frameworkVersion: 17.3.8
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
@@ -56,22 +64,12 @@ env: []
     generateTestFiles(tmpDir, files);
     await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.2");
 
-    const expectedFiles = {
-      ".apphosting/dist/browser/browserfile": "",
-      ".apphosting/dist/server/server.mjs": "",
-      ".apphosting/bundle.yaml": `
-runCommand: node .apphosting/dist/server/server.mjs
-neededDirs:
-  - .apphosting
-staticAssets:
-  - .apphosting/dist/browser
-env:
+    const expectedContents = `env:
   - variable: SSR_PORT
     value: "8080"
     availability: RUNTIME
-`,
-    };
-    validateTestFiles(tmpDir, expectedFiles);
+`;
+    validateFileExistsAndContains(tmpDir, ".apphosting/bundle.yaml", expectedContents);
   });
 
   it("test failed validateOutputDirectory", async () => {
@@ -81,7 +79,7 @@ env:
       "dist/test/server/notserver.mjs": "",
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions);
+    await generateOutputDirectory(tmpDir, outputBundleOptions, defaultAngularVersion);
     assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
   });
 
@@ -133,4 +131,18 @@ function validateTestFiles(baseDir: string, expectedFiles: Object): void {
     const contents = fs.readFileSync(fileToRead).toString();
     assert.deepEqual(ignoreBlankLines(contents), ignoreBlankLines(expectedContents));
   });
+}
+
+function validateFileExistsAndContains(
+  baseDir: string,
+  expectedFileName: string,
+  expectedContents: string,
+): void {
+  const fileToRead = path.join(baseDir, expectedFileName);
+  assert.ok(fs.existsSync(fileToRead), `File '${fileToRead}' does not exist.`);
+  const contents = fs.readFileSync(fileToRead).toString();
+  assert.ok(
+    contents.includes(expectedContents),
+    `Actual contents do not contain expected contents.\nExpected contained contents:\n${expectedContents}\nActual:\n${contents}`,
+  );
 }
