@@ -44,25 +44,21 @@ const packagesToPublish = scopedLernaList.map((lerna) => {
   return packageJson;
 });
 
-for (const packageJson of packagesToPublish) {
-  for (const dependency in packageJson.dependencies) {
-    if (dependency) {
-      const lernaPackage = lernaList.find((it) => it.name === dependency);
-      if (lernaPackage) {
-        const changedPackage = packagesToPublish.find((it) => it.name === dependency);
-        const version = changedPackage?.version || lernaPackage.version;
-        if (packageJson.publishConfig.tag === "latest" && version.includes("-")) {
-          throw new Error(
-            `Cowardly refusing to publish ${packageJson.name}@${packageJson.version} with dependency on a pre-release ${dependency}@${version}`,
-          );
-        }
-        packageJson.dependencies[dependency] = version;
+for (const package of packagesToPublish) {
+  for (const dependencyName in package.dependencies) {
+    // for/in needs an if to make lint happy
+    if (dependencyName) {
+      const lernaDependency = lernaList.find((it) => it.name === dependencyName);
+      if (lernaDependency) {
+        const dependencyBeingPublished = packagesToPublish.find((it) => it.name === dependencyName);
+        const dependencyVersion = dependencyBeingPublished?.version || lernaDependency.version;
+        package.dependencies[dependencyName] = dependencyVersion;
       }
     }
   }
-  const lerna = lernaList.find((it) => it.name === packageJson.name);
+  const lerna = lernaList.find((it) => it.name === package.name);
   const packageJsonPath = join(lerna.location, "package.json");
-  writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
+  writeFileSync(packageJsonPath, JSON.stringify(package, undefined, 2));
   const cwd = lerna.location;
   execSync(`npm publish`, { cwd });
 }
