@@ -10,14 +10,14 @@ const since = process.env.GITHUB_ACTION
     }`
   : "";
 
-const lernaList = JSON.parse(execSync("lerna list --json --loglevel error"));
+const lernaList = JSON.parse(execSync("lerna list --json --loglevel silent"));
 
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
 const scopedLernaList = JSON.parse(
   execSync(
-    `lerna list --json --no-private --toposort --loglevel error --include-dependents ${
+    `lerna list --json --no-private --toposort --loglevel silent --include-dependents ${
       packagePatternFromRef ? `--scope='{,*/}${packagePatternFromRef}'` : since
     }`,
   ),
@@ -27,7 +27,7 @@ const packagesFromRef =
   packagePatternFromRef &&
   JSON.parse(
     execSync(
-      `lerna list --json --no-private --loglevel error --scope='{,*/}${packagePatternFromRef}'`,
+      `lerna list --json --no-private --loglevel silent --scope='{,*/}${packagePatternFromRef}'`,
     ),
   );
 if (packagePatternFromRef && packagesFromRef.length !== 1) {
