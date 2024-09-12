@@ -26,28 +26,31 @@ wombatDressingRoomTokens.forEach((token, pkg) => {
 
 const packagesToPublish = filteredLernaList.map((lerna) => {
   const useVersionFromRef = versionFromRef && lerna.name.endsWith(packageFromRef);
-  if (useVersionFromRef && versionFromRef && versionFromRef.split("-")[0] !== lerna.version) {
+  if (useVersionFromRef && versionFromRef.split("-")[0] !== lerna.version) {
     throw new Error(
       `Cowardly refusing to publish ${lerna.name}@${versionFromRef} from ${lerna.version}, version needs to be bumped in source.`,
     );
   }
-  const version = (useVersionFromRef && versionFromRef) || `${lerna.version}-canary.${shortSHA}`;
+  const newVersion = useVersionFromRef ? versionFromRef : `${lerna.version}-canary.${shortSHA}`;
+  const registry = wombatDressingRoomTokens.get(lerna.name)
+    ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`
+    : "https://registry.npmjs.org";
+  const tag = useVersionFromRef ? (prerelease ? "next" : "latest") : "canary";
   const packageJsonPath = join(lerna.location, "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath).toString());
-  packageJson.version = version;
+  packageJson.version = newVersion;
+  packageJson.publishConfig = { tag, registry, provenance: true, access: "public" };
   return packageJson;
 });
 
 for (const packageJson of packagesToPublish) {
-  const usedVersionFromRef = packageJson.version === versionFromRef;
-  const tag = usedVersionFromRef ? (prerelease ? "next" : "latest") : "canary";
   for (const dependency in packageJson.dependencies) {
     if (dependency) {
       const lernaPackage = lernaList.find((it) => it.name === dependency);
       if (lernaPackage) {
         const changedPackage = packagesToPublish.find((it) => it.name === dependency);
         const version = changedPackage?.version || lernaPackage.version;
-        if (tag === "latest" && version.includes("-")) {
+        if (packageJson.publishConfig.tag === "latest" && version.includes("-")) {
           throw new Error(
             `Cowardly refusing to publish ${packageJson.name}@${packageJson.version} with dependency on a pre-release ${dependency}@${version}`,
           );
@@ -59,9 +62,6 @@ for (const packageJson of packagesToPublish) {
   const lerna = lernaList.find((it) => it.name === packageJson.name);
   const packageJsonPath = join(lerna.location, "package.json");
   writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2));
-  const registry = wombatDressingRoomTokens.get(lerna.name)
-    ? `https://wombat-dressing-room.appspot.com/${lerna.name}/_ns`
-    : "https://registry.npmjs.org";
   const cwd = lerna.location;
-  execSync(`npm publish --registry ${registry} --access public --tag ${tag} --provenance`, { cwd });
+  execSync(`npm publish`, { cwd });
 }
