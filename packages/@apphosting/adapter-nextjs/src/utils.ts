@@ -7,7 +7,7 @@ import { stringify as yamlStringify } from "yaml";
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 import { Metadata, OutputBundleOptions } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
-import { OutputBundleConfig } from "@apphosting/common/dist/index.js";
+import { OutputBundleConfig } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
