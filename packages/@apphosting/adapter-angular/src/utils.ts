@@ -6,16 +6,13 @@ import { execSync } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import {
-  Availability,
-  EnvironmentVariable,
-  Metadata,
   OutputBundleOptions,
   OutputPaths,
   buildManifestSchema,
 } from "./interface.js";
 import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
-import { BuildOptions } from "@apphosting/common";
+import { BuildOptions, OutputBundleConfig, EnvVarConfig, Metadata, Availability } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile, readFileSync, existsSync } = fsExtra;
@@ -95,14 +92,10 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBun
     serverRelativePath = relative(baseDirectory, fileURLToPath(outputPaths["server"]));
     needsServerGenerated = false;
   }
-
   return {
     bundleYamlPath: resolve(outputBundleDir, "bundle.yaml"),
-    outputDirectory: outputBundleDir,
-    baseDirectory,
-    outputBaseDirectory: resolve(outputBundleDir, "dist"),
-    serverFilePath: resolve(outputBundleDir, "dist", serverRelativePath, "server.mjs"),
-    browserDirectory: resolve(outputBundleDir, "dist", browserRelativePath),
+    serverFilePath: resolve(baseDirectory, serverRelativePath, "server.mjs"),
+    browserDirectory: resolve(baseDirectory, browserRelativePath),
     needsServerGenerated,
   };
 }
@@ -161,17 +154,13 @@ export function createMetadata(angularVersion: string): Metadata {
 }
 
 /**
- * Move the base output directory, which contains the server and browser bundle directory, and prerendered routes
- * as well as generating bundle.yaml.
+ * Generate the bundle.yaml
  */
-export async function generateOutputDirectory(
+export async function generateBuildOutput(
   cwd: string,
   outputBundleOptions: OutputBundleOptions,
   angularVersion: string,
 ): Promise<void> {
-  await move(outputBundleOptions.baseDirectory, outputBundleOptions.outputBaseDirectory, {
-    overwrite: true,
-  });
   if (outputBundleOptions.needsServerGenerated) {
     await generateServer(outputBundleOptions);
   }
@@ -179,14 +168,14 @@ export async function generateOutputDirectory(
 }
 
 // add environment variable to bundle.yaml if needed for specific versions
-function generateEnvVars(angularVersion: string): EnvironmentVariable[] {
-  const runtimeEnvVars: EnvironmentVariable[] = [];
+function generateEnvVars(angularVersion: string): EnvVarConfig[] {
+  const runtimeEnvVars: EnvVarConfig[] = [];
   // add env var to solve angular port issue, existing only for Angular v17.3.2 (b/332896115)
   if (angularVersion === "17.3.2") {
-    const ssrPortEnvVar: EnvironmentVariable = {
+    const ssrPortEnvVar: EnvVarConfig = {
       variable: "SSR_PORT",
       value: "8080",
-      availability: Availability.Runtime,
+      availability: [Availability.Runtime],
     };
     runtimeEnvVars.push(ssrPortEnvVar);
   }
@@ -195,19 +184,22 @@ function generateEnvVars(angularVersion: string): EnvironmentVariable[] {
 
 // Generate bundle.yaml
 async function generateBundleYaml(
-  outputBundleOptions: OutputBundleOptions,
+  opts: OutputBundleOptions,
   cwd: string,
   angularVersion: string,
 ): Promise<void> {
+  await mkdir(dirname(opts.bundleYamlPath));
+  const outputBundle: OutputBundleConfig = {
+    version: "v1",
+    serverConfig: {
+      runCommand: `node ${normalize(relative(cwd, opts.serverFilePath))}`,
+      environmentVariables: generateEnvVars(angularVersion),
+    },
+    metadata: createMetadata(angularVersion),
+  };
   await writeFile(
-    outputBundleOptions.bundleYamlPath,
-    yamlStringify({
-      runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
-      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectory))],
-      staticAssets: [normalize(relative(cwd, outputBundleOptions.browserDirectory))],
-      env: generateEnvVars(angularVersion),
-      metadata: createMetadata(angularVersion),
-    }),
+    opts.bundleYamlPath,
+    yamlStringify(outputBundle),
   );
 }
 
@@ -222,7 +214,6 @@ export async function validateOutputDirectory(
   outputBundleOptions: OutputBundleOptions,
 ): Promise<void> {
   if (
-    !(await fsExtra.exists(outputBundleOptions.outputDirectory)) ||
     !(await fsExtra.exists(outputBundleOptions.browserDirectory)) ||
     !(await fsExtra.exists(outputBundleOptions.serverFilePath)) ||
     !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))

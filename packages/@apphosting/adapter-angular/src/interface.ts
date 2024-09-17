@@ -4,9 +4,6 @@ import { URL } from "node:url";
 // options to help generate output directory
 export interface OutputBundleOptions {
   bundleYamlPath: string;
-  outputDirectory: string;
-  baseDirectory: string;
-  outputBaseDirectory: string;
   serverFilePath: string;
   browserDirectory: string;
   needsServerGenerated: boolean;
