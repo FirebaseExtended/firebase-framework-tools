@@ -53,7 +53,9 @@ for (const package of packagesToPublish) {
         const dependencyBeingPublished = packagesToPublish.find((it) => it.name === dependencyName);
         const dependencyVersion = dependencyBeingPublished?.version || lernaDependency.version;
         const dependencyPrerelease = dependencyVersion.includes("-");
-        package.dependencies[dependencyName] = dependencyPrerelease ? dependencyVersion : `^${dependencyVersion}`;
+        package.dependencies[dependencyName] = dependencyPrerelease
+          ? dependencyVersion
+          : `^${dependencyVersion}`;
       }
     }
   }
