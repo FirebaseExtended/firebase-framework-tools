@@ -22,7 +22,9 @@
   "sideEffects": false,
   "scripts": {
     "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
-    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
+    "test": "npm run test:unit && npm run test:functional",
+    "test:unit": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
+    "test:functional": "node --loader ts-node/esm ./e2e/run-local.ts",
     "localregistry:start": "npx verdaccio --config ../publish-dev/verdaccio-config.yaml",
     "localregistry:publish": "(npm view --registry=http://localhost:4873 @apphosting/adapter-angular && npm unpublish --@apphosting:registry=http://localhost:4873 --force); npm publish --@apphosting:registry=http://localhost:4873"
   },
@@ -41,7 +43,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@apphosting/common": "^0.0.2",
+    "@apphosting/common": "*",
     "firebase-functions": "^4.3.1",
     "fs-extra": "^11.1.1",
     "strip-ansi": "^7.1.0",

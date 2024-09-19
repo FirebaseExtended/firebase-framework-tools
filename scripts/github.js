@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 const { execSync } = require("child_process");
 
-const [, packageFromRef, versionFromRef, , prerelease] =
+const [, packagePatternFromRef, versionFromRef, , prereleaseFromRef] =
   /^refs\/tags\/(.+)-v(\d\d*\.\d\d*(\.\d\d*)?(-.+)?)$/.exec(process.env.GITHUB_REF ?? "") ?? [];
 
 const since = process.env.GITHUB_ACTION
@@ -10,34 +10,41 @@ const since = process.env.GITHUB_ACTION
     }`
   : "";
 
-const lernaList = JSON.parse(
-  execSync(
-    `lerna list --json --include-dependencies --include-dependents ${
-      packageFromRef ? `--scope='{,*/}${packageFromRef}'` : since
-    }`,
-    { stdio: ["ignore", "pipe", "ignore"] },
-  ).toString(),
-);
+const lernaList = JSON.parse(execSync("lerna list --json --loglevel silent"));
 
 const ref = process.env.GITHUB_SHA ?? "HEAD";
 const shortSHA = execSync(`git rev-parse --short ${ref}`).toString().trim();
 
-const filteredLernaList = lernaList.filter((lerna) => {
-  if (lerna.private) return false;
-  return true;
-});
+const scopedLernaList = JSON.parse(
+  execSync(
+    `lerna list --json --no-private --toposort --loglevel silent --include-dependents ${
+      packagePatternFromRef ? `--scope='{,*/}${packagePatternFromRef}'` : since
+    }`,
+  ),
+);
 
-if (packageFromRef && filteredLernaList.length === 0) {
-  throw new Error(`Lerna didn't find ${packageFromRef} in this workspace`);
+const packagesFromRef =
+  packagePatternFromRef &&
+  JSON.parse(
+    execSync(
+      `lerna list --json --no-private --loglevel silent --scope='{,*/}${packagePatternFromRef}'`,
+    ),
+  );
+if (packagePatternFromRef && packagesFromRef.length !== 1) {
+  throw new Error(`Tag pattern matched more than one package...`);
 }
+const packageFromRef = packagesFromRef?.[0].name;
 
-const lernaScopeArgs = filteredLernaList.map(({ name }) => ["--scope", name]).flat();
+const lernaScopes = scopedLernaList.map(({ name }) => ["--scope", name]).flat();
 
 module.exports = {
-  packageFromRef,
-  versionFromRef,
-  prerelease: !packageFromRef || !!prerelease,
-  filteredLernaList,
+  taggedRelease: packageFromRef && {
+    name: packageFromRef,
+    version: versionFromRef,
+    tag: prereleaseFromRef ? "next" : "latest",
+  },
+  lernaList,
+  scopedLernaList,
   shortSHA,
-  lernaScopeArgs,
+  lernaScopes,
 };
