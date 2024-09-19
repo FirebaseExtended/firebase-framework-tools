@@ -57,7 +57,19 @@ const tests = await Promise.all(
 
     const buildScript = relative(cwd, join(__dirname, "../dist/bin/build.js"));
     console.log(`[${runId}] > node ${buildScript}`);
-    await promiseSpawn("node", [buildScript], { cwd, stdio: "inherit", shell: true });
+
+    const frameworkVersion = JSON.parse(
+      readFileSync(join(cwd, "node_modules", "@angular", "core", "package.json"), "utf-8"),
+    ).version;
+    await promiseSpawn("node", [buildScript], {
+      cwd,
+      stdio: "inherit",
+      shell: true,
+      env: {
+        ...process.env,
+        FRAMEWORK_VERSION: frameworkVersion,
+      },
+    });
 
     const bundleYaml = parseYaml(readFileSync(join(cwd, ".apphosting/bundle.yaml")).toString());
 
@@ -80,6 +92,7 @@ const tests = await Promise.all(
       cwd,
       shell: true,
       env: {
+        ...process.env,
         NODE_ENV: "production",
         PORT: port.toString(),
       },
