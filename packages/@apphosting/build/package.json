@@ -33,11 +33,11 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
+        "@apphosting/discover": "*",
         "colorette": "^2.0.20",
         "commander": "^11.1.0",
         "npm-pick-manifest": "^9.0.0",
-        "ts-node": "^10.9.1",
-        "@apphosting/discover": "*"
+        "ts-node": "^10.9.1"
     },
     "devDependencies": {
         "@types/commander": "*"
