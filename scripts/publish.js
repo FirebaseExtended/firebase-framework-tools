@@ -52,7 +52,8 @@ for (const package of packagesToPublish) {
       if (lernaDependency) {
         const dependencyBeingPublished = packagesToPublish.find((it) => it.name === dependencyName);
         const dependencyVersion = dependencyBeingPublished?.version || lernaDependency.version;
-        package.dependencies[dependencyName] = dependencyVersion;
+        const dependencyPrerelease = dependencyVersion.includes("-");
+        package.dependencies[dependencyName] = dependencyPrerelease ? dependencyVersion : `^${dependencyVersion}`;
       }
     }
   }
