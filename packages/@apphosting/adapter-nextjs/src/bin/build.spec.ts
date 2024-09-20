@@ -5,6 +5,7 @@ import yaml from "yaml";
 import path from "path";
 import os from "os";
 import { OutputBundleOptions } from "../interfaces.js";
+
 describe("build commands", () => {
   let tmpDir: string;
   let outputBundleOptions: OutputBundleOptions;
@@ -224,6 +225,7 @@ metadata:
 function generateTmpDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "test-files"));
 }
+
 function generateTestFiles(baseDir: string, filesToGenerate: Object): void {
   Object.entries(filesToGenerate).forEach((file) => {
     const fileName = file[0];
@@ -233,6 +235,7 @@ function generateTestFiles(baseDir: string, filesToGenerate: Object): void {
     fs.writeFileSync(fileToGenerate, contents);
   });
 }
+
 function validateTestFiles(baseDir: string, expectedFiles: Object): void {
   Object.entries(expectedFiles).forEach((file) => {
     const fileName = file[0];
@@ -242,6 +245,7 @@ function validateTestFiles(baseDir: string, expectedFiles: Object): void {
     assert.deepEqual(contents, expectedContents);
   });
 }
+
 function validatePartialYamlContents(
   baseDir: string,
   yamlFileName: string,

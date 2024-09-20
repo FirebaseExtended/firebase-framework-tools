@@ -43,6 +43,7 @@ export const isMain = (meta: ImportMeta) => {
   if (!process.argv[1]) return false;
   return process.argv[1] === fileURLToPath(meta.url);
 };
+
 /**
  * Provides the paths in the output bundle for the built artifacts.
  * @param rootDir The root directory of the uploaded source code.
@@ -111,6 +112,7 @@ async function moveResources(appDir: string, outputBundleAppDir: string): Promis
   }
   return;
 }
+
 /**
  * Create metadata needed for outputting adapter and framework metrics in bundle.yaml.
  */
@@ -171,5 +173,5 @@ export async function validateOutputDirectory(
     !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))
   ) {
     throw new Error("Output directory is not of expected structure");
-  }  
+  }
 }

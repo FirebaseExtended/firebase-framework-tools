@@ -7,8 +7,10 @@ import {
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
+
 const root = process.cwd();
 const opts = getBuildOptions();
+
 // Set standalone mode
 process.env.NEXT_PRIVATE_STANDALONE = "true";
 // Opt-out sending telemetry to Vercel
