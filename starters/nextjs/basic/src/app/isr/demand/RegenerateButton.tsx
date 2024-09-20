@@ -10,7 +10,7 @@ export function RegenerateButton() {
     <button
       type="button"
       className="button regenerate-button"
-      onClick={() => revalidate()}
+      onClick={() => void revalidate()}
     >
       Regenerate page
     </button>

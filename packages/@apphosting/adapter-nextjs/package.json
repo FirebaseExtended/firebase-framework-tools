@@ -22,7 +22,9 @@
   "sideEffects": false,
   "scripts": {
     "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
-    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
+    "test": "npm run test:unit && npm run test:functional",
+    "test:unit": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
+    "test:functional": "node --loader ts-node/esm ./e2e/run-local.ts",
     "localregistry:start": "npx verdaccio --config ../publish-dev/verdaccio-config.yaml",
     "localregistry:publish": "(npm view --registry=http://localhost:4873 @apphosting/adapter-nextjs && npm unpublish --@apphosting:registry=http://localhost:4873 --force); npm publish --@apphosting:registry=http://localhost:4873"
   },
@@ -41,7 +43,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@apphosting/common": "^0.0.3",
+    "@apphosting/common": "*",
     "fs-extra": "^11.1.1",
     "yaml": "^2.3.4"
   },
@@ -55,11 +57,15 @@
   },
   "devDependencies": {
     "@types/fs-extra": "*",
+    "@types/mocha": "*",
     "@types/tmp": "*",
+    "mocha": "*",
     "next": "~14.0.0",
     "semver": "*",
     "tmp": "*",
+    "ts-mocha": "*",
     "ts-node": "*",
+    "typescript": "*",
     "verdaccio": "^5.30.3"
   }
 }

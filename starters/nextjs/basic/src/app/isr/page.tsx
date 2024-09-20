@@ -15,7 +15,7 @@ export default function Page() {
         </article>
         <article className="card">
           <h2>
-            <Link href="/isr/time" className="link">
+            <Link href="/isr/demand" className="link">
               On-demand revalidation
             </Link>
           </h2>
