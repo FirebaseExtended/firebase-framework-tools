@@ -9,9 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const oneYear = 31_536_000_000;
 
-app.use(express.static(path.join(__dirname, "..", "browser"), { maxAge: oneYear }));
+const browserDistFolder = path.join(__dirname, "..", "browser");
+
+app.get("*.*", express.static(browserDistFolder, { maxAge: oneYear }));
+app.get("*", express.static(browserDistFolder, { cacheControl: false, extensions: ["html"] }));
 app.get("*", (request, response) => {
-  response.sendFile(path.join(__dirname, "..", "browser", "index.html"));
+  response.sendFile(path.join(browserDistFolder, "index.html"), { cacheControl: false });
 });
 var port = process.env.PORT || 3000;
 app.listen(port, () => {
