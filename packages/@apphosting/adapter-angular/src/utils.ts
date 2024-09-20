@@ -5,14 +5,16 @@ import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
-import {
-  OutputBundleOptions,
-  OutputPaths,
-  buildManifestSchema,
-} from "./interface.js";
+import { OutputBundleOptions, OutputPaths, buildManifestSchema } from "./interface.js";
 import { createRequire } from "node:module";
 import stripAnsi from "strip-ansi";
-import { BuildOptions, OutputBundleConfig, EnvVarConfig, Metadata, Availability } from "@apphosting/common";
+import {
+  BuildOptions,
+  OutputBundleConfig,
+  EnvVarConfig,
+  Metadata,
+  Availability,
+} from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { writeFile, move, readJson, mkdir, copyFile, readFileSync, existsSync } = fsExtra;
@@ -197,10 +199,7 @@ async function generateBundleYaml(
     },
     metadata: createMetadata(angularVersion),
   };
-  await writeFile(
-    opts.bundleYamlPath,
-    yamlStringify(outputBundle),
-  );
+  await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
 }
 
 // Generate server file for CSR apps

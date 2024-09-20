@@ -96,7 +96,7 @@ describe("app", () => {
     const initialResponse = await fetch(posix.join(host, "isr", "demand"));
     assert.ok(initialResponse.ok);
     const initialText = await initialResponse.text();
-    const initialUUID = initialText.match(/UUID<\/p>\s*<h2>([^<]+)<\/h2>/)?.[1];
+    const initialUUID = /UUID<\/p>\s*<h2>([^<]+)<\/h2>/.exec(initialText)?.[1];
 
     // Trigger revalidation
     const revalidateResponse = await fetch(posix.join(host, "isr", "demand", "revalidate"), {
@@ -108,7 +108,7 @@ describe("app", () => {
     const newResponse = await fetch(posix.join(host, "isr", "demand"));
     assert.ok(newResponse.ok);
     const newText = await newResponse.text();
-    const newUUID = newText.match(/UUID<\/p>\s*<h2>([^<]+)<\/h2>/)?.[1];
+    const newUUID = /UUID<\/p>\s*<h2>([^<]+)<\/h2>/.exec(newText)?.[1];
 
     // Check if the UUID has changed, indicating successful revalidation
     assert.notEqual(initialUUID, newUUID, "UUID should change after revalidation");
