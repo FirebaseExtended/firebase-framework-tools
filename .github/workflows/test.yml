@@ -56,7 +56,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        node: [18, 20]
+        node: [18, 20, 22]
       fail-fast: false
     name: Test Node ${{ matrix.node }}
     steps:
@@ -94,6 +94,7 @@ jobs:
         run: rsync -a artifact/ packages
       - name: Test
         run: npm run test
+        continue-on-error: ${{ matrix.node == 22 }}
 
   lint:
     runs-on: ubuntu-latest
