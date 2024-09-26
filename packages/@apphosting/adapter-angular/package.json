@@ -1,6 +1,6 @@
 {
   "name": "@apphosting/adapter-angular",
-  "version": "17.2.8",
+  "version": "17.2.9",
   "main": "dist/index.js",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "repository": {
