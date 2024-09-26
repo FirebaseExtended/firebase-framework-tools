@@ -13,38 +13,32 @@ describe("build commands", () => {
   beforeEach(() => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
-      baseDirectory: resolve(tmpDir, "dist", "test"),
-      browserDirectory: resolve(tmpDir, ".apphosting", "dist", "browser"),
+      browserDirectory: resolve(tmpDir, "dist", "test", "browser"),
       bundleYamlPath: resolve(tmpDir, ".apphosting", "bundle.yaml"),
-      outputBaseDirectory: resolve(tmpDir, ".apphosting", "dist"),
-      outputDirectory: resolve(tmpDir, ".apphosting"),
-      serverFilePath: resolve(tmpDir, ".apphosting", "dist", "server", "server.mjs"),
+      serverFilePath: resolve(tmpDir, "dist", "test", "server", "server.mjs"),
       needsServerGenerated: false,
     };
     defaultAngularVersion = "17.3.8";
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateOutputDirectory, validateOutputDirectory, createMetadata } = await importUtils;
+    const { generateBuildOutput, validateOutputDirectory, createMetadata } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
     const packageVersion = createMetadata(defaultAngularVersion).adapterVersion;
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions, defaultAngularVersion);
+    await generateBuildOutput(tmpDir, outputBundleOptions, defaultAngularVersion);
     await validateOutputDirectory(outputBundleOptions);
 
     const expectedFiles = {
-      ".apphosting/dist/browser/browserfile": "",
-      ".apphosting/dist/server/server.mjs": "",
-      ".apphosting/bundle.yaml": `
-runCommand: node .apphosting/dist/server/server.mjs
-neededDirs:
-  - .apphosting
-staticAssets:
-  - .apphosting/dist/browser
-env: []
+      "dist/test/browser/browserfile": "",
+      "dist/test/server/server.mjs": "",
+      ".apphosting/bundle.yaml": `version: v1
+serverConfig:
+  runCommand: node dist/test/server/server.mjs
+  environmentVariables: []
 metadata:
   adapterPackageName: "@apphosting/adapter-angular"
   adapterVersion: ${packageVersion}
@@ -56,43 +50,40 @@ metadata:
   });
 
   it("expects SSR_PORT variable is added to bundle.yaml for Angular v17.3.2", async () => {
-    const { generateOutputDirectory } = await importUtils;
+    const { generateBuildOutput } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions, "17.3.2");
+    await generateBuildOutput(tmpDir, outputBundleOptions, "17.3.2");
 
-    const expectedContents = `env:
-  - variable: SSR_PORT
-    value: "8080"
-    availability: RUNTIME
-`;
+    const expectedContents = `  environmentVariables:
+    - variable: SSR_PORT
+      value: "8080"
+      availability:
+        - RUNTIME`;
     validateFileExistsAndContains(tmpDir, ".apphosting/bundle.yaml", expectedContents);
   });
 
   it("test failed validateOutputDirectory", async () => {
-    const { generateOutputDirectory, validateOutputDirectory } = await importUtils;
+    const { generateBuildOutput, validateOutputDirectory } = await importUtils;
     const files = {
       "dist/test/browser/browserfile": "",
       "dist/test/server/notserver.mjs": "",
     };
     generateTestFiles(tmpDir, files);
-    await generateOutputDirectory(tmpDir, outputBundleOptions, defaultAngularVersion);
+    await generateBuildOutput(tmpDir, outputBundleOptions, defaultAngularVersion);
     assert.rejects(async () => await validateOutputDirectory(outputBundleOptions));
   });
 
   it("test populate output bundle options", async () => {
     const { populateOutputBundleOptions } = await importUtils;
     const expectedOutputBundleOptions = {
-      baseDirectory: "/test",
-      browserDirectory: resolve(".apphosting", "browser"),
+      browserDirectory: "/browser",
       bundleYamlPath: resolve(".apphosting", "bundle.yaml"),
-      outputBaseDirectory: resolve(".apphosting", "dist"),
-      outputDirectory: resolve("", ".apphosting"),
       needsServerGenerated: false,
-      serverFilePath: resolve(".apphosting", "server", "server.mjs"),
+      serverFilePath: path.join("/server", "server.mjs"),
     };
     const outputPaths = {
       root: new URL("file:///test"),

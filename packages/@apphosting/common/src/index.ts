@@ -51,7 +51,7 @@ export interface EnvVarConfig {
 // Represents where environment variables are made available
 export enum Availability {
   // Runtime environment variables are available on the server when the app is run
-  Runtime,
+  Runtime = "RUNTIME",
 }
 
 // Options to configure the build of a framework application
