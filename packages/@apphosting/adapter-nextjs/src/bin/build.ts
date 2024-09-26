@@ -2,7 +2,7 @@
 import {
   loadConfig,
   populateOutputBundleOptions,
-  generateOutputDirectory,
+  generateBuildOutput,
   validateOutputDirectory,
 } from "../utils.js";
 import { join } from "path";
@@ -20,15 +20,20 @@ if (!process.env.FRAMEWORK_VERSION) {
 }
 await runBuild();
 
-const outputBundleOptions = populateOutputBundleOptions(root, opts.projectDirectory);
 const { distDir } = await loadConfig(root, opts.projectDirectory);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
 
-await generateOutputDirectory(
+const outputBundleOptions = populateOutputBundleOptions(
+  root,
+  opts.projectDirectory,
+  nextBuildDirectory,
+);
+
+await generateBuildOutput(
   root,
   opts.projectDirectory,
   outputBundleOptions,
   nextBuildDirectory,
   process.env.FRAMEWORK_VERSION,
 );
-await validateOutputDirectory(outputBundleOptions);
+await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);
