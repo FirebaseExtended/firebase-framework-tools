@@ -5,15 +5,13 @@ import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
-import { ROUTES_MANIFEST } from "./constants.js";
-import { Metadata, OutputBundleOptions, RoutesManifest } from "./interfaces.js";
+import { OutputBundleOptions } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
+import { OutputBundleConfig, Metadata } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync } = fsExtra;
-
-// The default fallback command prefix to run a build.
-export const DEFAULT_COMMAND = "npm";
+export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
+  fsExtra;
 
 // Loads the user's next.config.js file.
 export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
@@ -27,6 +25,7 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
   const require = createRequire(import.meta.url);
   const configPath = require.resolve("next/dist/server/config.js", { paths: [projectRoot] });
   // dynamically load NextJS so this can be used in an NPX context
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
     await import(configPath);
 
@@ -34,11 +33,7 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
 
-export async function readRoutesManifest(distDir: string): Promise<RoutesManifest> {
-  return await readJson(join(distDir, ROUTES_MANIFEST));
-}
-
-export const isMain = (meta: ImportMeta) => {
+export const isMain = (meta: ImportMeta): boolean => {
   if (!meta) return false;
   if (!process.argv[1]) return false;
   return process.argv[1] === fileURLToPath(meta.url);
@@ -50,63 +45,65 @@ export const isMain = (meta: ImportMeta) => {
  * @param appDir The path to the application source code, relative to the root.
  * @return The output bundle paths.
  */
-export function populateOutputBundleOptions(rootDir: string, appDir: string): OutputBundleOptions {
+export function populateOutputBundleOptions(
+  rootDir: string,
+  appDir: string,
+  nextBuildDirectory: string,
+): OutputBundleOptions {
   const outputBundleDir = join(rootDir, ".apphosting");
+  const standaloneDirectory = join(nextBuildDirectory, "standalone");
   // In monorepo setups, the standalone directory structure will mirror the structure of the monorepo.
   // We find the relative path from the root to the app directory to correctly locate server.js.
-  const outputDirectoryAppPath = join(
-    outputBundleDir,
+  const standaloneAppPath = join(
+    standaloneDirectory,
     process.env.MONOREPO_COMMAND ? relative(rootDir, appDir) : "",
   );
-
   return {
     bundleYamlPath: join(outputBundleDir, "bundle.yaml"),
     outputDirectoryBasePath: outputBundleDir,
-    outputDirectoryAppPath,
-    serverFilePath: join(outputDirectoryAppPath, "server.js"),
-    outputPublicDirectoryPath: join(outputDirectoryAppPath, "public"),
-    outputStaticDirectoryPath: join(outputDirectoryAppPath, ".next", "static"),
+    outputDirectoryAppPath: standaloneAppPath,
+    serverFilePath: join(standaloneAppPath, "server.js"),
+    outputPublicDirectoryPath: join(standaloneAppPath, "public"),
+    outputStaticDirectoryPath: join(standaloneAppPath, ".next", "static"),
   };
 }
 
 /**
- * Moves the standalone directory, the static directory and copies over all of the apps resources
- * to the apphosting output directory.
- * Also generates the bundle.yaml file.
+ * Moves static assets and other resources into the standlone directory, also generates the bundle.yaml
  * @param rootDir The root directory of the uploaded source code.
- * @param appDir The path to the application source code, relative to the root.
  * @param outputBundleOptions The target location of built artifacts in the output bundle.
  * @param nextBuildDirectory The location of the .next directory.
  */
-export async function generateOutputDirectory(
+export async function generateBuildOutput(
   rootDir: string,
   appDir: string,
-  outputBundleOptions: OutputBundleOptions,
+  opts: OutputBundleOptions,
   nextBuildDirectory: string,
   nextVersion: string,
 ): Promise<void> {
-  const standaloneDirectory = join(nextBuildDirectory, "standalone");
-  await move(standaloneDirectory, outputBundleOptions.outputDirectoryBasePath, { overwrite: true });
-
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
-    move(staticDirectory, outputBundleOptions.outputStaticDirectoryPath, { overwrite: true }),
-    moveResources(appDir, outputBundleOptions.outputDirectoryAppPath),
-    generateBundleYaml(outputBundleOptions, nextBuildDirectory, rootDir, nextVersion),
+    move(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
+    moveResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
+    generateBundleYaml(opts, rootDir, nextVersion),
   ]);
   return;
 }
 
 // Move all files and directories to apphosting output directory.
 // Files are skipped if there is already a file with the same name in the output directory
-async function moveResources(appDir: string, outputBundleAppDir: string): Promise<void> {
+async function moveResources(
+  appDir: string,
+  outputBundleAppDir: string,
+  bundleYamlPath: string,
+): Promise<void> {
   const appDirExists = await exists(appDir);
   if (!appDirExists) return;
   const pathsToMove = await readdir(appDir);
   for (const path of pathsToMove) {
-    const isOutputBundleDir = join(appDir, path) === outputBundleAppDir;
+    const isbundleYamlDir = join(appDir, path) === dirname(bundleYamlPath);
     const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
-    if (!isOutputBundleDir && !existsInOutputBundle) {
+    if (!isbundleYamlDir && !existsInOutputBundle) {
       await move(join(appDir, path), join(outputBundleAppDir, path));
     }
   }
@@ -133,44 +130,32 @@ export function createMetadata(nextVersion: string): Metadata {
 
 // generate bundle.yaml
 async function generateBundleYaml(
-  outputBundleOptions: OutputBundleOptions,
-  nextBuildDirectory: string,
+  opts: OutputBundleOptions,
   cwd: string,
   nextVersion: string,
 ): Promise<void> {
-  const manifest = await readRoutesManifest(nextBuildDirectory);
-  const headers = manifest.headers.map((it) => ({ ...it, regex: undefined }));
-  const redirects = manifest.redirects
-    .filter((it) => !it.internal)
-    .map((it) => ({ ...it, regex: undefined }));
-  const beforeFileRewrites = Array.isArray(manifest.rewrites)
-    ? manifest.rewrites
-    : manifest.rewrites?.beforeFiles || [];
-  const rewrites = beforeFileRewrites.map((it) => ({ ...it, regex: undefined }));
-  await writeFile(
-    outputBundleOptions.bundleYamlPath,
-    yamlStringify({
-      headers,
-      redirects,
-      rewrites,
-      runCommand: `node ${normalize(relative(cwd, outputBundleOptions.serverFilePath))}`,
-      neededDirs: [normalize(relative(cwd, outputBundleOptions.outputDirectoryBasePath))],
-      staticAssets: [normalize(relative(cwd, outputBundleOptions.outputPublicDirectoryPath))],
-      env: [],
-      metadata: createMetadata(nextVersion),
-    }),
-  );
+  await mkdir(opts.outputDirectoryBasePath);
+  const outputBundle: OutputBundleConfig = {
+    version: "v1",
+    serverConfig: {
+      runCommand: `node ${normalize(relative(cwd, opts.serverFilePath))}`,
+    },
+    metadata: createMetadata(nextVersion),
+  };
+  await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
   return;
 }
 
 // Validate output directory includes all necessary parts
 export async function validateOutputDirectory(
-  outputBundleOptions: OutputBundleOptions,
+  opts: OutputBundleOptions,
+  nextBuildDirectory: string,
 ): Promise<void> {
+  const standaloneDirectory = join(nextBuildDirectory, "standalone");
   if (
-    !(await fsExtra.exists(outputBundleOptions.outputDirectoryBasePath)) ||
-    !(await fsExtra.exists(outputBundleOptions.serverFilePath)) ||
-    !(await fsExtra.exists(outputBundleOptions.bundleYamlPath))
+    !(await fsExtra.exists(nextBuildDirectory)) ||
+    !(await fsExtra.exists(standaloneDirectory)) ||
+    !(await fsExtra.exists(opts.bundleYamlPath))
   ) {
     throw new Error("Output directory is not of expected structure");
   }

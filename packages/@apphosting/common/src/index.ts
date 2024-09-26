@@ -8,7 +8,7 @@ export interface OutputBundleConfig {
 }
 
 // Fields needed to configure the App Hosting server
-interface ServerConfig {
+export interface ServerConfig {
   // Command to start the server (e.g. "node dist/index.js"). Assume this command is run from the root dir of the workspace
   runCommand: string;
   // Environment variables set when the app is run
@@ -27,7 +27,7 @@ interface ServerConfig {
 }
 
 // Additonal fields needed for identifying the framework and adapter being used
-interface Metadata {
+export interface Metadata {
   // Name of the adapter (this should be the official package name) e.g. "@apphosting/adapter-nextjs"
   adapterPackageName: string;
   // Version of the adapter, e.g. "18.0.1"
@@ -39,7 +39,7 @@ interface Metadata {
 }
 
 // Represents a single environment variable.
-interface EnvVarConfig {
+export interface EnvVarConfig {
   // Name of the variable
   variable: string;
   // Value associated with the variable
@@ -49,7 +49,7 @@ interface EnvVarConfig {
 }
 
 // Represents where environment variables are made available
-enum Availability {
+export enum Availability {
   // Runtime environment variables are available on the server when the app is run
   Runtime,
 }
