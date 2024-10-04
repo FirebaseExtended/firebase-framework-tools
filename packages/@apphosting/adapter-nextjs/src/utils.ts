@@ -137,7 +137,7 @@ async function generateBundleYaml(
   await mkdir(opts.outputDirectoryBasePath);
   const outputBundle: OutputBundleConfig = {
     version: "v1",
-    serverConfig: {
+    runConfig: {
       runCommand: `node ${normalize(relative(cwd, opts.serverFilePath))}`,
     },
     metadata: createMetadata(nextVersion),
