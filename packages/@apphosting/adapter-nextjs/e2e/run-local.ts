@@ -49,7 +49,7 @@ await promiseSpawn("node", [buildScript], {
 
 const bundleYaml = parseYaml(readFileSync(join(cwd, ".apphosting/bundle.yaml")).toString());
 
-const runCommand = bundleYaml.serverConfig.runCommand;
+const runCommand = bundleYaml.runConfig.runCommand;
 
 if (typeof runCommand !== "string") {
   throw new Error("runCommand must be a string");

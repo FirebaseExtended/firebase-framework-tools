@@ -36,7 +36,7 @@ describe("build commands", () => {
       "dist/test/browser/browserfile": "",
       "dist/test/server/server.mjs": "",
       ".apphosting/bundle.yaml": `version: v1
-serverConfig:
+runConfig:
   runCommand: node dist/test/server/server.mjs
   environmentVariables: []
 metadata:

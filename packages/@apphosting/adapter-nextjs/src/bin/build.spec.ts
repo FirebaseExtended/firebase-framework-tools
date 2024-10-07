@@ -49,7 +49,7 @@ describe("build commands", () => {
       ".next/standalone/.next/static/staticfile": "",
       ".next/standalone/server.js": "",
       ".apphosting/bundle.yaml": `version: v1
-serverConfig:
+runConfig:
   runCommand: node .next/standalone/server.js
 metadata:
   adapterPackageName: "@apphosting/adapter-nextjs"
@@ -105,7 +105,7 @@ metadata:
     };
     const expectedPartialYaml = {
       version: "v1",
-      serverConfig: { runCommand: "node .next/standalone/apps/next-app/server.js" },
+      runConfig: { runCommand: "node .next/standalone/apps/next-app/server.js" },
     };
     validateTestFiles(tmpDir, expectedFiles);
     validatePartialYamlContents(tmpDir, ".apphosting/bundle.yaml", expectedPartialYaml);

@@ -193,7 +193,7 @@ async function generateBundleYaml(
   await mkdir(dirname(opts.bundleYamlPath));
   const outputBundle: OutputBundleConfig = {
     version: "v1",
-    serverConfig: {
+    runConfig: {
       runCommand: `node ${normalize(relative(cwd, opts.serverFilePath))}`,
       environmentVariables: generateEnvVars(angularVersion),
     },

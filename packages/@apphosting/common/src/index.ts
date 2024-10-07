@@ -3,12 +3,12 @@ import { spawn } from "child_process";
 // Output bundle metadata specifications to be written to bundle.yaml
 export interface OutputBundleConfig {
   version: "v1";
-  serverConfig: ServerConfig;
+  runConfig: RunConfig;
   metadata: Metadata;
 }
 
 // Fields needed to configure the App Hosting server
-export interface ServerConfig {
+export interface RunConfig {
   // Command to start the server (e.g. "node dist/index.js"). Assume this command is run from the root dir of the workspace
   runCommand: string;
   // Environment variables set when the app is run
