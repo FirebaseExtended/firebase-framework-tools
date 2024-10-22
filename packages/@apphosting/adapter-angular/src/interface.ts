@@ -4,9 +4,6 @@ import { URL } from "node:url";
 // options to help generate output directory
 export interface OutputBundleOptions {
   bundleYamlPath: string;
-  outputDirectory: string;
-  baseDirectory: string;
-  outputBaseDirectory: string;
   serverFilePath: string;
   browserDirectory: string;
   needsServerGenerated: boolean;
@@ -16,13 +13,21 @@ export interface OutputBundleOptions {
 export interface EnvironmentVariable {
   variable: string;
   value: string;
-  availability: Availability.RUNTIME; // currently support RUNTIME only
+  availability: Availability.Runtime; // currently support RUNTIME only
 }
 
 // defines whether the environment variable is buildtime, runtime or both
 export enum Availability {
-  BUILDTIME = "BUILDTIME",
-  RUNTIME = "RUNTIME",
+  Buildtime = "BUILD",
+  Runtime = "RUNTIME",
+}
+
+// Metadata schema for bundle.yaml outputted by angular adapter
+export interface Metadata {
+  adapterPackageName: string;
+  adapterVersion: string;
+  framework: string;
+  frameworkVersion: string;
 }
 
 // valid manifest schema
