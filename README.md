@@ -45,7 +45,7 @@ The version represents which output bundle version is currently being used. The 
 
 ### RunConfig
 
-The runConfig fields configures the Cloud Run service associated with the App Hosting Backend.
+The `runConfig` fields configures the Cloud Run service associated with the App Hosting Backend.
 
 ```typescript
 interface RunConfig {
