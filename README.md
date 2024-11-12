@@ -7,7 +7,7 @@ App Hosting provides configuration-free build and deploy support for Web apps de
 * Next.js 13+
 * Angular 17.2+
 
-This repo holds the code for the adapters that enable support for these frameworks. At a high level these adapters transform frameowkr specific configurations into an output bundle spec that App Hosting is able to process and configure frameworks support. For more information see our [documentation](https://firebase.google.com/docs/app-hosting/about-app-hosting#frameworks)
+This repo holds the code for the adapters that enable support for these frameworks. At a high level these adapters transform framework specific configurations into an [output bundle spec](#app-hosting-output-bundle) that App Hosting is able to process and configure frameworks support. For more information see our [Framework integration](https://firebase.google.com/docs/app-hosting/about-app-hosting#frameworks).
 
 ## App Hosting output bundle
 
@@ -29,7 +29,7 @@ The output bundle all lives inside a single file:
 
 As long as this file exists and follows the schema App Hosting will be able to process the build properly.
 
-The schema can also be found in <https://github.com/FirebaseExtended/firebase-framework-tools/blob/main/packages/%40apphosting/common/src/index.ts#L4>
+The schema can also be found in [source](https://github.com/FirebaseExtended/firebase-framework-tools/blob/main/packages/%40apphosting/common/src/index.ts#L4)
 
 ```typescript
 interface OutputBundle {
@@ -68,7 +68,7 @@ interface EnvVarConfig {
 
 | Field  | Type | Description |
 | ---------- | ------- | - |
-| runCommand | string |Command to start the server (e.g. "node dist/index.js"). Assume this command is run from the root dir of the workspace.This should be the productionized version of the server start command. |
+| runCommand | string |Command to start the server (e.g. "node dist/index.js"). Assume this command is run from the root dir of the workspace. This should be the productionized version of the server start command. |
 | environmentVariables| EnvVarConfig[] | Environment variables present in the server execution environment.|
 | concurrency | number | The maximum number of concurrent requests that each server instance can receive.|
 | cpu | number |The number of CPUs used in a single server instance. |
@@ -79,7 +79,7 @@ interface EnvVarConfig {
 | EnvVarConfig.value | string |Value associated with the environment variable |
 | EnvVarConfig.availability | RUNTIME | Where the variable will be available. For now this will always be RUNTIME |
 
-Many of these fields are shared with apphosting.yaml as well so see [our documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context.
+Many of these fields are shared with apphosting.yaml. See the [runConfig reference documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context.
 
 ### Metadata
 
@@ -100,7 +100,7 @@ interface Metadata {
 | framework | string | Name of the framework that is being supported|
 | frameworkVersion | string |Version of the framework that is being supported |
 
-Putting this all together a sample bundle.yaml would look as follows:
+Here is a sample bundle.yaml file putting all this together:
 
 ```
 > cat .apphosting/bundle.yaml
@@ -128,4 +128,4 @@ metadata:
 
 ```
 
-As long as you have the bundle.yaml in this format, App Hosting will be able to deploy any server side rendered framework.
+As long as you have the bundle.yaml in this format, App Hosting will be able to deploy any framework that supports server side rendering.
