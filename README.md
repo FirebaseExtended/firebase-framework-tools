@@ -2,7 +2,7 @@
 
 ## Overview
 
-App Hosting provides no-config-needed build and deploy support for Web apps developed in these frameworks:
+App Hosting provides configuration-free build and deploy support for Web apps developed in these frameworks:
 
 * Next.js 13+
 * Angular 17.2+
@@ -11,7 +11,7 @@ This repo holds the code for the adapters that enable support for these framewor
 
 ## App Hosting output bundle
 
-The App Hosting output bundle is a file based specification that allows different frameworks to configure and customize their App Hosting deploy to provide more full featured support.
+The App Hosting output bundle is a file based specification that allows different frameworks to configure and customize their App Hosting deployment for enhanced support.
 
 Any framework that can generate a build output in accordance with the App Hosting output bundle can be deployed on App Hosting.
 
@@ -45,7 +45,7 @@ The version represents which output bundle version is currently being used. The 
 
 ### RunConfig
 
-The runConfig fields are in charge of configuring the backend’s Cloud run deploy.
+The runConfig fields configures the Cloud Run service associated with the App Hosting Backend.
 
 ```typescript
 interface RunConfig {
@@ -71,13 +71,13 @@ interface EnvVarConfig {
 | runCommand | string |Command to start the server (e.g. "node dist/index.js"). Assume this command is run from the root dir of the workspace.This should be the productionized version of the server start command. |
 | environmentVariables| EnvVarConfig[] | Environment variables present in the server execution environment.|
 | concurrency | number | The maximum number of concurrent requests that each server instance can receive.|
-| cpu | number |The number of CPUs used in a single server instance.. |
+| cpu | number |The number of CPUs used in a single server instance. |
 | memoryMiB | number | The amount of memory available for a server instance.|
 | minInstance | number |The limit on the minimum number of function instances that may coexist at a given time. |
 | MaxInstance | number | The limit on the maximum number of function instances that may coexist at a given time.|
 | EnvVarConfig.variable | string |Name of the environment variable |
 | EnvVarConfig.value | string |Value associated with the environment variable |
-| EnvVarConfig.availability | RUNTIME | Where the variable will be available, for now this will always be RUNTIME |
+| EnvVarConfig.availability | RUNTIME | Where the variable will be available. For now this will always be RUNTIME |
 
 Many of these fields are shared with apphosting.yaml as well so see [our documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context.
 
