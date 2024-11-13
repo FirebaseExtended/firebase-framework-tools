@@ -15,7 +15,7 @@ The App Hosting output bundle is a file based specification that allows differen
 
 Any framework that can generate a build output in accordance with the App Hosting output bundle can be deployed on App Hosting.
 
-The output bundle primarily consists of a bundle.yaml file that sits inside of the .apphosting directory. This bundle.yaml contains all the ways that frameworks can configure App Hosting when users deploy their applications.
+The output bundle primarily consists of a `bundle.yaml` file that sits inside of the `.apphosting` directory. This bundle.yaml contains all the ways that frameworks can configure App Hosting when users deploy their applications.
 
 NOTE: App Hosting technically supports all all node applications, but no custom framework features will be enabled without the output bundle.
 
@@ -41,7 +41,7 @@ interface OutputBundle {
 
 ### Version
 
-The version represents which output bundle version is currently being used. The current version is v1.
+The `version` represents which output bundle version is currently being used. The current version is v1.
 
 ### RunConfig
 
@@ -68,18 +68,18 @@ interface EnvVarConfig {
 
 | Field  | Type | Description |
 | ---------- | ------- | - |
-| runCommand | string |Command to start the server (e.g. "node dist/index.js"). Assume this command is run from the root dir of the workspace. This should be the productionized version of the server start command. |
-| environmentVariables| EnvVarConfig[] | Environment variables present in the server execution environment.|
-| concurrency | number | The maximum number of concurrent requests that each server instance can receive.|
-| cpu | number |The number of CPUs used in a single server instance. |
-| memoryMiB | number | The amount of memory available for a server instance.|
-| minInstance | number |The limit on the minimum number of function instances that may coexist at a given time. |
-| MaxInstance | number | The limit on the maximum number of function instances that may coexist at a given time.|
-| EnvVarConfig.variable | string |Name of the environment variable |
-| EnvVarConfig.value | string |Value associated with the environment variable |
-| EnvVarConfig.availability | RUNTIME | Where the variable will be available. For now this will always be RUNTIME |
+| `runCommand` | `string` |Command to start the server (e.g. `node dist/index.js`). Assume this command is run from the root dir of the workspace. This should be the productionized version of the server start command. |
+| `environmentVariables`| `EnvVarConfig[]` | Environment variables present in the server execution environment.|
+| `concurrency` | `number` | The maximum number of concurrent requests that each server instance can receive.|
+| `cpu` | `number` |The number of CPUs used in a single server instance. |
+| `memoryMiB` | `number` | The amount of memory available for a server instance.|
+| `minInstance` | `number` |The limit on the minimum number of function instances that may coexist at a given time. |
+| `MaxInstance` | `number` | The limit on the maximum number of function instances that may coexist at a given time.|
+| `EnvVarConfig.variable` | `string` |Name of the environment variable |
+| `EnvVarConfig.value` | `string` |Value associated with the environment variable |
+| `EnvVarConfig.availability` | `RUNTIME` | Where the variable will be available. For now this will always be `RUNTIME` |
 
-Many of these fields are shared with apphosting.yaml. See the [runConfig reference documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context.
+Many of these fields are shared with `apphosting.yaml`. See the [runConfig reference documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context.
 
 ### Metadata
 
@@ -95,12 +95,12 @@ interface Metadata {
 
 | Field  | Type | Description |
 | ---------- | ------- | - |
-| adapterPackageName | string |Name of the adapter (this should be the npm package name) |
-| adapterVersion| string | Version of the adapter|
-| framework | string | Name of the framework that is being supported|
-| frameworkVersion | string |Version of the framework that is being supported |
+| `adapterPackageName` | `string` |Name of the adapter (this should be the npm package name) |
+| `adapterVersion`| `string` | Version of the adapter|
+| `framework` | `string` | Name of the framework that is being supported|
+| `frameworkVersion` | `string` |Version of the framework that is being supported |
 
-Here is a sample bundle.yaml file putting all this together:
+Here is a sample `bundle.yaml` file putting all this together:
 
 ```
 > cat .apphosting/bundle.yaml
@@ -128,4 +128,4 @@ metadata:
 
 ```
 
-As long as you have the bundle.yaml in this format, App Hosting will be able to deploy any framework that supports server side rendering.
+As long as you have the `bundle.yaml` in this format, App Hosting will be able to deploy any framework that supports server side rendering.
