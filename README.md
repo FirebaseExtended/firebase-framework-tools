@@ -7,7 +7,7 @@ App Hosting provides configuration-free build and deploy support for Web apps de
 * Next.js 13+
 * Angular 17.2+
 
-This repo holds the code for the adapters that enable support for these frameworks. At a high level these adapters transform framework specific configurations into an [output bundle spec](#app-hosting-output-bundle) that App Hosting is able to process and configure frameworks support. For more information see our [Framework integration](https://firebase.google.com/docs/app-hosting/about-app-hosting#frameworks).
+This repo holds the code for the adapters that enable support for these frameworks. At a high level these adapters transform framework specific configurations into an [output bundle spec](#app-hosting-output-bundle) that App Hosting can use to configure frameworks support. For more information see our [Framework integration](https://firebase.google.com/docs/app-hosting/about-app-hosting#frameworks).
 
 ## App Hosting output bundle
 
@@ -21,13 +21,13 @@ NOTE: App Hosting technically supports all all node applications, but no custom 
 
 ## Output bundle Schema
 
-The output bundle all lives inside a single file:
+The output bundle is contained in a single file:
 
 ```shell
 .apphosting/bundle.yaml
 ```
 
-As long as this file exists and follows the schema App Hosting will be able to process the build properly.
+As long as this file exists and follows the schema, App Hosting will be able to process the build properly.
 
 The schema can also be found in [source](https://github.com/FirebaseExtended/firebase-framework-tools/blob/main/packages/%40apphosting/common/src/index.ts#L4)
 
