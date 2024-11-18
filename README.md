@@ -17,7 +17,8 @@ Any framework that can generate a build output in accordance with the App Hostin
 
 The output bundle primarily consists of a `bundle.yaml` file that sits inside of the `.apphosting` directory. This bundle.yaml contains all the ways that frameworks can configure App Hosting when users deploy their applications.
 
-NOTE: App Hosting technically supports all all node applications, but no custom framework features will be enabled without the output bundle.
+> [!NOTE]  
+> App Hosting technically supports all all node applications, but no custom framework features will be enabled without the output bundle.
 
 ## Output bundle Schema
 
@@ -50,14 +51,30 @@ The `runConfig` fields configures the Cloud Run service associated with the App 
 ```typescript
 interface RunConfig {
   runCommand: string;
-  environmentVariables: EnvVarConfig[];
+  environmentVariables?: EnvVarConfig[];
   concurrency?: number;
   cpu?: number;
   memoryMiB?: number;
   minInstances?: number;
   maxInstances?: number;
 }
+```
 
+| Field  | Type | Description | Required? |
+| ---------- | ------- | - | - |
+| `runCommand` | `string` |Command to start the server (e.g. `node dist/index.js`). Assume this command is run from the root dir of the workspace. This should be the productionized version of the server start command. | y |
+| `environmentVariables`| `EnvVarConfig[]` | Environment variables present in the server execution environment.| n |
+| `concurrency` | `number` | The maximum number of concurrent requests that each server instance can receive.| n |
+| `cpu` | `number` |The number of CPUs used in a single server instance. | n |
+| `memoryMiB` | `number` | The amount of memory available for a server instance.| n |
+| `minInstance` | `number` |The limit on the minimum number of function instances that may coexist at a given time. | n |
+| `MaxInstance` | `number` | The limit on the maximum number of function instances that may coexist at a given time.| n |
+
+Many of these fields are shared with `apphosting.yaml`. See the [runConfig reference documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context and default values.
+
+### EnvVarConfig
+
+```typescript
 interface EnvVarConfig {
   variable: string;
   value: string;
@@ -66,20 +83,11 @@ interface EnvVarConfig {
 
 ```
 
-| Field  | Type | Description |
-| ---------- | ------- | - |
-| `runCommand` | `string` |Command to start the server (e.g. `node dist/index.js`). Assume this command is run from the root dir of the workspace. This should be the productionized version of the server start command. |
-| `environmentVariables`| `EnvVarConfig[]` | Environment variables present in the server execution environment.|
-| `concurrency` | `number` | The maximum number of concurrent requests that each server instance can receive.|
-| `cpu` | `number` |The number of CPUs used in a single server instance. |
-| `memoryMiB` | `number` | The amount of memory available for a server instance.|
-| `minInstance` | `number` |The limit on the minimum number of function instances that may coexist at a given time. |
-| `MaxInstance` | `number` | The limit on the maximum number of function instances that may coexist at a given time.|
-| `EnvVarConfig.variable` | `string` |Name of the environment variable |
-| `EnvVarConfig.value` | `string` |Value associated with the environment variable |
-| `EnvVarConfig.availability` | `RUNTIME` | Where the variable will be available. For now this will always be `RUNTIME` |
-
-Many of these fields are shared with `apphosting.yaml`. See the [runConfig reference documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context.
+| Field  | Type | Description | Required? |
+| ---------- | ------- | - | - |
+| `variable` | `string` |Name of the environment variable | y |
+| `value` | `string` |Value associated with the environment variable | y |
+| `availability` | `RUNTIME` | Where the variable will be available. For now this will always be `RUNTIME` | y |
 
 ### Metadata
 
@@ -93,12 +101,12 @@ interface Metadata {
 
 ```
 
-| Field  | Type | Description |
-| ---------- | ------- | - |
-| `adapterPackageName` | `string` |Name of the adapter (this should be the npm package name) |
-| `adapterVersion`| `string` | Version of the adapter|
-| `framework` | `string` | Name of the framework that is being supported|
-| `frameworkVersion` | `string` |Version of the framework that is being supported |
+| Field  | Type | Description | Required? |
+| ---------- | ------- | - | - |
+| `adapterPackageName` | `string` |Name of the adapter (this should be the npm package name) | y |
+| `adapterVersion`| `string` | Version of the adapter | y |
+| `framework` | `string` | Name of the framework that is being supported | y |
+| `frameworkVersion` | `string` |Version of the framework that is being supported | n |
 
 Here is a sample `bundle.yaml` file putting all this together:
 
