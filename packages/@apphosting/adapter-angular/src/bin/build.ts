@@ -22,7 +22,7 @@ const { stdout: output } = await runBuild();
 if (!output) {
   throw new Error("No output from Angular build command, expecting a build manifest file.");
 }
-if (!outputBundleExists()){
+if (!outputBundleExists()) {
   const outputBundleOptions = parseOutputBundleOptions(output);
   const root = process.cwd();
   await generateBuildOutput(root, outputBundleOptions, process.env.FRAMEWORK_VERSION);

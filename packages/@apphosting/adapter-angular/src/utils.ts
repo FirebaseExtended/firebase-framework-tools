@@ -26,7 +26,7 @@ const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server
 
 export const ALLOWED_BUILDERS = [
   "@angular-devkit/build-angular:application",
-  "@analogjs/platform:vite"
+  "@analogjs/platform:vite",
 ];
 
 /**
@@ -43,8 +43,8 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     const builder = projectJson.targets.build.executor;
     if (!ALLOWED_BUILDERS.includes(builder)) {
       throw new Error(
-        `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(',')}.`,
-      )
+        `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
+      );
     }
     return;
   }
@@ -80,7 +80,7 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
   const { builder } = workspaceProject.targets.get(target)!;
   if (!ALLOWED_BUILDERS.includes(builder)) {
     throw new Error(
-      `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(',')}.`,
+      `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
     );
   }
 }
@@ -230,9 +230,9 @@ export const isMain = (meta: ImportMeta) => {
   return process.argv[1] === fileURLToPath(meta.url);
 };
 
-export const outputBundleExists  = () => {
+export const outputBundleExists = () => {
   const outputBundleDir = resolve(".apphosting");
-  if (existsSync(outputBundleDir)){
+  if (existsSync(outputBundleDir)) {
     return true;
   }
   return false;
