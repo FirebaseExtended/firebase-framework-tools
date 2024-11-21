@@ -227,9 +227,9 @@ export const isMain = (meta: ImportMeta) => {
   return process.argv[1] === fileURLToPath(meta.url);
 };
 
-export const outputBundleExists  = (outputBundleOptions: OutputBundleOptions) => {
-  if (existsSync(dirname(outputBundleOptions.bundleYamlPath))){
+export const outputBundleExists = (outputBundleOptions: OutputBundleOptions) => {
+  if (existsSync(dirname(outputBundleOptions.bundleYamlPath))) {
     return true;
   }
   return false;
-}
+};
