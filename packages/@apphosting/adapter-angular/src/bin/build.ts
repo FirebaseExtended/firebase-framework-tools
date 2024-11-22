@@ -4,6 +4,7 @@ import {
   checkBuildConditions,
   validateOutputDirectory,
   parseOutputBundleOptions,
+  outputBundleExists,
 } from "../utils.js";
 import { getBuildOptions, runBuild } from "@apphosting/common";
 
@@ -21,8 +22,10 @@ const { stdout: output } = await runBuild();
 if (!output) {
   throw new Error("No output from Angular build command, expecting a build manifest file.");
 }
-const outputBundleOptions = parseOutputBundleOptions(output);
-const root = process.cwd();
-await generateBuildOutput(root, outputBundleOptions, process.env.FRAMEWORK_VERSION);
+if (!outputBundleExists()) {
+  const outputBundleOptions = parseOutputBundleOptions(output);
+  const root = process.cwd();
+  await generateBuildOutput(root, outputBundleOptions, process.env.FRAMEWORK_VERSION);
 
-await validateOutputDirectory(outputBundleOptions);
+  await validateOutputDirectory(outputBundleOptions);
+}
