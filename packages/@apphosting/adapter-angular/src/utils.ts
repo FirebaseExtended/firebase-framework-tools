@@ -24,7 +24,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server.mjs");
 
-export const REQUIRED_BUILDER = "@angular-devkit/build-angular:application";
+export const ALLOWED_BUILDERS = [
+  "@angular-devkit/build-angular:application",
+  "@analogjs/platform:vite",
+];
 
 /**
  * Check if the following build conditions are satisfied for the workspace:
@@ -38,9 +41,9 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     const output = execSync(`npx nx show project ${opts.projectName}`);
     const projectJson = JSON.parse(output.toString());
     const builder = projectJson.targets.build.executor;
-    if (builder !== REQUIRED_BUILDER) {
+    if (!ALLOWED_BUILDERS.includes(builder)) {
       throw new Error(
-        "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
+        `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
       );
     }
     return;
@@ -75,9 +78,9 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
   if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
 
   const { builder } = workspaceProject.targets.get(target)!;
-  if (builder !== REQUIRED_BUILDER) {
+  if (!ALLOWED_BUILDERS.includes(builder)) {
     throw new Error(
-      "Only the Angular application builder is supported. Please refer to https://angular.dev/tools/cli/build-system-migration#for-existing-applications guide to upgrade your builder to the Angular application builder. ",
+      `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
     );
   }
 }
@@ -225,4 +228,12 @@ export const isMain = (meta: ImportMeta) => {
   if (!meta) return false;
   if (!process.argv[1]) return false;
   return process.argv[1] === fileURLToPath(meta.url);
+};
+
+export const outputBundleExists = () => {
+  const outputBundleDir = resolve(".apphosting");
+  if (existsSync(outputBundleDir)) {
+    return true;
+  }
+  return false;
 };
