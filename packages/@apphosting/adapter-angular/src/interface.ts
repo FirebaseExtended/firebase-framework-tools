@@ -63,4 +63,7 @@ export const buildManifestSchema = z.object({
     server: z.optional(url),
     browser: url,
   }),
+  // angular v18 has an array type and v19 has an object type
+  // We should uncomment this when we need to use prerenderedRoutes
+  // prerenderedRoutes: z.optional(z.union([z.string().array(), z.object({})])),
 });
