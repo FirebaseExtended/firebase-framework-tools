@@ -63,5 +63,4 @@ export const buildManifestSchema = z.object({
     server: z.optional(url),
     browser: url,
   }),
-  prerenderedRoutes: z.optional(z.union([z.string().array(), z.object({})])),
 });
