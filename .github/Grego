@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Escuela</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5; /* Beige de fondo */
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #003366; /* Azul Navy */
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        table, th, td {
+            border: 1px solid #003366; /* Azul Navy */
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+        }
+        th {
+            background-color: #003366; /* Azul Navy */
+            color: white;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .student-name {
+            color: #003366;
+            cursor: pointer;
+            position: relative;
+            font-weight: bold;
+        }
+        .inspect-btn {
+            display: none;
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background-color: #007BFF;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .student-name:hover .inspect-btn {
+            display: block;
+        }
+        #notification {
+            text-align: center;
+            color: green;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #btnRequest {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #003366; /* Azul Navy */
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        #btnRequest:hover {
+            background-color: #002244;
+        }
+        #btnBack {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #003366;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        #btnBack:hover {
+            background-color: #002244;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Lista de Alumnos</h2>
+
+    <div id="main-container">
+        <!-- Aquí se generarán los alumnos y el contenido -->
+    </div>
+
+    <script>
+        // Lista de 50 alumnos con nombres, apellidos y calificaciones
+        const students = [
+            {nombre: "Juan", apellido: "Pérez", matematicas: 5, espanol: 6, ciencias: 7, historia: 4},
+            {nombre: "Ana", apellido: "Gómez", matematicas: 9, espanol: 8, ciencias: 7, historia: 9},
+            {nombre: "Carlos", apellido: "Ramírez", matematicas: 4, espanol: 3, ciencias: 6, historia: 5},
+            {nombre: "Lucía", apellido: "Martínez", matematicas: 6, espanol: 7, ciencias: 8, historia: 5},
+            {nombre: "Luis", apellido: "González", matematicas: 3, espanol: 4, ciencias: 5, historia: 6},
+            {nombre: "Marta", apellido: "Fernández", matematicas: 7, espanol: 8, ciencias: 9, historia: 6},
+            {nombre: "José", apellido: "López", matematicas: 5, espanol: 7, ciencias: 4, historia: 3},
+            {nombre: "Sofía", apellido: "Sánchez", matematicas: 8, espanol: 9, ciencias: 6, historia: 7},
+            {nombre: "Elena", apellido: "Paredes", matematicas: 6, espanol: 5, ciencias: 8, historia: 7},
+            {nombre: "Luis", apellido: "Torres", matematicas: 3, espanol: 4, ciencias: 2, historia: 3},
+            {nombre: "Pedro", apellido: "Serrano", matematicas: 9, espanol: 7, ciencias: 6, historia: 8},
+            {nombre: "Isabel", apellido: "Díaz", matematicas: 6, espanol: 7, ciencias: 5, historia: 6},
+            {nombre: "Raúl", apellido: "Salazar", matematicas: 5, espanol: 3, ciencias: 4, historia: 5},
+            {nombre: "Luciana", apellido: "Ramírez", matematicas: 8, espanol: 8, ciencias: 7, historia: 9},
+            {nombre: "Felipe", apellido: "Martínez", matematicas: 7, espanol: 6, ciencias: 8, historia: 7},
+            {nombre: "Gabriela", apellido: "Pérez", matematicas: 5, espanol: 5, ciencias: 6, historia: 5},
+            {nombre: "Eduardo", apellido: "García", matematicas: 4, espanol: 4, ciencias: 3, historia: 2},
+            {nombre: "Fernanda", apellido: "Vázquez", matematicas: 9, espanol: 9, ciencias: 10, historia: 9},
+            {nombre: "Iván", apellido: "Sánchez", matematicas: 5, espanol: 6, ciencias: 6, historia: 4},
+            {nombre: "Victoria", apellido: "Ruiz", matematicas: 6, espanol: 6, ciencias: 7, historia: 6},
+            {nombre: "Martín", apellido: "López", matematicas: 8, espanol: 7, ciencias: 8, historia: 8},
+            {nombre: "Adriana", apellido: "González", matematicas: 7, espanol: 8, ciencias: 6, historia: 7},
+            {nombre: "Miguel", apellido: "Cordero", matematicas: 4, espanol: 5, ciencias: 5, historia: 6},
+            {nombre: "Andrea", apellido: "Mendoza", matematicas: 9, espanol: 8, ciencias: 8, historia: 9},
+            {nombre: "Esteban", apellido: "Vera", matematicas: 6, espanol: 6, ciencias: 6, historia: 5},
+            {nombre: "Paula", apellido: "Castro", matematicas: 7, espanol: 8, ciencias: 7, historia: 8},
+            {nombre: "Ricardo", apellido: "Ríos", matematicas: 5, espanol: 5, ciencias: 6, historia: 5},
+            {nombre: "Lorena", apellido: "Castillo", matematicas: 7, espanol: 6, ciencias: 5, historia: 7},
+            {nombre: "Santiago", apellido: "Jaramillo", matematicas: 8, espanol: 8, ciencias: 9, historia: 7},
+            {nombre: "Beatriz", apellido: "Morales", matematicas: 5, espanol: 4, ciencias: 6, historia: 5},
+            {nombre: "Ricardo", apellido: "Fuentes", matematicas: 9, espanol: 9, ciencias: 8, historia: 8},
+            {nombre: "Silvia", apellido: "Núñez", matematicas: 6, espanol: 5, ciencias: 7, historia: 6},
+            {nombre: "Carlos", apellido: "Molina", matematicas: 6, espanol: 6, ciencias: 5, historia: 6},
+            {nombre: "Lucía", apellido: "Soto", matematicas: 5, espanol: 5, ciencias: 7, historia: 6},
+            {nombre: "César", apellido: "Pérez", matematicas: 7, espanol: 8, ciencias: 9, historia: 6},
+            {nombre: "Raquel", apellido: "Morales", matematicas: 9, espanol: 9, ciencias: 9, historia: 9},
+            {nombre: "Juanita", apellido: "Téllez", matematicas: 4, espanol: 4, ciencias: 3, historia: 2},
+            {nombre: "Luis", apellido: "Salas", matematicas: 5, espanol: 6, ciencias: 7, historia: 5},
+            {nombre: "Daniel", apellido: "Bravo", matematicas: 8, espanol: 7, ciencias: 6, historia: 7},
+            {nombre: "Emma", apellido: "Vázquez", matematicas: 6, espanol: 7, ciencias: 5, historia: 6},
+            {nombre: "Pablo", apellido: "Guzmán", matematicas: 9, espanol: 8, ciencias: 7, historia: 7},
+            {nombre: "Teresa", apellido: "Martín", matematicas: 7, espanol: 7, ciencias: 6, historia: 6},
+            {nombre: "Javier", apellido: "García", matematicas: 6, espanol: 7, ciencias: 8, historia: 7},
+            {nombre: "Andrea", apellido: "Cano", matematicas: 5, espanol: 4, ciencias: 5, historia: 5}
+        ];
+
+        // Función para crear la tabla
+        function crearTabla() {
+            const mainContainer = document.getElementById("main-container");
+            mainContainer.innerHTML = ""; // Limpiar contenedor antes de agregar la tabla
+           
+            const table = document.createElement("table");
+            const thead = document.createElement("thead");
+            thead.innerHTML = `
+                <tr>
+                    <th>Nombre del Alumno</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+           
+            const tbody = document.createElement("tbody");
+            students.forEach((student, index) => {
+                const tr = document.createElement("tr");
+                const studentName = `${student.nombre} ${student.apellido}`;
+                tr.innerHTML = `
+                    <td class="student-name" onclick="inspeccionar(${index})">
+                        ${studentName}
+                        <div class="inspect-btn">Inspeccionar</div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            mainContainer.appendChild(table);
+        }
+
+        // Función para inspeccionar y mostrar las materias del alumno
+        function inspeccionar(index) {
+            const student = students[index];
+            const mainContainer = document.getElementById("main-container");
+           
+            mainContainer.innerHTML = `
+                <h3>${student.nombre} ${student.apellido}</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Calificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Matemáticas</td>
+                            <td>${student.matematicas}</td>
+                        </tr>
+                        <tr>
+                            <td>Español</td>
+                            <td>${student.espanol}</td>
+                        </tr>
+                        <tr>
+                            <td>Ciencias</td>
+                            <td>${student.ciencias}</td>
+                        </tr>
+                        <tr>
+                            <td>Historia</td>
+                            <td>${student.historia}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button id="btnRequest" onclick="solicitarCita()">Solicitar una cita con el profesor</button>
+                <button id="btnBack" onclick="volver()">Volver a la lista de alumnos</button>
+            `;
+        }
+
+        // Función para volver a la lista
+        function volver() {
+            crearTabla();
+        }
+
+        // Función para solicitar una cita
+        function solicitarCita() {
+            alert("SOLICITANDO CITA");
+        }
+
+        // Inicializar la tabla al cargar la página
+        crearTabla();
+    </script>
+
+</body>
+</html>
