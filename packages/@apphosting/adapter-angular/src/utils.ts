@@ -26,6 +26,7 @@ const SIMPLE_SERVER_FILE_PATH = join(__dirname, "simple-server", "bundled_server
 
 export const ALLOWED_BUILDERS = [
   "@angular-devkit/build-angular:application",
+  "@angular/build:application",
   "@analogjs/platform:vite",
 ];
 
