@@ -1,135 +1,139 @@
-# Firebase CLI & Web Frameworks
-
-## Frameworks
-
-| Framework  | Support | |
-| ---------- | ------- | - |
-| [Next.js](https://firebase.google.com/docs/hosting/frameworks/nextjs) | **Early preview** | |
-| [Angular](https://firebase.google.com/docs/hosting/frameworks/angular) | **Early preview** | |
-| [Express](https://firebase.google.com/docs/hosting/frameworks/express) | **Early preview** | |
-| Flask | **Early preview** | Coming soon... |
-| Django | Experimental | Coming soon... |
-| [Flutter](https://firebase.google.com/docs/hosting/frameworks/flutter) | Experimental | |
-| Nuxt | Experimental | |
-| Astro | Experimental | |
-| SvelteKit | Experimental | |
-| Preact<br>React<br>Lit<br>Svelte<br>and more... | Experimental | Static web apps, powered by *Vite* |
+# App Hosting adapters
 
 ## Overview
 
-Firebase Hosting integrates with popular modern web frameworks including Angular and Next.js. Using Firebase Hosting and
-Cloud Functions for Firebase with these frameworks, you can develop apps and microservices in your preferred framework
-environment, and then deploy them in a managed, secure server environment. Support during this early preview includes
-the following functionality:
+App Hosting provides configuration-free build and deploy support for Web apps developed in these frameworks:
 
-* Deploy Web apps comprised of static web content
-* Deploy Web apps that use pre-rendering / Static Site Generation (SSG)
-* Deploy Web apps that use server-side Rendering (SSR)—full server rendering on demand
+* Next.js 13+
+* Angular 17.2+
 
-Firebase provides this functionality through the Firebase CLI. When initializing Hosting on the command line, you
-provide information about your new or existing Web project, and the CLI sets up the right resources for your chosen Web
-framework.
+This repo holds the code for the adapters that enable support for these frameworks. At a high level these adapters transform framework specific configurations into an [output bundle spec](#app-hosting-output-bundle) that App Hosting can use to configure frameworks support. For more information see [Framework integration](https://firebase.google.com/docs/app-hosting/about-app-hosting#frameworks).
 
-We'd love to learn from you. [Express your interest in helping us shape the future of Firebase Hosting here.](https://goo.gle/41enW5X)
+## App Hosting output bundle
 
-## Status
+The App Hosting output bundle is a file based specification that allows different frameworks to configure and customize their App Hosting deployment for enhanced support.
 
-![Status: Experimental](https://img.shields.io/badge/Status-Experimental-blue)
+Any framework that can generate a build output in accordance with the App Hosting output bundle can be deployed on App Hosting.
 
-This repository is maintained by Google but is not a supported Firebase product. Issues here are answered by
-maintainers and other community members on GitHub on a best-effort basis.
+The output bundle primarily consists of a `bundle.yaml` file that sits inside of the `.apphosting` directory. This bundle.yaml contains all the ways that frameworks can configure App Hosting when users deploy their applications.
 
-[Please open issues related to Web Frameworks support in Firease CLI in the firebase-tools repository](https://github.com/firebase/firebase-tools/issues/new/choose).
+> [!NOTE]  
+> App Hosting technically supports all all node applications, but no custom framework features will be enabled without the output bundle.
 
-## Enable framework-awareness
+## Output bundle Schema
 
-An experimental add-on to the Firebase CLI provides web framework support. To enable it, call the following:
+The output bundle is contained in a single file:
 
 ```shell
-firebase experiments:enable webframeworks
+.apphosting/bundle.yaml
 ```
 
-## Prerequisites
+As long as this file exists and follows the schema, App Hosting will be able to process the build properly.
 
-- Firebase CLI version 10.9.1 or later (see installation instructions [here](https://firebase.google.com/docs/cli))
+The schema can also be found in [source](https://github.com/FirebaseExtended/firebase-framework-tools/blob/main/packages/%40apphosting/common/src/index.ts#L4)
 
-
-## Initialize Firebase Hosting
-
-When you initialize Firebase Hosting it should automatically detect known Web Frameworks, if one isn't discovered
-you'll be given a list of supported frameworks to start with.
-
-```shell
-firebase init hosting
-```
-
-You should see the "source" option in your `firebase.json` rather than the traditional "public". This points to the
-root directory of your application's source code, relative to your `firebase.json`.
-
-```json
-{
-  "hosting": {
-    "source": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "frameworksBackend": {
-      "region": "us-central1"
-    }
-  }
+```typescript
+interface OutputBundle {
+  version: "v1"
+  runConfig: RunConfig;
+  metadata: Metadata;
 }
 ```
 
-## Serve locally
+### Version
 
-You can test your integration locally by following these steps:
+The `version` represents which output bundle version is currently being used. The current version is v1.
 
-1. Run `firebase emulators:start` from the terminal. This should build your app and serve it using the Firebase CLI.
-2. Open your web app at the local URL returned by the CLI (usually http://localhost:5000).
+### RunConfig
 
-## Deploy your app to Firebase Hosting
+The `runConfig` fields configures the Cloud Run service associated with the App Hosting Backend.
 
-When you're ready to share your changes with the world, deploy your app to your live site:
-
-1. Run `firebase deploy` from the terminal. This will build your application, determine if a backend is needed, and if so build and deploy a Cloud Function for you.
-3. Check your website on: `SITE_ID.web.app` or `PROJECT_ID.web.app` (or your custom domain, if you set one up)
-
-## Configuring your backend
-
-In your `firebase.json` you can alter the configuration of the code-generated Cloud Function by editing the "frameworksBackend"
-option. "frameworksBackend" takes the same options as [firebase-functions/v2/https.httpsOptions](https://firebase.google.com/docs/reference/functions/2nd-gen/node/firebase-functions.https.httpsoptions)
-though JSON-serializable. E.g,
-
-
-```json
-{
-  "hosting": {
-    "source": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "frameworksBackend": {
-      "region": "us-central1",
-      "minInstances": 1,
-      "maxInstances": 10
-    }
-  }
+```typescript
+interface RunConfig {
+  runCommand: string;
+  environmentVariables?: EnvVarConfig[];
+  concurrency?: number;
+  cpu?: number;
+  memoryMiB?: number;
+  minInstances?: number;
+  maxInstances?: number;
 }
 ```
 
-# Contributors
+| Field  | Type | Description | Required? |
+| ---------- | ------- | - | - |
+| `runCommand` | `string` |Command to start the server (e.g. `node dist/index.js`). Assume this command is run from the root dir of the workspace. This should be the productionized version of the server start command. | y |
+| `environmentVariables`| `EnvVarConfig[]` | Environment variables present in the server execution environment.| n |
+| `concurrency` | `number` | The maximum number of concurrent requests that each server instance can receive.| n |
+| `cpu` | `number` |The number of CPUs used in a single server instance. | n |
+| `memoryMiB` | `number` | The amount of memory available for a server instance.| n |
+| `minInstance` | `number` |The limit on the minimum number of function instances that may coexist at a given time. | n |
+| `MaxInstance` | `number` | The limit on the maximum number of function instances that may coexist at a given time.| n |
 
-We'd love to accept your patches and contributions to this project. There are just a few small guidelines you need to
-follow. [See CONTRIBUTING](./CONTRIBUTING.md).
+Many of these fields are shared with `apphosting.yaml`. See the [runConfig reference documentation](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#runconfig) for additional context and default values.
 
-## Building
+### EnvVarConfig
 
-```bash
-$ cd <YOUR-GIT-CHECKOUT>
-$ npm i
-$ npm run build
+```typescript
+interface EnvVarConfig {
+  variable: string;
+  value: string;
+  availability: 'RUNTIME'
+}
+
 ```
+
+| Field  | Type | Description | Required? |
+| ---------- | ------- | - | - |
+| `variable` | `string` |Name of the environment variable | y |
+| `value` | `string` |Value associated with the environment variable | y |
+| `availability` | `RUNTIME` | Where the variable will be available. For now this will always be `RUNTIME` | y |
+
+### Metadata
+
+```typescript
+interface Metadata {
+  adapterPackageName: string;
+  adapterVersion: string;
+  framework: string;
+  frameworkVersion?: string;
+}
+
+```
+
+| Field  | Type | Description | Required? |
+| ---------- | ------- | - | - |
+| `adapterPackageName` | `string` |Name of the adapter (this should be the npm package name) | y |
+| `adapterVersion`| `string` | Version of the adapter | y |
+| `framework` | `string` | Name of the framework that is being supported | y |
+| `frameworkVersion` | `string` |Version of the framework that is being supported | n |
+
+Here is a sample `bundle.yaml` file putting all this together:
+
+```
+> cat .apphosting/bundle.yaml
+
+version: v1
+runConfig:
+  runCommand:
+    - node
+    - dist/index.js
+  environmentVariables:
+    - variable: VAR
+      value: 8080
+      availability: RUNTIME
+  concurrency: 80
+  cpu: 2
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 14
+    
+metadata:
+  adapterNpmPackageName: npm-name
+  adapterVersion: 12.0.0
+  frameworkNpmPackageName: framework-name
+  adapterVersion: 1.0.0
+
+```
+
+As long as you have the `bundle.yaml` in this format, App Hosting will be able to deploy any framework that supports server side rendering.
