@@ -132,7 +132,7 @@ metadata:
   adapterNpmPackageName: npm-name
   adapterVersion: 12.0.0
   frameworkNpmPackageName: framework-name
-  adapterVersion: 1.0.0
+  frameworkVersion: 1.0.0
 
 ```
 
