@@ -115,9 +115,7 @@ Here is a sample `bundle.yaml` file putting all this together:
 
 version: v1
 runConfig:
-  runCommand:
-    - node
-    - dist/index.js
+  runCommand: 'node dist/index.js'
   environmentVariables:
     - variable: VAR
       value: 8080
