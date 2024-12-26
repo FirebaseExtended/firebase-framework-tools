@@ -129,9 +129,9 @@ runConfig:
   maxInstances: 14
     
 metadata:
-  adapterNpmPackageName: npm-name
+  adapterPackageName: npm-name
   adapterVersion: 12.0.0
-  frameworkNpmPackageName: framework-name
+  framework: framework-name
   frameworkVersion: 1.0.0
 
 ```
