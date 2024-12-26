@@ -108,11 +108,9 @@ interface Metadata {
 | `framework` | `string` | Name of the framework that is being supported | y |
 | `frameworkVersion` | `string` |Version of the framework that is being supported | n |
 
-Here is a sample `bundle.yaml` file putting all this together:
+Here is a sample `.apphosting/bundle.yaml` file putting all this together:
 
-```
-> cat .apphosting/bundle.yaml
-
+```yaml
 version: v1
 runConfig:
   runCommand: 'node dist/index.js'
@@ -131,7 +129,6 @@ metadata:
   adapterVersion: 12.0.0
   framework: framework-name
   frameworkVersion: 1.0.0
-
 ```
 
 As long as you have the `bundle.yaml` in this format, App Hosting will be able to deploy any framework that supports server side rendering.
