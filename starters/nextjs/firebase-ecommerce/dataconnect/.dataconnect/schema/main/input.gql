@@ -1,0 +1,2380 @@
+"""
+✨ `Collection_KeyOutput` returns the primary key fields of table type `Collection`.
+
+It has the same format as `Collection_Key`, but is only used as mutation return value.
+"""
+scalar Collection_KeyOutput
+"""
+✨ `Customer_KeyOutput` returns the primary key fields of table type `Customer`.
+
+It has the same format as `Customer_Key`, but is only used as mutation return value.
+"""
+scalar Customer_KeyOutput
+"""
+✨ `Order_KeyOutput` returns the primary key fields of table type `Order`.
+
+It has the same format as `Order_Key`, but is only used as mutation return value.
+"""
+scalar Order_KeyOutput
+"""
+✨ `OrderItem_KeyOutput` returns the primary key fields of table type `OrderItem`.
+
+It has the same format as `OrderItem_Key`, but is only used as mutation return value.
+"""
+scalar OrderItem_KeyOutput
+"""
+✨ `Product_KeyOutput` returns the primary key fields of table type `Product`.
+
+It has the same format as `Product_Key`, but is only used as mutation return value.
+"""
+scalar Product_KeyOutput
+"""
+✨ `ProductCollection_KeyOutput` returns the primary key fields of table type `ProductCollection`.
+
+It has the same format as `ProductCollection_Key`, but is only used as mutation return value.
+"""
+scalar ProductCollection_KeyOutput
+"""
+✨ `ProductImage_KeyOutput` returns the primary key fields of table type `ProductImage`.
+
+It has the same format as `ProductImage_Key`, but is only used as mutation return value.
+"""
+scalar ProductImage_KeyOutput
+"""
+✨ `ProductOption_KeyOutput` returns the primary key fields of table type `ProductOption`.
+
+It has the same format as `ProductOption_Key`, but is only used as mutation return value.
+"""
+scalar ProductOption_KeyOutput
+"""
+✨ `ProductReview_KeyOutput` returns the primary key fields of table type `ProductReview`.
+
+It has the same format as `ProductReview_Key`, but is only used as mutation return value.
+"""
+scalar ProductReview_KeyOutput
+"""
+✨ `ProductVariant_KeyOutput` returns the primary key fields of table type `ProductVariant`.
+
+It has the same format as `ProductVariant_Key`, but is only used as mutation return value.
+"""
+scalar ProductVariant_KeyOutput
+"""
+✨ `SEO_KeyOutput` returns the primary key fields of table type `SEO`.
+
+It has the same format as `SEO_Key`, but is only used as mutation return value.
+"""
+scalar SEO_KeyOutput
+"""
+✨ `SelectedOption_KeyOutput` returns the primary key fields of table type `SelectedOption`.
+
+It has the same format as `SelectedOption_Key`, but is only used as mutation return value.
+"""
+scalar SelectedOption_KeyOutput
+"""
+✨ Generated data input type for table 'Collection'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Collection_Data {
+  """
+  ✨ Generated from Field `Collection`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Collection`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Collection`.`featuredImageId` of type `UUID`
+  """
+  featuredImageId: UUID
+  """
+  ✨ `_expr` server value variant of `featuredImageId` (✨ Generated from Field `Collection`.`featuredImageId` of type `UUID`)
+  """
+  featuredImageId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Collection`.`seoId` of type `UUID`
+  """
+  seoId: UUID
+  """
+  ✨ `_expr` server value variant of `seoId` (✨ Generated from Field `Collection`.`seoId` of type `UUID`)
+  """
+  seoId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Collection`.`featuredImage` of type `ProductImage`
+  """
+  featuredImage: ProductImage_Key
+  """
+  ✨ Generated from Field `Collection`.`seo` of type `SEO`
+  """
+  seo: SEO_Key
+  """
+  ✨ Generated from Field `Collection`.`createdAt` of type `Date!`
+  """
+  createdAt: Date
+  """
+  ✨ `_date` server value variant of `createdAt` (✨ Generated from Field `Collection`.`createdAt` of type `Date!`)
+  """
+  createdAt_date: Date_Relative
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Collection`.`createdAt` of type `Date!`)
+  """
+  createdAt_expr: Date_Expr
+  """
+  ✨ Generated from Field `Collection`.`description` of type `String`
+  """
+  description: String
+  """
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `Collection`.`description` of type `String`)
+  """
+  description_expr: String_Expr
+  """
+  ✨ Generated from Field `Collection`.`handle` of type `String!`
+  """
+  handle: String
+  """
+  ✨ `_expr` server value variant of `handle` (✨ Generated from Field `Collection`.`handle` of type `String!`)
+  """
+  handle_expr: String_Expr
+  """
+  ✨ Generated from Field `Collection`.`name` of type `String!`
+  """
+  name: String
+  """
+  ✨ `_expr` server value variant of `name` (✨ Generated from Field `Collection`.`name` of type `String!`)
+  """
+  name_expr: String_Expr
+  """
+  ✨ Generated from Field `Collection`.`page` of type `String`
+  """
+  page: String
+  """
+  ✨ `_expr` server value variant of `page` (✨ Generated from Field `Collection`.`page` of type `String`)
+  """
+  page_expr: String_Expr
+  """
+  ✨ Generated from Field `Collection`.`updatedAt` of type `Date!`
+  """
+  updatedAt: Date
+  """
+  ✨ `_date` server value variant of `updatedAt` (✨ Generated from Field `Collection`.`updatedAt` of type `Date!`)
+  """
+  updatedAt_date: Date_Relative
+  """
+  ✨ `_expr` server value variant of `updatedAt` (✨ Generated from Field `Collection`.`updatedAt` of type `Date!`)
+  """
+  updatedAt_expr: Date_Expr
+}
+"""
+✨ Generated filter input type for table 'Collection'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Collection_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Collection_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Collection_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Collection_Filter!]
+  """
+  ✨ Generated from Field `Collection`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Collection`.`featuredImageId` of type `UUID`
+  """
+  featuredImageId: UUID_Filter
+  """
+  ✨ Generated from Field `Collection`.`seoId` of type `UUID`
+  """
+  seoId: UUID_Filter
+  """
+  ✨ Generated from Field `Collection`.`featuredImage` of type `ProductImage`
+  """
+  featuredImage: ProductImage_Filter
+  """
+  ✨ Generated from Field `Collection`.`seo` of type `SEO`
+  """
+  seo: SEO_Filter
+  """
+  ✨ Generated from Field `Collection`.`createdAt` of type `Date!`
+  """
+  createdAt: Date_Filter
+  """
+  ✨ Generated from Field `Collection`.`description` of type `String`
+  """
+  description: String_Filter
+  """
+  ✨ Generated from Field `Collection`.`handle` of type `String!`
+  """
+  handle: String_Filter
+  """
+  ✨ Generated from Field `Collection`.`name` of type `String!`
+  """
+  name: String_Filter
+  """
+  ✨ Generated from Field `Collection`.`page` of type `String`
+  """
+  page: String_Filter
+  """
+  ✨ Generated from Field `Collection`.`updatedAt` of type `Date!`
+  """
+  updatedAt: Date_Filter
+  """
+  ✨ Generated from Field `Collection`.`productCollections_on_collection` of type `[ProductCollection!]!`
+  """
+  productCollections_on_collection: ProductCollection_ListFilter
+  """
+  ✨ Generated from Field `Collection`.`products_via_ProductCollection` of type `[Product!]!`
+  """
+  products_via_ProductCollection: Product_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Collection'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Collection_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Collection_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Collection_Filter
+}
+"""
+✨ Generated key input type for table 'Collection'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Collection_Key {
+  """
+  ✨ Generated from Field `Collection`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Collection`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Collection'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Collection_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Collection_Filter
+}
+"""
+✨ Generated order input type for table 'Collection'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Collection_Order {
+  """
+  ✨ Generated from Field `Collection`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`featuredImageId` of type `UUID`
+  """
+  featuredImageId: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`seoId` of type `UUID`
+  """
+  seoId: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`featuredImage` of type `ProductImage`
+  """
+  featuredImage: ProductImage_Order
+  """
+  ✨ Generated from Field `Collection`.`seo` of type `SEO`
+  """
+  seo: SEO_Order
+  """
+  ✨ Generated from Field `Collection`.`createdAt` of type `Date!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`description` of type `String`
+  """
+  description: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`handle` of type `String!`
+  """
+  handle: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`name` of type `String!`
+  """
+  name: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`page` of type `String`
+  """
+  page: OrderDirection
+  """
+  ✨ Generated from Field `Collection`.`updatedAt` of type `Date!`
+  """
+  updatedAt: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Customer'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Customer_Data {
+  """
+  ✨ Generated from Field `Customer`.`id` of type `String!`
+  """
+  id: String
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Customer`.`id` of type `String!`)
+  """
+  id_expr: String_Expr
+  """
+  ✨ Generated from Field `Customer`.`acceptsMarketing` of type `Boolean!`
+  """
+  acceptsMarketing: Boolean
+  """
+  ✨ Generated from Field `Customer`.`email` of type `String!`
+  """
+  email: String
+  """
+  ✨ `_expr` server value variant of `email` (✨ Generated from Field `Customer`.`email` of type `String!`)
+  """
+  email_expr: String_Expr
+  """
+  ✨ Generated from Field `Customer`.`firstName` of type `String!`
+  """
+  firstName: String
+  """
+  ✨ `_expr` server value variant of `firstName` (✨ Generated from Field `Customer`.`firstName` of type `String!`)
+  """
+  firstName_expr: String_Expr
+  """
+  ✨ Generated from Field `Customer`.`lastName` of type `String!`
+  """
+  lastName: String
+  """
+  ✨ `_expr` server value variant of `lastName` (✨ Generated from Field `Customer`.`lastName` of type `String!`)
+  """
+  lastName_expr: String_Expr
+  """
+  ✨ Generated from Field `Customer`.`phone` of type `String!`
+  """
+  phone: String
+  """
+  ✨ `_expr` server value variant of `phone` (✨ Generated from Field `Customer`.`phone` of type `String!`)
+  """
+  phone_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'Customer'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Customer_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Customer_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Customer_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Customer_Filter!]
+  """
+  ✨ Generated from Field `Customer`.`id` of type `String!`
+  """
+  id: String_Filter
+  """
+  ✨ Generated from Field `Customer`.`acceptsMarketing` of type `Boolean!`
+  """
+  acceptsMarketing: Boolean_Filter
+  """
+  ✨ Generated from Field `Customer`.`email` of type `String!`
+  """
+  email: String_Filter
+  """
+  ✨ Generated from Field `Customer`.`firstName` of type `String!`
+  """
+  firstName: String_Filter
+  """
+  ✨ Generated from Field `Customer`.`lastName` of type `String!`
+  """
+  lastName: String_Filter
+  """
+  ✨ Generated from Field `Customer`.`phone` of type `String!`
+  """
+  phone: String_Filter
+  """
+  ✨ Generated from Field `Customer`.`orders_on_customer` of type `[Order!]!`
+  """
+  orders_on_customer: Order_ListFilter
+  """
+  ✨ Generated from Field `Customer`.`productReviews_on_customer` of type `[ProductReview!]!`
+  """
+  productReviews_on_customer: ProductReview_ListFilter
+  """
+  ✨ Generated from Field `Customer`.`products_via_ProductReview` of type `[Product!]!`
+  """
+  products_via_ProductReview: Product_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Customer'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Customer_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Customer_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Customer_Filter
+}
+"""
+✨ Generated key input type for table 'Customer'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Customer_Key {
+  """
+  ✨ Generated from Field `Customer`.`id` of type `String!`
+  """
+  id: String
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Customer`.`id` of type `String!`)
+  """
+  id_expr: String_Expr
+}
+"""
+✨ Generated list filter input type for table 'Customer'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Customer_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Customer_Filter
+}
+"""
+✨ Generated order input type for table 'Customer'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Customer_Order {
+  """
+  ✨ Generated from Field `Customer`.`id` of type `String!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Customer`.`acceptsMarketing` of type `Boolean!`
+  """
+  acceptsMarketing: OrderDirection
+  """
+  ✨ Generated from Field `Customer`.`email` of type `String!`
+  """
+  email: OrderDirection
+  """
+  ✨ Generated from Field `Customer`.`firstName` of type `String!`
+  """
+  firstName: OrderDirection
+  """
+  ✨ Generated from Field `Customer`.`lastName` of type `String!`
+  """
+  lastName: OrderDirection
+  """
+  ✨ Generated from Field `Customer`.`phone` of type `String!`
+  """
+  phone: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Order'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Order_Data {
+  """
+  ✨ Generated from Field `Order`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Order`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Order`.`customerId` of type `String!`
+  """
+  customerId: String
+  """
+  ✨ `_expr` server value variant of `customerId` (✨ Generated from Field `Order`.`customerId` of type `String!`)
+  """
+  customerId_expr: String_Expr
+  """
+  ✨ Generated from Field `Order`.`customer` of type `Customer!`
+  """
+  customer: Customer_Key
+  """
+  ✨ Generated from Field `Order`.`chargeId` of type `String`
+  """
+  chargeId: String
+  """
+  ✨ `_expr` server value variant of `chargeId` (✨ Generated from Field `Order`.`chargeId` of type `String`)
+  """
+  chargeId_expr: String_Expr
+  """
+  ✨ Generated from Field `Order`.`financialStatus` of type `String!`
+  """
+  financialStatus: String
+  """
+  ✨ `_expr` server value variant of `financialStatus` (✨ Generated from Field `Order`.`financialStatus` of type `String!`)
+  """
+  financialStatus_expr: String_Expr
+  """
+  ✨ Generated from Field `Order`.`fulfillmentStatus` of type `String!`
+  """
+  fulfillmentStatus: String
+  """
+  ✨ `_expr` server value variant of `fulfillmentStatus` (✨ Generated from Field `Order`.`fulfillmentStatus` of type `String!`)
+  """
+  fulfillmentStatus_expr: String_Expr
+  """
+  ✨ Generated from Field `Order`.`paymentIntentId` of type `String`
+  """
+  paymentIntentId: String
+  """
+  ✨ `_expr` server value variant of `paymentIntentId` (✨ Generated from Field `Order`.`paymentIntentId` of type `String`)
+  """
+  paymentIntentId_expr: String_Expr
+  """
+  ✨ Generated from Field `Order`.`processedAt` of type `Date!`
+  """
+  processedAt: Date
+  """
+  ✨ `_date` server value variant of `processedAt` (✨ Generated from Field `Order`.`processedAt` of type `Date!`)
+  """
+  processedAt_date: Date_Relative
+  """
+  ✨ `_expr` server value variant of `processedAt` (✨ Generated from Field `Order`.`processedAt` of type `Date!`)
+  """
+  processedAt_expr: Date_Expr
+  """
+  ✨ Generated from Field `Order`.`receiptUrl` of type `String`
+  """
+  receiptUrl: String
+  """
+  ✨ `_expr` server value variant of `receiptUrl` (✨ Generated from Field `Order`.`receiptUrl` of type `String`)
+  """
+  receiptUrl_expr: String_Expr
+  """
+  ✨ Generated from Field `Order`.`subtotalPrice` of type `Float!`
+  """
+  subtotalPrice: Float
+  """
+  ✨ Generated from Field `Order`.`totalPrice` of type `Float!`
+  """
+  totalPrice: Float
+  """
+  ✨ Generated from Field `Order`.`totalShippingPrice` of type `Float!`
+  """
+  totalShippingPrice: Float
+  """
+  ✨ Generated from Field `Order`.`totalTax` of type `Float!`
+  """
+  totalTax: Float
+}
+"""
+✨ Generated filter input type for table 'Order'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Order_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Order_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Order_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Order_Filter!]
+  """
+  ✨ Generated from Field `Order`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Order`.`customerId` of type `String!`
+  """
+  customerId: String_Filter
+  """
+  ✨ Generated from Field `Order`.`customer` of type `Customer!`
+  """
+  customer: Customer_Filter
+  """
+  ✨ Generated from Field `Order`.`chargeId` of type `String`
+  """
+  chargeId: String_Filter
+  """
+  ✨ Generated from Field `Order`.`financialStatus` of type `String!`
+  """
+  financialStatus: String_Filter
+  """
+  ✨ Generated from Field `Order`.`fulfillmentStatus` of type `String!`
+  """
+  fulfillmentStatus: String_Filter
+  """
+  ✨ Generated from Field `Order`.`paymentIntentId` of type `String`
+  """
+  paymentIntentId: String_Filter
+  """
+  ✨ Generated from Field `Order`.`processedAt` of type `Date!`
+  """
+  processedAt: Date_Filter
+  """
+  ✨ Generated from Field `Order`.`receiptUrl` of type `String`
+  """
+  receiptUrl: String_Filter
+  """
+  ✨ Generated from Field `Order`.`subtotalPrice` of type `Float!`
+  """
+  subtotalPrice: Float_Filter
+  """
+  ✨ Generated from Field `Order`.`totalPrice` of type `Float!`
+  """
+  totalPrice: Float_Filter
+  """
+  ✨ Generated from Field `Order`.`totalShippingPrice` of type `Float!`
+  """
+  totalShippingPrice: Float_Filter
+  """
+  ✨ Generated from Field `Order`.`totalTax` of type `Float!`
+  """
+  totalTax: Float_Filter
+  """
+  ✨ Generated from Field `Order`.`orderItems_on_order` of type `[OrderItem!]!`
+  """
+  orderItems_on_order: OrderItem_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Order'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Order_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Order_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Order_Filter
+}
+"""
+✨ Generated key input type for table 'Order'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Order_Key {
+  """
+  ✨ Generated from Field `Order`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Order`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Order'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Order_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Order_Filter
+}
+"""
+✨ Generated order input type for table 'Order'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Order_Order {
+  """
+  ✨ Generated from Field `Order`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`customerId` of type `String!`
+  """
+  customerId: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`customer` of type `Customer!`
+  """
+  customer: Customer_Order
+  """
+  ✨ Generated from Field `Order`.`chargeId` of type `String`
+  """
+  chargeId: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`financialStatus` of type `String!`
+  """
+  financialStatus: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`fulfillmentStatus` of type `String!`
+  """
+  fulfillmentStatus: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`paymentIntentId` of type `String`
+  """
+  paymentIntentId: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`processedAt` of type `Date!`
+  """
+  processedAt: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`receiptUrl` of type `String`
+  """
+  receiptUrl: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`subtotalPrice` of type `Float!`
+  """
+  subtotalPrice: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`totalPrice` of type `Float!`
+  """
+  totalPrice: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`totalShippingPrice` of type `Float!`
+  """
+  totalShippingPrice: OrderDirection
+  """
+  ✨ Generated from Field `Order`.`totalTax` of type `Float!`
+  """
+  totalTax: OrderDirection
+}
+"""
+✨ Generated data input type for table 'OrderItem'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input OrderItem_Data {
+  """
+  ✨ Generated from Field `OrderItem`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `OrderItem`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `OrderItem`.`orderId` of type `UUID!`
+  """
+  orderId: UUID
+  """
+  ✨ `_expr` server value variant of `orderId` (✨ Generated from Field `OrderItem`.`orderId` of type `UUID!`)
+  """
+  orderId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `OrderItem`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `OrderItem`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `OrderItem`.`order` of type `Order!`
+  """
+  order: Order_Key
+  """
+  ✨ Generated from Field `OrderItem`.`product` of type `Product!`
+  """
+  product: Product_Key
+  """
+  ✨ Generated from Field `OrderItem`.`price` of type `Float!`
+  """
+  price: Float
+  """
+  ✨ Generated from Field `OrderItem`.`quantity` of type `Int!`
+  """
+  quantity: Int
+}
+"""
+✨ Generated filter input type for table 'OrderItem'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input OrderItem_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [OrderItem_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: OrderItem_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [OrderItem_Filter!]
+  """
+  ✨ Generated from Field `OrderItem`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `OrderItem`.`orderId` of type `UUID!`
+  """
+  orderId: UUID_Filter
+  """
+  ✨ Generated from Field `OrderItem`.`productId` of type `UUID!`
+  """
+  productId: UUID_Filter
+  """
+  ✨ Generated from Field `OrderItem`.`order` of type `Order!`
+  """
+  order: Order_Filter
+  """
+  ✨ Generated from Field `OrderItem`.`product` of type `Product!`
+  """
+  product: Product_Filter
+  """
+  ✨ Generated from Field `OrderItem`.`price` of type `Float!`
+  """
+  price: Float_Filter
+  """
+  ✨ Generated from Field `OrderItem`.`quantity` of type `Int!`
+  """
+  quantity: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'OrderItem'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input OrderItem_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [OrderItem_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: OrderItem_Filter
+}
+"""
+✨ Generated key input type for table 'OrderItem'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input OrderItem_Key {
+  """
+  ✨ Generated from Field `OrderItem`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `OrderItem`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'OrderItem'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input OrderItem_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: OrderItem_Filter
+}
+"""
+✨ Generated order input type for table 'OrderItem'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input OrderItem_Order {
+  """
+  ✨ Generated from Field `OrderItem`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `OrderItem`.`orderId` of type `UUID!`
+  """
+  orderId: OrderDirection
+  """
+  ✨ Generated from Field `OrderItem`.`productId` of type `UUID!`
+  """
+  productId: OrderDirection
+  """
+  ✨ Generated from Field `OrderItem`.`order` of type `Order!`
+  """
+  order: Order_Order
+  """
+  ✨ Generated from Field `OrderItem`.`product` of type `Product!`
+  """
+  product: Product_Order
+  """
+  ✨ Generated from Field `OrderItem`.`price` of type `Float!`
+  """
+  price: OrderDirection
+  """
+  ✨ Generated from Field `OrderItem`.`quantity` of type `Int!`
+  """
+  quantity: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Product'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Product_Data {
+  """
+  ✨ Generated from Field `Product`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Product`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Product`.`featuredImageId` of type `UUID`
+  """
+  featuredImageId: UUID
+  """
+  ✨ `_expr` server value variant of `featuredImageId` (✨ Generated from Field `Product`.`featuredImageId` of type `UUID`)
+  """
+  featuredImageId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Product`.`seoId` of type `UUID`
+  """
+  seoId: UUID
+  """
+  ✨ `_expr` server value variant of `seoId` (✨ Generated from Field `Product`.`seoId` of type `UUID`)
+  """
+  seoId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `Product`.`featuredImage` of type `ProductImage`
+  """
+  featuredImage: ProductImage_Key
+  """
+  ✨ Generated from Field `Product`.`seo` of type `SEO`
+  """
+  seo: SEO_Key
+  """
+  ✨ Generated from Field `Product`.`availableForSale` of type `Boolean!`
+  """
+  availableForSale: Boolean
+  """
+  ✨ Generated from Field `Product`.`createdAt` of type `Date!`
+  """
+  createdAt: Date
+  """
+  ✨ `_date` server value variant of `createdAt` (✨ Generated from Field `Product`.`createdAt` of type `Date!`)
+  """
+  createdAt_date: Date_Relative
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Product`.`createdAt` of type `Date!`)
+  """
+  createdAt_expr: Date_Expr
+  """
+  ✨ Generated from Field `Product`.`description` of type `String`
+  """
+  description: String
+  """
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `Product`.`description` of type `String`)
+  """
+  description_expr: String_Expr
+  """
+  ✨ Generated from Field `Product`.`descriptionEmbedding` of type `Vector!`
+  """
+  descriptionEmbedding: Vector
+  """
+  ✨ `_embed` server value variant of `descriptionEmbedding` (✨ Generated from Field `Product`.`descriptionEmbedding` of type `Vector!`)
+  """
+  descriptionEmbedding_embed: Vector_Embed
+  """
+  ✨ Generated from Field `Product`.`handle` of type `String!`
+  """
+  handle: String
+  """
+  ✨ `_expr` server value variant of `handle` (✨ Generated from Field `Product`.`handle` of type `String!`)
+  """
+  handle_expr: String_Expr
+  """
+  ✨ Generated from Field `Product`.`productType` of type `String`
+  """
+  productType: String
+  """
+  ✨ `_expr` server value variant of `productType` (✨ Generated from Field `Product`.`productType` of type `String`)
+  """
+  productType_expr: String_Expr
+  """
+  ✨ Generated from Field `Product`.`title` of type `String!`
+  """
+  title: String
+  """
+  ✨ `_expr` server value variant of `title` (✨ Generated from Field `Product`.`title` of type `String!`)
+  """
+  title_expr: String_Expr
+  """
+  ✨ Generated from Field `Product`.`titleEmbedding` of type `Vector!`
+  """
+  titleEmbedding: Vector
+  """
+  ✨ `_embed` server value variant of `titleEmbedding` (✨ Generated from Field `Product`.`titleEmbedding` of type `Vector!`)
+  """
+  titleEmbedding_embed: Vector_Embed
+  """
+  ✨ Generated from Field `Product`.`updatedAt` of type `Date!`
+  """
+  updatedAt: Date
+  """
+  ✨ `_date` server value variant of `updatedAt` (✨ Generated from Field `Product`.`updatedAt` of type `Date!`)
+  """
+  updatedAt_date: Date_Relative
+  """
+  ✨ `_expr` server value variant of `updatedAt` (✨ Generated from Field `Product`.`updatedAt` of type `Date!`)
+  """
+  updatedAt_expr: Date_Expr
+}
+"""
+✨ Generated filter input type for table 'Product'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Product_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Product_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Product_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Product_Filter!]
+  """
+  ✨ Generated from Field `Product`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Product`.`featuredImageId` of type `UUID`
+  """
+  featuredImageId: UUID_Filter
+  """
+  ✨ Generated from Field `Product`.`seoId` of type `UUID`
+  """
+  seoId: UUID_Filter
+  """
+  ✨ Generated from Field `Product`.`featuredImage` of type `ProductImage`
+  """
+  featuredImage: ProductImage_Filter
+  """
+  ✨ Generated from Field `Product`.`seo` of type `SEO`
+  """
+  seo: SEO_Filter
+  """
+  ✨ Generated from Field `Product`.`availableForSale` of type `Boolean!`
+  """
+  availableForSale: Boolean_Filter
+  """
+  ✨ Generated from Field `Product`.`createdAt` of type `Date!`
+  """
+  createdAt: Date_Filter
+  """
+  ✨ Generated from Field `Product`.`description` of type `String`
+  """
+  description: String_Filter
+  """
+  ✨ Generated from Field `Product`.`descriptionEmbedding` of type `Vector!`
+  """
+  descriptionEmbedding: Vector_Filter
+  """
+  ✨ Generated from Field `Product`.`handle` of type `String!`
+  """
+  handle: String_Filter
+  """
+  ✨ Generated from Field `Product`.`productType` of type `String`
+  """
+  productType: String_Filter
+  """
+  ✨ Generated from Field `Product`.`title` of type `String!`
+  """
+  title: String_Filter
+  """
+  ✨ Generated from Field `Product`.`titleEmbedding` of type `Vector!`
+  """
+  titleEmbedding: Vector_Filter
+  """
+  ✨ Generated from Field `Product`.`updatedAt` of type `Date!`
+  """
+  updatedAt: Date_Filter
+  """
+  ✨ Generated from Field `Product`.`orderItems_on_product` of type `[OrderItem!]!`
+  """
+  orderItems_on_product: OrderItem_ListFilter
+  """
+  ✨ Generated from Field `Product`.`productCollections_on_product` of type `[ProductCollection!]!`
+  """
+  productCollections_on_product: ProductCollection_ListFilter
+  """
+  ✨ Generated from Field `Product`.`productImages_on_product` of type `[ProductImage!]!`
+  """
+  productImages_on_product: ProductImage_ListFilter
+  """
+  ✨ Generated from Field `Product`.`productOptions_on_product` of type `[ProductOption!]!`
+  """
+  productOptions_on_product: ProductOption_ListFilter
+  """
+  ✨ Generated from Field `Product`.`productReviews_on_product` of type `[ProductReview!]!`
+  """
+  productReviews_on_product: ProductReview_ListFilter
+  """
+  ✨ Generated from Field `Product`.`productVariants_on_product` of type `[ProductVariant!]!`
+  """
+  productVariants_on_product: ProductVariant_ListFilter
+  """
+  ✨ Generated from Field `Product`.`collections_via_ProductCollection` of type `[Collection!]!`
+  """
+  collections_via_ProductCollection: Collection_ListFilter
+  """
+  ✨ Generated from Field `Product`.`customers_via_ProductReview` of type `[Customer!]!`
+  """
+  customers_via_ProductReview: Customer_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Product'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Product_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Product_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Product_Filter
+}
+"""
+✨ Generated key input type for table 'Product'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Product_Key {
+  """
+  ✨ Generated from Field `Product`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Product`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'Product'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Product_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Product_Filter
+}
+"""
+✨ Generated order input type for table 'Product'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Product_Order {
+  """
+  ✨ Generated from Field `Product`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`featuredImageId` of type `UUID`
+  """
+  featuredImageId: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`seoId` of type `UUID`
+  """
+  seoId: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`featuredImage` of type `ProductImage`
+  """
+  featuredImage: ProductImage_Order
+  """
+  ✨ Generated from Field `Product`.`seo` of type `SEO`
+  """
+  seo: SEO_Order
+  """
+  ✨ Generated from Field `Product`.`availableForSale` of type `Boolean!`
+  """
+  availableForSale: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`createdAt` of type `Date!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`description` of type `String`
+  """
+  description: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`descriptionEmbedding` of type `Vector!`
+  """
+  descriptionEmbedding: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`handle` of type `String!`
+  """
+  handle: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`productType` of type `String`
+  """
+  productType: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`title` of type `String!`
+  """
+  title: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`titleEmbedding` of type `Vector!`
+  """
+  titleEmbedding: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`updatedAt` of type `Date!`
+  """
+  updatedAt: OrderDirection
+}
+"""
+✨ Generated data input type for table 'ProductCollection'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input ProductCollection_Data {
+  """
+  ✨ Generated from Field `ProductCollection`.`collectionId` of type `UUID!`
+  """
+  collectionId: UUID
+  """
+  ✨ `_expr` server value variant of `collectionId` (✨ Generated from Field `ProductCollection`.`collectionId` of type `UUID!`)
+  """
+  collectionId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductCollection`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `ProductCollection`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductCollection`.`collection` of type `Collection!`
+  """
+  collection: Collection_Key
+  """
+  ✨ Generated from Field `ProductCollection`.`product` of type `Product!`
+  """
+  product: Product_Key
+  """
+  ✨ Generated from Field `ProductCollection`.`displayPosition` of type `Int!`
+  """
+  displayPosition: Int
+}
+"""
+✨ Generated filter input type for table 'ProductCollection'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ProductCollection_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [ProductCollection_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: ProductCollection_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [ProductCollection_Filter!]
+  """
+  ✨ Generated from Field `ProductCollection`.`collectionId` of type `UUID!`
+  """
+  collectionId: UUID_Filter
+  """
+  ✨ Generated from Field `ProductCollection`.`productId` of type `UUID!`
+  """
+  productId: UUID_Filter
+  """
+  ✨ Generated from Field `ProductCollection`.`collection` of type `Collection!`
+  """
+  collection: Collection_Filter
+  """
+  ✨ Generated from Field `ProductCollection`.`product` of type `Product!`
+  """
+  product: Product_Filter
+  """
+  ✨ Generated from Field `ProductCollection`.`displayPosition` of type `Int!`
+  """
+  displayPosition: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'ProductCollection'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input ProductCollection_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [ProductCollection_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: ProductCollection_Filter
+}
+"""
+✨ Generated key input type for table 'ProductCollection'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input ProductCollection_Key {
+  """
+  ✨ Generated from Field `ProductCollection`.`collectionId` of type `UUID!`
+  """
+  collectionId: UUID
+  """
+  ✨ `_expr` server value variant of `collectionId` (✨ Generated from Field `ProductCollection`.`collectionId` of type `UUID!`)
+  """
+  collectionId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductCollection`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `ProductCollection`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'ProductCollection'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input ProductCollection_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: ProductCollection_Filter
+}
+"""
+✨ Generated order input type for table 'ProductCollection'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input ProductCollection_Order {
+  """
+  ✨ Generated from Field `ProductCollection`.`collectionId` of type `UUID!`
+  """
+  collectionId: OrderDirection
+  """
+  ✨ Generated from Field `ProductCollection`.`productId` of type `UUID!`
+  """
+  productId: OrderDirection
+  """
+  ✨ Generated from Field `ProductCollection`.`collection` of type `Collection!`
+  """
+  collection: Collection_Order
+  """
+  ✨ Generated from Field `ProductCollection`.`product` of type `Product!`
+  """
+  product: Product_Order
+  """
+  ✨ Generated from Field `ProductCollection`.`displayPosition` of type `Int!`
+  """
+  displayPosition: OrderDirection
+}
+"""
+✨ Generated data input type for table 'ProductImage'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input ProductImage_Data {
+  """
+  ✨ Generated from Field `ProductImage`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ProductImage`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductImage`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `ProductImage`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductImage`.`product` of type `Product!`
+  """
+  product: Product_Key
+  """
+  ✨ Generated from Field `ProductImage`.`altText` of type `String`
+  """
+  altText: String
+  """
+  ✨ `_expr` server value variant of `altText` (✨ Generated from Field `ProductImage`.`altText` of type `String`)
+  """
+  altText_expr: String_Expr
+  """
+  ✨ Generated from Field `ProductImage`.`displayPosition` of type `Int!`
+  """
+  displayPosition: Int
+  """
+  ✨ Generated from Field `ProductImage`.`featured` of type `Boolean!`
+  """
+  featured: Boolean
+  """
+  ✨ Generated from Field `ProductImage`.`height` of type `Int!`
+  """
+  height: Int
+  """
+  ✨ Generated from Field `ProductImage`.`url` of type `String!`
+  """
+  url: String
+  """
+  ✨ `_expr` server value variant of `url` (✨ Generated from Field `ProductImage`.`url` of type `String!`)
+  """
+  url_expr: String_Expr
+  """
+  ✨ Generated from Field `ProductImage`.`width` of type `Int!`
+  """
+  width: Int
+}
+"""
+✨ Generated filter input type for table 'ProductImage'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ProductImage_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [ProductImage_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: ProductImage_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [ProductImage_Filter!]
+  """
+  ✨ Generated from Field `ProductImage`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`productId` of type `UUID!`
+  """
+  productId: UUID_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`product` of type `Product!`
+  """
+  product: Product_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`altText` of type `String`
+  """
+  altText: String_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`displayPosition` of type `Int!`
+  """
+  displayPosition: Int_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`featured` of type `Boolean!`
+  """
+  featured: Boolean_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`height` of type `Int!`
+  """
+  height: Int_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`url` of type `String!`
+  """
+  url: String_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`width` of type `Int!`
+  """
+  width: Int_Filter
+  """
+  ✨ Generated from Field `ProductImage`.`collections_on_featuredImage` of type `[Collection!]!`
+  """
+  collections_on_featuredImage: Collection_ListFilter
+  """
+  ✨ Generated from Field `ProductImage`.`products_on_featuredImage` of type `[Product!]!`
+  """
+  products_on_featuredImage: Product_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'ProductImage'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input ProductImage_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [ProductImage_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: ProductImage_Filter
+}
+"""
+✨ Generated key input type for table 'ProductImage'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input ProductImage_Key {
+  """
+  ✨ Generated from Field `ProductImage`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ProductImage`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'ProductImage'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input ProductImage_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: ProductImage_Filter
+}
+"""
+✨ Generated order input type for table 'ProductImage'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input ProductImage_Order {
+  """
+  ✨ Generated from Field `ProductImage`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `ProductImage`.`productId` of type `UUID!`
+  """
+  productId: OrderDirection
+  """
+  ✨ Generated from Field `ProductImage`.`product` of type `Product!`
+  """
+  product: Product_Order
+  """
+  ✨ Generated from Field `ProductImage`.`altText` of type `String`
+  """
+  altText: OrderDirection
+  """
+  ✨ Generated from Field `ProductImage`.`displayPosition` of type `Int!`
+  """
+  displayPosition: OrderDirection
+  """
+  ✨ Generated from Field `ProductImage`.`featured` of type `Boolean!`
+  """
+  featured: OrderDirection
+  """
+  ✨ Generated from Field `ProductImage`.`height` of type `Int!`
+  """
+  height: OrderDirection
+  """
+  ✨ Generated from Field `ProductImage`.`url` of type `String!`
+  """
+  url: OrderDirection
+  """
+  ✨ Generated from Field `ProductImage`.`width` of type `Int!`
+  """
+  width: OrderDirection
+}
+"""
+✨ Generated data input type for table 'ProductOption'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input ProductOption_Data {
+  """
+  ✨ Generated from Field `ProductOption`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ProductOption`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductOption`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `ProductOption`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductOption`.`product` of type `Product!`
+  """
+  product: Product_Key
+  """
+  ✨ Generated from Field `ProductOption`.`name` of type `String!`
+  """
+  name: String
+  """
+  ✨ `_expr` server value variant of `name` (✨ Generated from Field `ProductOption`.`name` of type `String!`)
+  """
+  name_expr: String_Expr
+  """
+  ✨ Generated from Field `ProductOption`.`values` of type `[String]`
+  """
+  values: [String!]
+}
+"""
+✨ Generated filter input type for table 'ProductOption'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ProductOption_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [ProductOption_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: ProductOption_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [ProductOption_Filter!]
+  """
+  ✨ Generated from Field `ProductOption`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `ProductOption`.`productId` of type `UUID!`
+  """
+  productId: UUID_Filter
+  """
+  ✨ Generated from Field `ProductOption`.`product` of type `Product!`
+  """
+  product: Product_Filter
+  """
+  ✨ Generated from Field `ProductOption`.`name` of type `String!`
+  """
+  name: String_Filter
+  """
+  ✨ Generated from Field `ProductOption`.`values` of type `[String]`
+  """
+  values: String_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'ProductOption'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input ProductOption_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [ProductOption_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: ProductOption_Filter
+}
+"""
+✨ Generated key input type for table 'ProductOption'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input ProductOption_Key {
+  """
+  ✨ Generated from Field `ProductOption`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ProductOption`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'ProductOption'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input ProductOption_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: ProductOption_Filter
+}
+"""
+✨ Generated order input type for table 'ProductOption'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input ProductOption_Order {
+  """
+  ✨ Generated from Field `ProductOption`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `ProductOption`.`productId` of type `UUID!`
+  """
+  productId: OrderDirection
+  """
+  ✨ Generated from Field `ProductOption`.`product` of type `Product!`
+  """
+  product: Product_Order
+  """
+  ✨ Generated from Field `ProductOption`.`name` of type `String!`
+  """
+  name: OrderDirection
+}
+"""
+✨ Generated data input type for table 'ProductReview'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input ProductReview_Data {
+  """
+  ✨ Generated from Field `ProductReview`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `ProductReview`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductReview`.`customerId` of type `String!`
+  """
+  customerId: String
+  """
+  ✨ `_expr` server value variant of `customerId` (✨ Generated from Field `ProductReview`.`customerId` of type `String!`)
+  """
+  customerId_expr: String_Expr
+  """
+  ✨ Generated from Field `ProductReview`.`customer` of type `Customer!`
+  """
+  customer: Customer_Key
+  """
+  ✨ Generated from Field `ProductReview`.`product` of type `Product!`
+  """
+  product: Product_Key
+  """
+  ✨ Generated from Field `ProductReview`.`content` of type `String!`
+  """
+  content: String
+  """
+  ✨ `_expr` server value variant of `content` (✨ Generated from Field `ProductReview`.`content` of type `String!`)
+  """
+  content_expr: String_Expr
+  """
+  ✨ Generated from Field `ProductReview`.`contentEmbedding` of type `Vector!`
+  """
+  contentEmbedding: Vector
+  """
+  ✨ `_embed` server value variant of `contentEmbedding` (✨ Generated from Field `ProductReview`.`contentEmbedding` of type `Vector!`)
+  """
+  contentEmbedding_embed: Vector_Embed
+  """
+  ✨ Generated from Field `ProductReview`.`date` of type `Date!`
+  """
+  date: Date
+  """
+  ✨ `_date` server value variant of `date` (✨ Generated from Field `ProductReview`.`date` of type `Date!`)
+  """
+  date_date: Date_Relative
+  """
+  ✨ `_expr` server value variant of `date` (✨ Generated from Field `ProductReview`.`date` of type `Date!`)
+  """
+  date_expr: Date_Expr
+  """
+  ✨ Generated from Field `ProductReview`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ProductReview`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductReview`.`rating` of type `Int!`
+  """
+  rating: Int
+}
+"""
+✨ Generated filter input type for table 'ProductReview'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ProductReview_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [ProductReview_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: ProductReview_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [ProductReview_Filter!]
+  """
+  ✨ Generated from Field `ProductReview`.`productId` of type `UUID!`
+  """
+  productId: UUID_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`customerId` of type `String!`
+  """
+  customerId: String_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`customer` of type `Customer!`
+  """
+  customer: Customer_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`product` of type `Product!`
+  """
+  product: Product_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`content` of type `String!`
+  """
+  content: String_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`contentEmbedding` of type `Vector!`
+  """
+  contentEmbedding: Vector_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`date` of type `Date!`
+  """
+  date: Date_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `ProductReview`.`rating` of type `Int!`
+  """
+  rating: Int_Filter
+}
+"""
+✨ Generated first-row input type for table 'ProductReview'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input ProductReview_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [ProductReview_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: ProductReview_Filter
+}
+"""
+✨ Generated key input type for table 'ProductReview'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input ProductReview_Key {
+  """
+  ✨ Generated from Field `ProductReview`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `ProductReview`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductReview`.`customerId` of type `String!`
+  """
+  customerId: String
+  """
+  ✨ `_expr` server value variant of `customerId` (✨ Generated from Field `ProductReview`.`customerId` of type `String!`)
+  """
+  customerId_expr: String_Expr
+}
+"""
+✨ Generated list filter input type for table 'ProductReview'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input ProductReview_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: ProductReview_Filter
+}
+"""
+✨ Generated order input type for table 'ProductReview'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input ProductReview_Order {
+  """
+  ✨ Generated from Field `ProductReview`.`productId` of type `UUID!`
+  """
+  productId: OrderDirection
+  """
+  ✨ Generated from Field `ProductReview`.`customerId` of type `String!`
+  """
+  customerId: OrderDirection
+  """
+  ✨ Generated from Field `ProductReview`.`customer` of type `Customer!`
+  """
+  customer: Customer_Order
+  """
+  ✨ Generated from Field `ProductReview`.`product` of type `Product!`
+  """
+  product: Product_Order
+  """
+  ✨ Generated from Field `ProductReview`.`content` of type `String!`
+  """
+  content: OrderDirection
+  """
+  ✨ Generated from Field `ProductReview`.`contentEmbedding` of type `Vector!`
+  """
+  contentEmbedding: OrderDirection
+  """
+  ✨ Generated from Field `ProductReview`.`date` of type `Date!`
+  """
+  date: OrderDirection
+  """
+  ✨ Generated from Field `ProductReview`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `ProductReview`.`rating` of type `Int!`
+  """
+  rating: OrderDirection
+}
+"""
+✨ Generated data input type for table 'ProductVariant'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input ProductVariant_Data {
+  """
+  ✨ Generated from Field `ProductVariant`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ProductVariant`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductVariant`.`productId` of type `UUID!`
+  """
+  productId: UUID
+  """
+  ✨ `_expr` server value variant of `productId` (✨ Generated from Field `ProductVariant`.`productId` of type `UUID!`)
+  """
+  productId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `ProductVariant`.`product` of type `Product!`
+  """
+  product: Product_Key
+  """
+  ✨ Generated from Field `ProductVariant`.`availableForSale` of type `Boolean!`
+  """
+  availableForSale: Boolean
+  """
+  ✨ Generated from Field `ProductVariant`.`inventoryQuantity` of type `Int!`
+  """
+  inventoryQuantity: Int
+  """
+  ✨ Generated from Field `ProductVariant`.`price` of type `Float!`
+  """
+  price: Float
+  """
+  ✨ Generated from Field `ProductVariant`.`sku` of type `String`
+  """
+  sku: String
+  """
+  ✨ `_expr` server value variant of `sku` (✨ Generated from Field `ProductVariant`.`sku` of type `String`)
+  """
+  sku_expr: String_Expr
+  """
+  ✨ Generated from Field `ProductVariant`.`title` of type `String!`
+  """
+  title: String
+  """
+  ✨ `_expr` server value variant of `title` (✨ Generated from Field `ProductVariant`.`title` of type `String!`)
+  """
+  title_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'ProductVariant'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input ProductVariant_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [ProductVariant_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: ProductVariant_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [ProductVariant_Filter!]
+  """
+  ✨ Generated from Field `ProductVariant`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`productId` of type `UUID!`
+  """
+  productId: UUID_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`product` of type `Product!`
+  """
+  product: Product_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`availableForSale` of type `Boolean!`
+  """
+  availableForSale: Boolean_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`inventoryQuantity` of type `Int!`
+  """
+  inventoryQuantity: Int_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`price` of type `Float!`
+  """
+  price: Float_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`sku` of type `String`
+  """
+  sku: String_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`title` of type `String!`
+  """
+  title: String_Filter
+  """
+  ✨ Generated from Field `ProductVariant`.`selectedOptions_on_productVariant` of type `[SelectedOption!]!`
+  """
+  selectedOptions_on_productVariant: SelectedOption_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'ProductVariant'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input ProductVariant_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [ProductVariant_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: ProductVariant_Filter
+}
+"""
+✨ Generated key input type for table 'ProductVariant'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input ProductVariant_Key {
+  """
+  ✨ Generated from Field `ProductVariant`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `ProductVariant`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'ProductVariant'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input ProductVariant_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: ProductVariant_Filter
+}
+"""
+✨ Generated order input type for table 'ProductVariant'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input ProductVariant_Order {
+  """
+  ✨ Generated from Field `ProductVariant`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `ProductVariant`.`productId` of type `UUID!`
+  """
+  productId: OrderDirection
+  """
+  ✨ Generated from Field `ProductVariant`.`product` of type `Product!`
+  """
+  product: Product_Order
+  """
+  ✨ Generated from Field `ProductVariant`.`availableForSale` of type `Boolean!`
+  """
+  availableForSale: OrderDirection
+  """
+  ✨ Generated from Field `ProductVariant`.`inventoryQuantity` of type `Int!`
+  """
+  inventoryQuantity: OrderDirection
+  """
+  ✨ Generated from Field `ProductVariant`.`price` of type `Float!`
+  """
+  price: OrderDirection
+  """
+  ✨ Generated from Field `ProductVariant`.`sku` of type `String`
+  """
+  sku: OrderDirection
+  """
+  ✨ Generated from Field `ProductVariant`.`title` of type `String!`
+  """
+  title: OrderDirection
+}
+"""
+✨ Generated data input type for table 'SEO'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input SEO_Data {
+  """
+  ✨ Generated from Field `SEO`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `SEO`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `SEO`.`description` of type `String!`
+  """
+  description: String
+  """
+  ✨ `_expr` server value variant of `description` (✨ Generated from Field `SEO`.`description` of type `String!`)
+  """
+  description_expr: String_Expr
+  """
+  ✨ Generated from Field `SEO`.`keywords` of type `String!`
+  """
+  keywords: String
+  """
+  ✨ `_expr` server value variant of `keywords` (✨ Generated from Field `SEO`.`keywords` of type `String!`)
+  """
+  keywords_expr: String_Expr
+  """
+  ✨ Generated from Field `SEO`.`title` of type `String!`
+  """
+  title: String
+  """
+  ✨ `_expr` server value variant of `title` (✨ Generated from Field `SEO`.`title` of type `String!`)
+  """
+  title_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'SEO'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input SEO_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [SEO_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: SEO_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [SEO_Filter!]
+  """
+  ✨ Generated from Field `SEO`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `SEO`.`description` of type `String!`
+  """
+  description: String_Filter
+  """
+  ✨ Generated from Field `SEO`.`keywords` of type `String!`
+  """
+  keywords: String_Filter
+  """
+  ✨ Generated from Field `SEO`.`title` of type `String!`
+  """
+  title: String_Filter
+  """
+  ✨ Generated from Field `SEO`.`collections_on_seo` of type `[Collection!]!`
+  """
+  collections_on_seo: Collection_ListFilter
+  """
+  ✨ Generated from Field `SEO`.`products_on_seo` of type `[Product!]!`
+  """
+  products_on_seo: Product_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'SEO'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input SEO_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [SEO_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: SEO_Filter
+}
+"""
+✨ Generated key input type for table 'SEO'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input SEO_Key {
+  """
+  ✨ Generated from Field `SEO`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `SEO`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'SEO'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input SEO_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: SEO_Filter
+}
+"""
+✨ Generated order input type for table 'SEO'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input SEO_Order {
+  """
+  ✨ Generated from Field `SEO`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `SEO`.`description` of type `String!`
+  """
+  description: OrderDirection
+  """
+  ✨ Generated from Field `SEO`.`keywords` of type `String!`
+  """
+  keywords: OrderDirection
+  """
+  ✨ Generated from Field `SEO`.`title` of type `String!`
+  """
+  title: OrderDirection
+}
+"""
+✨ Generated data input type for table 'SelectedOption'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input SelectedOption_Data {
+  """
+  ✨ Generated from Field `SelectedOption`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `SelectedOption`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+  """
+  ✨ Generated from Field `SelectedOption`.`productVariantId` of type `UUID!`
+  """
+  productVariantId: UUID
+  """
+  ✨ `_expr` server value variant of `productVariantId` (✨ Generated from Field `SelectedOption`.`productVariantId` of type `UUID!`)
+  """
+  productVariantId_expr: UUID_Expr
+  """
+  ✨ Generated from Field `SelectedOption`.`productVariant` of type `ProductVariant!`
+  """
+  productVariant: ProductVariant_Key
+  """
+  ✨ Generated from Field `SelectedOption`.`name` of type `String`
+  """
+  name: String
+  """
+  ✨ `_expr` server value variant of `name` (✨ Generated from Field `SelectedOption`.`name` of type `String`)
+  """
+  name_expr: String_Expr
+  """
+  ✨ Generated from Field `SelectedOption`.`value` of type `String`
+  """
+  value: String
+  """
+  ✨ `_expr` server value variant of `value` (✨ Generated from Field `SelectedOption`.`value` of type `String`)
+  """
+  value_expr: String_Expr
+}
+"""
+✨ Generated filter input type for table 'SelectedOption'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input SelectedOption_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [SelectedOption_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: SelectedOption_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [SelectedOption_Filter!]
+  """
+  ✨ Generated from Field `SelectedOption`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `SelectedOption`.`productVariantId` of type `UUID!`
+  """
+  productVariantId: UUID_Filter
+  """
+  ✨ Generated from Field `SelectedOption`.`productVariant` of type `ProductVariant!`
+  """
+  productVariant: ProductVariant_Filter
+  """
+  ✨ Generated from Field `SelectedOption`.`name` of type `String`
+  """
+  name: String_Filter
+  """
+  ✨ Generated from Field `SelectedOption`.`value` of type `String`
+  """
+  value: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'SelectedOption'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input SelectedOption_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [SelectedOption_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: SelectedOption_Filter
+}
+"""
+✨ Generated key input type for table 'SelectedOption'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input SelectedOption_Key {
+  """
+  ✨ Generated from Field `SelectedOption`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `SelectedOption`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr
+}
+"""
+✨ Generated list filter input type for table 'SelectedOption'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input SelectedOption_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: SelectedOption_Filter
+}
+"""
+✨ Generated order input type for table 'SelectedOption'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input SelectedOption_Order {
+  """
+  ✨ Generated from Field `SelectedOption`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `SelectedOption`.`productVariantId` of type `UUID!`
+  """
+  productVariantId: OrderDirection
+  """
+  ✨ Generated from Field `SelectedOption`.`productVariant` of type `ProductVariant!`
+  """
+  productVariant: ProductVariant_Order
+  """
+  ✨ Generated from Field `SelectedOption`.`name` of type `String`
+  """
+  name: OrderDirection
+  """
+  ✨ Generated from Field `SelectedOption`.`value` of type `String`
+  """
+  value: OrderDirection
+}
