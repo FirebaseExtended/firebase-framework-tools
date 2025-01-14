@@ -1,0 +1,470 @@
+extend type Collection {
+  """
+  ✨ List `ProductCollection` objects in a one-to-many relationship (where `ProductCollection`.`collection` is this object).
+  """
+  productCollections_on_collection(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductCollection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductCollection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductCollection!]! @fdc_generated(from: "ProductCollection.collection", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Product` objects using `ProductCollection` as the join table (a `ProductCollection` object exists where its `collection` is this and its `product` is that).
+  """
+  products_via_ProductCollection(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductCollection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductCollection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Product!]! @fdc_generated(from: "ProductCollection", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+}
+extend type Customer {
+  """
+  ✨ List `Order` objects in a one-to-many relationship (where `Order`.`customer` is this object).
+  """
+  orders_on_customer(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Order_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Order_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Order!]! @fdc_generated(from: "Order.customer", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ProductReview` objects in a one-to-many relationship (where `ProductReview`.`customer` is this object).
+  """
+  productReviews_on_customer(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductReview_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductReview_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductReview!]! @fdc_generated(from: "ProductReview.customer", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Product` objects using `ProductReview` as the join table (a `ProductReview` object exists where its `customer` is this and its `product` is that).
+  """
+  products_via_ProductReview(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductReview_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductReview_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Product!]! @fdc_generated(from: "ProductReview", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+}
+extend type Order {
+  """
+  ✨ List `OrderItem` objects in a one-to-many relationship (where `OrderItem`.`order` is this object).
+  """
+  orderItems_on_order(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: OrderItem_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [OrderItem_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [OrderItem!]! @fdc_generated(from: "OrderItem.order", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+}
+extend type Product {
+  """
+  ✨ List `OrderItem` objects in a one-to-many relationship (where `OrderItem`.`product` is this object).
+  """
+  orderItems_on_product(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: OrderItem_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [OrderItem_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [OrderItem!]! @fdc_generated(from: "OrderItem.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ProductCollection` objects in a one-to-many relationship (where `ProductCollection`.`product` is this object).
+  """
+  productCollections_on_product(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductCollection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductCollection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductCollection!]! @fdc_generated(from: "ProductCollection.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ProductImage` objects in a one-to-many relationship (where `ProductImage`.`product` is this object).
+  """
+  productImages_on_product(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductImage_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductImage_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductImage!]! @fdc_generated(from: "ProductImage.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ProductOption` objects in a one-to-many relationship (where `ProductOption`.`product` is this object).
+  """
+  productOptions_on_product(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductOption_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductOption_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductOption!]! @fdc_generated(from: "ProductOption.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ProductReview` objects in a one-to-many relationship (where `ProductReview`.`product` is this object).
+  """
+  productReviews_on_product(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductReview_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductReview_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductReview!]! @fdc_generated(from: "ProductReview.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `ProductVariant` objects in a one-to-many relationship (where `ProductVariant`.`product` is this object).
+  """
+  productVariants_on_product(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductVariant_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductVariant_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductVariant!]! @fdc_generated(from: "ProductVariant.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Collection` objects using `ProductCollection` as the join table (a `ProductCollection` object exists where its `product` is this and its `collection` is that).
+  """
+  collections_via_ProductCollection(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductCollection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductCollection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Collection!]! @fdc_generated(from: "ProductCollection", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  ✨ List `Customer` objects using `ProductReview` as the join table (a `ProductReview` object exists where its `product` is this and its `customer` is that).
+  """
+  customers_via_ProductReview(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductReview_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductReview_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Customer!]! @fdc_generated(from: "ProductReview", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+}
+extend type ProductImage {
+  """
+  ✨ List `Collection` objects in a one-to-many relationship (where `Collection`.`featuredImage` is this object).
+  """
+  collections_on_featuredImage(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Collection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Collection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Collection!]! @fdc_generated(from: "Collection.featuredImage", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Product` objects in a one-to-many relationship (where `Product`.`featuredImage` is this object).
+  """
+  products_on_featuredImage(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Product_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Product_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Product!]! @fdc_generated(from: "Product.featuredImage", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+}
+extend type ProductVariant {
+  """
+  ✨ List `SelectedOption` objects in a one-to-many relationship (where `SelectedOption`.`productVariant` is this object).
+  """
+  selectedOptions_on_productVariant(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: SelectedOption_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [SelectedOption_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [SelectedOption!]! @fdc_generated(from: "SelectedOption.productVariant", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+}
+extend type SEO {
+  """
+  ✨ List `Collection` objects in a one-to-many relationship (where `Collection`.`seo` is this object).
+  """
+  collections_on_seo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Collection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Collection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Collection!]! @fdc_generated(from: "Collection.seo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `Product` objects in a one-to-many relationship (where `Product`.`seo` is this object).
+  """
+  products_on_seo(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Product_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Product_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Product!]! @fdc_generated(from: "Product.seo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+}

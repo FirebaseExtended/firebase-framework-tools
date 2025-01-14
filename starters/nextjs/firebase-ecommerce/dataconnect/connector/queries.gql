@@ -1,0 +1,249 @@
+# List all users, only admins should be able to list all users, so we use NO_ACCESS
+query ListCustomers @auth(level: NO_ACCESS) {
+  customers {
+    id
+    firstName
+    lastName
+    email
+  }
+}
+
+query GetReviewsByHandle($handle: String!) @auth(level: PUBLIC) {
+  products(where: { handle: { eq: $handle } }) {
+    productReviews_on_product(orderBy: [{ date: DESC }]) {
+      id
+      rating
+      content
+      date
+      customer {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+}
+
+query GetProductByHandle($handle: String!) @auth(level: PUBLIC) {
+  product(first: { where: { handle: { eq: $handle } } }) {
+    id
+    title
+    description
+    handle
+    availableForSale
+    createdAt
+    updatedAt
+    featuredImage {
+      url
+      width
+      height
+      altText
+    }
+    seo {
+      title
+      description
+      keywords
+    }
+    productVariants_on_product {
+      id
+      price
+      availableForSale
+      inventoryQuantity
+      selectedOptions_on_productVariant {
+        name
+        value
+      }
+    }
+    productImages_on_product(orderBy: [{ displayPosition: ASC }]) {
+      id
+      url
+      altText
+      width
+      height
+      displayPosition
+    }
+  }
+}
+
+query GetCollectionByHandle($handle: String!, $page: String) @auth(level: PUBLIC) {
+  collections(where: { handle: { eq: $handle }, page: { eq: $page } }) {
+    id
+    name
+    description
+    page
+    featuredImage {
+      url
+      width
+      height
+      altText
+    }
+    seo {
+      title
+      description
+      keywords
+    }
+    products_via_ProductCollection {
+      id
+      title
+      handle
+      description
+      availableForSale
+      createdAt
+      updatedAt
+      productVariants_on_product {
+        id
+        price
+        availableForSale
+        inventoryQuantity
+        selectedOptions_on_productVariant {
+          name
+          value
+        }
+      }
+      productImages_on_product(orderBy: [{ displayPosition: ASC }]) {
+        id
+        url
+        altText
+        width
+        height
+        displayPosition
+      }
+    }
+  }
+}
+
+query GetCollectionsByPage($page: String) @auth(level: PUBLIC) {
+  collections(where: { page: { eq: $page } }) {
+    id
+    name
+    description
+    handle
+    page
+    featuredImage {
+      url
+      width
+      height
+      altText
+    }
+    products_via_ProductCollection {
+      id
+      title
+      handle
+      description
+      productVariants_on_product {
+        id
+        price
+        selectedOptions_on_productVariant {
+          name
+          value
+        }
+      }
+      productImages_on_product(orderBy: [{ displayPosition: ASC }]) {
+        id
+        url
+        altText
+        width
+        height
+        displayPosition
+      }
+    }
+  }
+}
+
+query SearchProductDescriptionUsingL2Similarity($query: String!) @auth(level: PUBLIC) {
+  products_descriptionEmbedding_similarity(
+    compare_embed: { model: "textembedding-gecko@003", text: $query }
+    method: COSINE
+    within: 0.75
+    limit: 20
+  ) {
+    id
+    handle
+    title
+  }
+}
+
+query SearchProductTitleUsingL2Similarity($query: String!) @auth(level: PUBLIC) {
+  products_titleEmbedding_similarity(
+    compare_embed: { model: "textembedding-gecko@003", text: $query }
+    method: COSINE
+    within: 0.75
+    limit: 20
+  ) {
+    id
+    handle
+    title
+  }
+}
+
+query SearchProductReviewContentUsingL2Similarity($query: String!) @auth(level: PUBLIC) {
+  productReviews_contentEmbedding_similarity(
+    compare_embed: { model: "textembedding-gecko@003", text: $query }
+    method: COSINE
+    within: 0.75
+    limit: 20
+  ) {
+    product {
+      id
+      title
+      handle
+    }
+  }
+}
+
+query GetOrdersByCustomerId($customerId: String!) @auth(level: PUBLIC) {
+  orders(where: { customer: { id: { eq: $customerId } } }) {
+    id
+    processedAt
+    chargeId
+    paymentIntentId
+    receiptUrl
+    subtotalPrice
+    totalPrice
+    financialStatus
+    fulfillmentStatus
+    orderItems_on_order {
+      id
+      quantity
+      price
+      product {
+        id
+        title
+        handle
+        productImages_on_product(orderBy: [{ displayPosition: ASC }], limit: 1) {
+          url
+          altText
+          width
+          height
+        }
+      }
+    }
+  }
+}
+
+query GetOrderById($id: UUID!) @auth(level: PUBLIC) {
+  order(id: $id) {
+    id
+    processedAt
+    receiptUrl
+    totalPrice
+    financialStatus
+    fulfillmentStatus
+    orderItems_on_order {
+      id
+      quantity
+      price
+      product {
+        id
+        title
+        handle
+        productImages_on_product(orderBy: [{ displayPosition: ASC }], limit: 1) {
+          url
+          altText
+          width
+          height
+        }
+      }
+    }
+  }
+}

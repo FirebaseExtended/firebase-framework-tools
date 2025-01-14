@@ -1,0 +1,114 @@
+mutation UpsertCustomer(
+  $firstName: String!
+  $lastName: String!
+  $email: String!
+  $phone: String!
+  $acceptsMarketing: Boolean!
+) @auth(level: PUBLIC) {
+  customer_upsert(
+    data: {
+      id_expr: "auth.uid"
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+      phone: $phone
+      acceptsMarketing: $acceptsMarketing
+    }
+  )
+}
+
+# Create a new review
+mutation CreateProductReview(
+  $productId: UUID!
+  $customerId: String!
+  $rating: Int!
+  $content: String!
+) @auth(level: PUBLIC) {
+  productReview_insert(
+    data: {
+      product: { id: $productId }
+      customer: { id: $customerId }
+      rating: $rating
+      content: $content
+      contentEmbedding_embed: { model: "textembedding-gecko@003", text: $content }
+    }
+  )
+}
+
+mutation CreateOrder(
+  $customerId: String!
+  $chargeId: String
+  $paymentIntentId: String
+  $receiptUrl: String
+  $subtotalPrice: Float!
+  $totalTax: Float!
+  $totalShippingPrice: Float!
+  $totalPrice: Float!
+  $financialStatus: String!
+  $fulfillmentStatus: String!
+) @auth(level: PUBLIC) {
+  order_insert(
+    data: {
+      customer: { id: $customerId }
+      chargeId: $chargeId
+      paymentIntentId: $paymentIntentId
+      receiptUrl: $receiptUrl
+      subtotalPrice: $subtotalPrice
+      totalTax: $totalTax
+      totalShippingPrice: $totalShippingPrice
+      totalPrice: $totalPrice
+      financialStatus: $financialStatus
+      fulfillmentStatus: $fulfillmentStatus
+    }
+  )
+}
+
+mutation UpdateOrderByPaymentIntentId(
+  $paymentIntentId: String!
+  $financialStatus: String
+  $fulfillmentStatus: String
+  $receiptUrl: String
+  $processedAt: Date
+  $chargeId: String
+) @auth(level: PUBLIC) {
+  order_update(
+    first: { where: { paymentIntentId: { eq: $paymentIntentId } } }
+    data: {
+      financialStatus: $financialStatus
+      fulfillmentStatus: $fulfillmentStatus
+      receiptUrl: $receiptUrl
+      processedAt: $processedAt
+      chargeId: $chargeId
+    }
+  )
+}
+
+mutation UpdateOrderByChargeId(
+  $financialStatus: String
+  $fulfillmentStatus: String
+  $receiptUrl: String
+  $processedAt: Date
+  $chargeId: String
+) @auth(level: PUBLIC) {
+  order_update(
+    first: { where: { chargeId: { eq: $chargeId } } }
+    data: {
+      financialStatus: $financialStatus
+      fulfillmentStatus: $fulfillmentStatus
+      receiptUrl: $receiptUrl
+      processedAt: $processedAt
+    }
+  )
+}
+
+mutation CreateOrderItem($orderId: UUID!, $productId: UUID!, $quantity: Int!, $price: Float!)
+@auth(level: PUBLIC) {
+  orderItem_insert(
+    data: {
+      order: { id: $orderId }
+      product: { id: $productId }
+      quantity: $quantity
+      price: $price
+    }
+  )
+}

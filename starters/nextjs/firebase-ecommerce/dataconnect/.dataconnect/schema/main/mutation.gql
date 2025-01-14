@@ -1,0 +1,1336 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Collection` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  collection_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Collection_Data!
+  ): Collection_KeyOutput! @fdc_generated(from: "Collection", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Customer` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  customer_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Customer_Data!
+  ): Customer_KeyOutput! @fdc_generated(from: "Customer", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Order` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  order_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Order_Data!
+  ): Order_KeyOutput! @fdc_generated(from: "Order", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `OrderItem` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  orderItem_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: OrderItem_Data!
+  ): OrderItem_KeyOutput! @fdc_generated(from: "OrderItem", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Product` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  product_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ProductCollection` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productCollection_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ProductCollection_Data!
+  ): ProductCollection_KeyOutput! @fdc_generated(from: "ProductCollection", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ProductImage` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productImage_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ProductImage_Data!
+  ): ProductImage_KeyOutput! @fdc_generated(from: "ProductImage", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ProductOption` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productOption_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ProductOption_Data!
+  ): ProductOption_KeyOutput! @fdc_generated(from: "ProductOption", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ProductReview` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productReview_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ProductReview_Data!
+  ): ProductReview_KeyOutput! @fdc_generated(from: "ProductReview", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ProductVariant` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productVariant_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ProductVariant_Data!
+  ): ProductVariant_KeyOutput! @fdc_generated(from: "ProductVariant", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `SEO` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  sEO_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: SEO_Data!
+  ): SEO_KeyOutput! @fdc_generated(from: "SEO", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `SelectedOption` into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  selectedOption_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: SelectedOption_Data!
+  ): SelectedOption_KeyOutput! @fdc_generated(from: "SelectedOption", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Collection` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  collection_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Collection_Data!]!
+  ): [Collection_KeyOutput!]! @fdc_generated(from: "Collection", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Customer` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  customer_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Customer_Data!]!
+  ): [Customer_KeyOutput!]! @fdc_generated(from: "Customer", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Order` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  order_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Order_Data!]!
+  ): [Order_KeyOutput!]! @fdc_generated(from: "Order", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `OrderItem` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  orderItem_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [OrderItem_Data!]!
+  ): [OrderItem_KeyOutput!]! @fdc_generated(from: "OrderItem", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Product` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  product_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ProductCollection` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productCollection_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ProductCollection_Data!]!
+  ): [ProductCollection_KeyOutput!]! @fdc_generated(from: "ProductCollection", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ProductImage` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productImage_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ProductImage_Data!]!
+  ): [ProductImage_KeyOutput!]! @fdc_generated(from: "ProductImage", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ProductOption` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productOption_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ProductOption_Data!]!
+  ): [ProductOption_KeyOutput!]! @fdc_generated(from: "ProductOption", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ProductReview` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productReview_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ProductReview_Data!]!
+  ): [ProductReview_KeyOutput!]! @fdc_generated(from: "ProductReview", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ProductVariant` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  productVariant_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ProductVariant_Data!]!
+  ): [ProductVariant_KeyOutput!]! @fdc_generated(from: "ProductVariant", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `SEO` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  sEO_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [SEO_Data!]!
+  ): [SEO_KeyOutput!]! @fdc_generated(from: "SEO", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `SelectedOption` objects into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  selectedOption_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [SelectedOption_Data!]!
+  ): [SelectedOption_KeyOutput!]! @fdc_generated(from: "SelectedOption", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Collection` into the table, based on the primary key. Returns the key of the newly inserted `Collection`.
+  """
+  collection_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Collection_Data!
+  ): Collection_KeyOutput! @fdc_generated(from: "Collection", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Customer` into the table, based on the primary key. Returns the key of the newly inserted `Customer`.
+  """
+  customer_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Customer_Data!
+  ): Customer_KeyOutput! @fdc_generated(from: "Customer", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Order` into the table, based on the primary key. Returns the key of the newly inserted `Order`.
+  """
+  order_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Order_Data!
+  ): Order_KeyOutput! @fdc_generated(from: "Order", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `OrderItem` into the table, based on the primary key. Returns the key of the newly inserted `OrderItem`.
+  """
+  orderItem_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: OrderItem_Data!
+  ): OrderItem_KeyOutput! @fdc_generated(from: "OrderItem", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Product` into the table, based on the primary key. Returns the key of the newly inserted `Product`.
+  """
+  product_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ProductCollection` into the table, based on the primary key. Returns the key of the newly inserted `ProductCollection`.
+  """
+  productCollection_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ProductCollection_Data!
+  ): ProductCollection_KeyOutput! @fdc_generated(from: "ProductCollection", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ProductImage` into the table, based on the primary key. Returns the key of the newly inserted `ProductImage`.
+  """
+  productImage_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ProductImage_Data!
+  ): ProductImage_KeyOutput! @fdc_generated(from: "ProductImage", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ProductOption` into the table, based on the primary key. Returns the key of the newly inserted `ProductOption`.
+  """
+  productOption_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ProductOption_Data!
+  ): ProductOption_KeyOutput! @fdc_generated(from: "ProductOption", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ProductReview` into the table, based on the primary key. Returns the key of the newly inserted `ProductReview`.
+  """
+  productReview_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ProductReview_Data!
+  ): ProductReview_KeyOutput! @fdc_generated(from: "ProductReview", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ProductVariant` into the table, based on the primary key. Returns the key of the newly inserted `ProductVariant`.
+  """
+  productVariant_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ProductVariant_Data!
+  ): ProductVariant_KeyOutput! @fdc_generated(from: "ProductVariant", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `SEO` into the table, based on the primary key. Returns the key of the newly inserted `SEO`.
+  """
+  sEO_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: SEO_Data!
+  ): SEO_KeyOutput! @fdc_generated(from: "SEO", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `SelectedOption` into the table, based on the primary key. Returns the key of the newly inserted `SelectedOption`.
+  """
+  selectedOption_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: SelectedOption_Data!
+  ): SelectedOption_KeyOutput! @fdc_generated(from: "SelectedOption", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Collection` objects into the table, based on the primary key. Returns the key of the newly inserted `Collection`.
+  """
+  collection_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Collection_Data!]!
+  ): [Collection_KeyOutput!]! @fdc_generated(from: "Collection", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Customer` objects into the table, based on the primary key. Returns the key of the newly inserted `Customer`.
+  """
+  customer_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Customer_Data!]!
+  ): [Customer_KeyOutput!]! @fdc_generated(from: "Customer", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Order` objects into the table, based on the primary key. Returns the key of the newly inserted `Order`.
+  """
+  order_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Order_Data!]!
+  ): [Order_KeyOutput!]! @fdc_generated(from: "Order", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `OrderItem` objects into the table, based on the primary key. Returns the key of the newly inserted `OrderItem`.
+  """
+  orderItem_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [OrderItem_Data!]!
+  ): [OrderItem_KeyOutput!]! @fdc_generated(from: "OrderItem", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Product` objects into the table, based on the primary key. Returns the key of the newly inserted `Product`.
+  """
+  product_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ProductCollection` objects into the table, based on the primary key. Returns the key of the newly inserted `ProductCollection`.
+  """
+  productCollection_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ProductCollection_Data!]!
+  ): [ProductCollection_KeyOutput!]! @fdc_generated(from: "ProductCollection", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ProductImage` objects into the table, based on the primary key. Returns the key of the newly inserted `ProductImage`.
+  """
+  productImage_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ProductImage_Data!]!
+  ): [ProductImage_KeyOutput!]! @fdc_generated(from: "ProductImage", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ProductOption` objects into the table, based on the primary key. Returns the key of the newly inserted `ProductOption`.
+  """
+  productOption_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ProductOption_Data!]!
+  ): [ProductOption_KeyOutput!]! @fdc_generated(from: "ProductOption", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ProductReview` objects into the table, based on the primary key. Returns the key of the newly inserted `ProductReview`.
+  """
+  productReview_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ProductReview_Data!]!
+  ): [ProductReview_KeyOutput!]! @fdc_generated(from: "ProductReview", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ProductVariant` objects into the table, based on the primary key. Returns the key of the newly inserted `ProductVariant`.
+  """
+  productVariant_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ProductVariant_Data!]!
+  ): [ProductVariant_KeyOutput!]! @fdc_generated(from: "ProductVariant", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `SEO` objects into the table, based on the primary key. Returns the key of the newly inserted `SEO`.
+  """
+  sEO_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [SEO_Data!]!
+  ): [SEO_KeyOutput!]! @fdc_generated(from: "SEO", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `SelectedOption` objects into the table, based on the primary key. Returns the key of the newly inserted `SelectedOption`.
+  """
+  selectedOption_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [SelectedOption_Data!]!
+  ): [SelectedOption_KeyOutput!]! @fdc_generated(from: "SelectedOption", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Collection` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  collection_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Collection_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Collection_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Collection_Data!
+  ): Collection_KeyOutput @fdc_generated(from: "Collection", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Customer` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  customer_update(
+    """
+    The unique ID of the object.
+    """
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Customer_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Customer_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Customer_Data!
+  ): Customer_KeyOutput @fdc_generated(from: "Customer", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Order` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  order_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Order_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Order_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Order_Data!
+  ): Order_KeyOutput @fdc_generated(from: "Order", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `OrderItem` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  orderItem_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: OrderItem_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: OrderItem_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: OrderItem_Data!
+  ): OrderItem_KeyOutput @fdc_generated(from: "OrderItem", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Product` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  product_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Product_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Product_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ProductCollection` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  productCollection_update(
+    """
+    The key used to identify the object.
+    """
+    key: ProductCollection_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductCollection_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ProductCollection_Data!
+  ): ProductCollection_KeyOutput @fdc_generated(from: "ProductCollection", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ProductImage` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  productImage_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductImage_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductImage_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ProductImage_Data!
+  ): ProductImage_KeyOutput @fdc_generated(from: "ProductImage", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ProductOption` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  productOption_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductOption_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductOption_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ProductOption_Data!
+  ): ProductOption_KeyOutput @fdc_generated(from: "ProductOption", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ProductReview` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  productReview_update(
+    """
+    The key used to identify the object.
+    """
+    key: ProductReview_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductReview_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ProductReview_Data!
+  ): ProductReview_KeyOutput @fdc_generated(from: "ProductReview", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ProductVariant` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  productVariant_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductVariant_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductVariant_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ProductVariant_Data!
+  ): ProductVariant_KeyOutput @fdc_generated(from: "ProductVariant", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `SEO` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  sEO_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SEO_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SEO_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: SEO_Data!
+  ): SEO_KeyOutput @fdc_generated(from: "SEO", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `SelectedOption` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
+  """
+  selectedOption_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SelectedOption_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SelectedOption_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: SelectedOption_Data!
+  ): SelectedOption_KeyOutput @fdc_generated(from: "SelectedOption", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Collection` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  collection_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Collection_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Collection_Data!
+  ): Int! @fdc_generated(from: "Collection", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Customer` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  customer_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Customer_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Customer_Data!
+  ): Int! @fdc_generated(from: "Customer", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Order` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  order_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Order_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Order_Data!
+  ): Int! @fdc_generated(from: "Order", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `OrderItem` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  orderItem_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: OrderItem_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: OrderItem_Data!
+  ): Int! @fdc_generated(from: "OrderItem", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Product` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  product_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Product_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Product_Data!
+  ): Int! @fdc_generated(from: "Product", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ProductCollection` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  productCollection_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ProductCollection_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ProductCollection_Data!
+  ): Int! @fdc_generated(from: "ProductCollection", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ProductImage` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  productImage_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ProductImage_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ProductImage_Data!
+  ): Int! @fdc_generated(from: "ProductImage", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ProductOption` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  productOption_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ProductOption_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ProductOption_Data!
+  ): Int! @fdc_generated(from: "ProductOption", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ProductReview` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  productReview_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ProductReview_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ProductReview_Data!
+  ): Int! @fdc_generated(from: "ProductReview", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ProductVariant` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  productVariant_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ProductVariant_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ProductVariant_Data!
+  ): Int! @fdc_generated(from: "ProductVariant", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `SEO` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  sEO_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: SEO_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: SEO_Data!
+  ): Int! @fdc_generated(from: "SEO", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `SelectedOption` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  selectedOption_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: SelectedOption_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: SelectedOption_Data!
+  ): Int! @fdc_generated(from: "SelectedOption", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Collection` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  collection_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Collection_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Collection_FirstRow
+  ): Collection_KeyOutput @fdc_generated(from: "Collection", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Customer` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  customer_delete(
+    """
+    The unique ID of the object.
+    """
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Customer_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Customer_FirstRow
+  ): Customer_KeyOutput @fdc_generated(from: "Customer", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Order` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  order_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Order_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Order_FirstRow
+  ): Order_KeyOutput @fdc_generated(from: "Order", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `OrderItem` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  orderItem_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: OrderItem_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: OrderItem_FirstRow
+  ): OrderItem_KeyOutput @fdc_generated(from: "OrderItem", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Product` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  product_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Product_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Product_FirstRow
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ProductCollection` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  productCollection_delete(
+    """
+    The key used to identify the object.
+    """
+    key: ProductCollection_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductCollection_FirstRow
+  ): ProductCollection_KeyOutput @fdc_generated(from: "ProductCollection", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ProductImage` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  productImage_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductImage_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductImage_FirstRow
+  ): ProductImage_KeyOutput @fdc_generated(from: "ProductImage", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ProductOption` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  productOption_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductOption_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductOption_FirstRow
+  ): ProductOption_KeyOutput @fdc_generated(from: "ProductOption", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ProductReview` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  productReview_delete(
+    """
+    The key used to identify the object.
+    """
+    key: ProductReview_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductReview_FirstRow
+  ): ProductReview_KeyOutput @fdc_generated(from: "ProductReview", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ProductVariant` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  productVariant_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductVariant_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductVariant_FirstRow
+  ): ProductVariant_KeyOutput @fdc_generated(from: "ProductVariant", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `SEO` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  sEO_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SEO_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SEO_FirstRow
+  ): SEO_KeyOutput @fdc_generated(from: "SEO", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `SelectedOption` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  selectedOption_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SelectedOption_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SelectedOption_FirstRow
+  ): SelectedOption_KeyOutput @fdc_generated(from: "SelectedOption", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Collection` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  collection_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Collection_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Collection", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Customer` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  customer_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Customer_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Customer", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Order` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  order_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Order_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Order", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `OrderItem` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  orderItem_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: OrderItem_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "OrderItem", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Product` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  product_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Product_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Product", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ProductCollection` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  productCollection_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ProductCollection_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ProductCollection", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ProductImage` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  productImage_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ProductImage_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ProductImage", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ProductOption` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  productOption_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ProductOption_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ProductOption", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ProductReview` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  productReview_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ProductReview_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ProductReview", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ProductVariant` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  productVariant_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ProductVariant_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ProductVariant", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `SEO` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  sEO_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: SEO_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "SEO", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `SelectedOption` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  selectedOption_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: SelectedOption_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "SelectedOption", purpose: DELETE_MULTIPLE)
+}
