@@ -47,7 +47,7 @@ export default function createIntegration(userOptions: UserOptions): AstroIntegr
   return {
     name: "@apphosting/astro-adapter",
     hooks: {
-      "astro:config:setup": async ({ updateConfig, config }) => {
+      "astro:config:setup": ({ updateConfig, config }) => {
         updateConfig({
           image: {
             endpoint: config.image.endpoint ?? "astro/assets/endpoint/node",
@@ -70,7 +70,7 @@ export default function createIntegration(userOptions: UserOptions): AstroIntegr
         };
         setAdapter(getAdapter(_options));
       },
-      "astro:build:done": async (config) => {
+      "astro:build:done": async () => {
         await fs.mkdir("./.apphosting");
         const directoryName = dirname(fileURLToPath(import.meta.url));
         const packageJsonPath = `${directoryName}/../package.json`;
@@ -103,7 +103,7 @@ export default function createIntegration(userOptions: UserOptions): AstroIntegr
 
 function getPackageVersion(packageName: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    exec(`npm view ${packageName} version`, (error, stdout, stderr) => {
+    exec(`npm view ${packageName} version`, (error, stdout) => {
       if (error) {
         reject(error);
         return;
