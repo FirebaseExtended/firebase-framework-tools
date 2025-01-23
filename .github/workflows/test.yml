@@ -48,7 +48,7 @@ jobs:
           path: |
             packages/*/dist/
             packages/@apphosting/*/dist/
-            packages/@apphosting/experimental/*/dist/
+            packages/@apphosting/community/*/dist/
           retention-days: 1
           if-no-files-found: ignore
 
