@@ -43,11 +43,12 @@ jobs:
       - name: Build
         run: npm run build
       - name: "Upload Artifact"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: |
             packages/*/dist/
             packages/@apphosting/*/dist/
+            packages/@apphosting/experimental/*/dist/
           retention-days: 1
           if-no-files-found: ignore
 
