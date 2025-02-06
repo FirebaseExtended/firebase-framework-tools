@@ -6,16 +6,24 @@ import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 import fsExtra from "fs-extra";
 
-const { readFileSync, mkdirp, readJSON, writeJSON, rmdir } = fsExtra;
+const { readFileSync, mkdirp, readJSON, writeJSON, rmSync } = fsExtra;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const starterTemplateDir = "../../../starters/angular/basic";
 
 const errors: any[] = [];
-
-await rmdir(join(__dirname, "runs"), { recursive: true }).catch(() => undefined);
-
-console.log("\nBuilding and starting test projects in parallel...");
+console.log("About to remove runs directory (sync)");
+try {
+    rmSync(join(__dirname, "runs"), { recursive: true });
+    console.log("Runs directory removed successfully (sync)");
+} catch (err) {
+    console.error("Error removing runs directory (sync):", err);
+    // console.error("Error details:", err.message, err.stack);
+    // if (err.code) {
+        // console.error("Error code:", err.code); // Check error codes
+    // }
+}
+console.log("Finished removal attempt");
 
 const tests = await Promise.all(
   [
@@ -41,7 +49,13 @@ const tests = await Promise.all(
       stdio: "inherit",
       shell: true,
     });
-
+    console.log(`[${runId}] updating angular to next tag`);
+    console.log(`[${runId}] > ng update @angular/cli@next @angular/core@next`);
+    await promiseSpawn("ng", ["update", "@angular/cli@next", "@angular/core@next"], {
+      cwd,
+      stdio: "inherit",
+      shell: true,
+    });
     const angularJSON = JSON.parse((await readFile(join(cwd, "angular.json"))).toString());
 
     if (!enableSSR) {
