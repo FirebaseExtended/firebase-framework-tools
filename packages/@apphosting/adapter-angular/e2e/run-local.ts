@@ -42,8 +42,8 @@ const tests = await Promise.all(
       shell: true,
     });
     console.log(`[${runId}] updating angular to next tag`);
-    console.log(`[${runId}] > ng update @angular/cli@next @angular/core@next`);
-    await promiseSpawn("ng", ["update", "@angular/cli@next", "@angular/core@next"], {
+    console.log(`[${runId}] > npx ng update @angular/cli@next @angular/core@next`);
+    await promiseSpawn("npx", ["ng", "update", "@angular/cli@next", "@angular/core@next"], {
       cwd,
       stdio: "inherit",
       shell: true,
