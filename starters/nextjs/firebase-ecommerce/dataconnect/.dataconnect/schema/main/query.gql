@@ -1,0 +1,618 @@
+extend type Query {
+  """
+  ✨ Look up a single `Collection` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  collection(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Collection_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Collection_FirstRow
+  ): Collection @fdc_generated(from: "Collection", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Customer` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  customer(
+    """
+    The unique ID of the object.
+    """
+    id: String
+
+    """
+    ✨ `_expr` server value variant of `id` (The unique ID of the object.)
+    """
+    id_expr: String_Expr
+
+    """
+    The key used to identify the object.
+    """
+    key: Customer_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Customer_FirstRow
+  ): Customer @fdc_generated(from: "Customer", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Order` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  order(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Order_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Order_FirstRow
+  ): Order @fdc_generated(from: "Order", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `OrderItem` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  orderItem(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: OrderItem_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: OrderItem_FirstRow
+  ): OrderItem @fdc_generated(from: "OrderItem", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Product` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  product(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Product_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Product_FirstRow
+  ): Product @fdc_generated(from: "Product", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ProductCollection` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  productCollection(
+    """
+    The key used to identify the object.
+    """
+    key: ProductCollection_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductCollection_FirstRow
+  ): ProductCollection @fdc_generated(from: "ProductCollection", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ProductImage` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  productImage(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductImage_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductImage_FirstRow
+  ): ProductImage @fdc_generated(from: "ProductImage", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ProductOption` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  productOption(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductOption_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductOption_FirstRow
+  ): ProductOption @fdc_generated(from: "ProductOption", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ProductReview` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  productReview(
+    """
+    The key used to identify the object.
+    """
+    key: ProductReview_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductReview_FirstRow
+  ): ProductReview @fdc_generated(from: "ProductReview", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ProductVariant` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  productVariant(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ProductVariant_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ProductVariant_FirstRow
+  ): ProductVariant @fdc_generated(from: "ProductVariant", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `SEO` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  sEO(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SEO_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SEO_FirstRow
+  ): SEO @fdc_generated(from: "SEO", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `SelectedOption` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  selectedOption(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SelectedOption_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SelectedOption_FirstRow
+  ): SelectedOption @fdc_generated(from: "SelectedOption", purpose: QUERY_SINGLE)
+  """
+  ✨ List `Collection` objects in the table, optionally filtered by `where` conditions.
+  """
+  collections(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Collection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Collection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Collection!]! @fdc_generated(from: "Collection", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Customer` objects in the table, optionally filtered by `where` conditions.
+  """
+  customers(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Customer_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Customer_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Customer!]! @fdc_generated(from: "Customer", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Order` objects in the table, optionally filtered by `where` conditions.
+  """
+  orders(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Order_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Order_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Order!]! @fdc_generated(from: "Order", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `OrderItem` objects in the table, optionally filtered by `where` conditions.
+  """
+  orderItems(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: OrderItem_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [OrderItem_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [OrderItem!]! @fdc_generated(from: "OrderItem", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Product` objects in the table, optionally filtered by `where` conditions.
+  """
+  products(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Product_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Product_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Product!]! @fdc_generated(from: "Product", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ProductCollection` objects in the table, optionally filtered by `where` conditions.
+  """
+  productCollections(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductCollection_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductCollection_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductCollection!]! @fdc_generated(from: "ProductCollection", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ProductImage` objects in the table, optionally filtered by `where` conditions.
+  """
+  productImages(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductImage_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductImage_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductImage!]! @fdc_generated(from: "ProductImage", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ProductOption` objects in the table, optionally filtered by `where` conditions.
+  """
+  productOptions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductOption_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductOption_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductOption!]! @fdc_generated(from: "ProductOption", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ProductReview` objects in the table, optionally filtered by `where` conditions.
+  """
+  productReviews(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductReview_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductReview_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductReview!]! @fdc_generated(from: "ProductReview", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ProductVariant` objects in the table, optionally filtered by `where` conditions.
+  """
+  productVariants(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ProductVariant_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ProductVariant_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductVariant!]! @fdc_generated(from: "ProductVariant", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `SEO` objects in the table, optionally filtered by `where` conditions.
+  """
+  sEOS(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: SEO_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [SEO_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [SEO!]! @fdc_generated(from: "SEO", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `SelectedOption` objects in the table, optionally filtered by `where` conditions.
+  """
+  selectedOptions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: SelectedOption_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [SelectedOption_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [SelectedOption!]! @fdc_generated(from: "SelectedOption", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Product` objects ordered by vector similarity between the `descriptionEmbedding` field and `compare_embed`.
+  (Alternatively, `compare` can be used if the input is a raw Vector.)
+  """
+  products_descriptionEmbedding_similarity(
+    """
+    Vector to compare with the stored vectors.
+    """
+    compare: Vector
+
+    """
+    ✨ `_embed` server value variant of `compare` (Vector to compare with the stored vectors.)
+    """
+    compare_embed: Vector_Embed
+
+    """
+    Similarity method to use for vector comparison (defaults to `INNER_PRODUCT`).
+    """
+    method: VectorSimilarityMethod = INNER_PRODUCT
+
+    """
+    Threshold for distance comparison.
+    """
+    within: Float
+
+    """
+    Filter condition to apply when searching for similar vectors.
+    """
+    where: Product_Filter
+
+    """
+    Limit the number of similar vectors returned (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Product!]! @fdc_generated(from: "Product.descriptionEmbedding", purpose: QUERY_MULTIPLE_BY_SIMILARITY)
+  """
+  ✨ List `Product` objects ordered by vector similarity between the `titleEmbedding` field and `compare_embed`.
+  (Alternatively, `compare` can be used if the input is a raw Vector.)
+  """
+  products_titleEmbedding_similarity(
+    """
+    Vector to compare with the stored vectors.
+    """
+    compare: Vector
+
+    """
+    ✨ `_embed` server value variant of `compare` (Vector to compare with the stored vectors.)
+    """
+    compare_embed: Vector_Embed
+
+    """
+    Similarity method to use for vector comparison (defaults to `INNER_PRODUCT`).
+    """
+    method: VectorSimilarityMethod = INNER_PRODUCT
+
+    """
+    Threshold for distance comparison.
+    """
+    within: Float
+
+    """
+    Filter condition to apply when searching for similar vectors.
+    """
+    where: Product_Filter
+
+    """
+    Limit the number of similar vectors returned (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [Product!]! @fdc_generated(from: "Product.titleEmbedding", purpose: QUERY_MULTIPLE_BY_SIMILARITY)
+  """
+  ✨ List `ProductReview` objects ordered by vector similarity between the `contentEmbedding` field and `compare_embed`.
+  (Alternatively, `compare` can be used if the input is a raw Vector.)
+  """
+  productReviews_contentEmbedding_similarity(
+    """
+    Vector to compare with the stored vectors.
+    """
+    compare: Vector
+
+    """
+    ✨ `_embed` server value variant of `compare` (Vector to compare with the stored vectors.)
+    """
+    compare_embed: Vector_Embed
+
+    """
+    Similarity method to use for vector comparison (defaults to `INNER_PRODUCT`).
+    """
+    method: VectorSimilarityMethod = INNER_PRODUCT
+
+    """
+    Threshold for distance comparison.
+    """
+    within: Float
+
+    """
+    Filter condition to apply when searching for similar vectors.
+    """
+    where: ProductReview_Filter
+
+    """
+    Limit the number of similar vectors returned (defaults to 100 rows).
+    """
+    limit: Int = 100
+  ): [ProductReview!]! @fdc_generated(from: "ProductReview.contentEmbedding", purpose: QUERY_MULTIPLE_BY_SIMILARITY)
+}
