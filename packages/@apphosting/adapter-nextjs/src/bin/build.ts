@@ -4,6 +4,7 @@ import {
   populateOutputBundleOptions,
   generateBuildOutput,
   validateOutputDirectory,
+  // loadRouteManifest,
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
@@ -22,12 +23,13 @@ await runBuild();
 
 const { distDir } = await loadConfig(root, opts.projectDirectory);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
-
 const outputBundleOptions = populateOutputBundleOptions(
   root,
   opts.projectDirectory,
   nextBuildDirectory,
 );
+
+// await loadRouteManifest(outputBundleOptions.outputDirectoryAppPath, distDir);
 
 await generateBuildOutput(
   root,

@@ -4,8 +4,8 @@ import { join, dirname, relative, normalize } from "path";
 import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
-import { PHASE_PRODUCTION_BUILD } from "./constants.js";
-import { OutputBundleOptions } from "./interfaces.js";
+import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
+import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig, Metadata } from "@apphosting/common";
 
@@ -32,6 +32,18 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
   const loadConfig = nextServerConfig.default;
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
+
+// export async function loadRouteManifest(standalonePath: string, distDir: string): Promise<void> {
+//   console.log(`from loadRouteManifest - standalonePath: "${standalonePath}"`);
+//   console.log(`from loadRouteManifest - distDir: "${distDir}"`);
+//   const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
+//   console.log(`from loadRouteManifest - manifestPath: "${manifestPath}"`);
+//   const json = readFileSync(manifestPath, "utf-8");
+//   const currentRoutesManifest = JSON.parse(json) as RoutesManifest;
+//   console.log(
+//     `from loadRouteManifest - currentRoutesManifest: "${JSON.stringify(currentRoutesManifest)}"`,
+//   );
+// }
 
 export const isMain = (meta: ImportMeta): boolean => {
   if (!meta) return false;
