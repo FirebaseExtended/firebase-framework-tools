@@ -4,6 +4,7 @@ import {
   populateOutputBundleOptions,
   generateBuildOutput,
   validateOutputDirectory,
+  getAdapterMetadata,
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
@@ -21,6 +22,8 @@ if (!process.env.FRAMEWORK_VERSION) {
 }
 await runBuild();
 
+const adapterMetadata = getAdapterMetadata();
+
 const { distDir } = await loadConfig(root, opts.projectDirectory);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
 const outputBundleOptions = populateOutputBundleOptions(
@@ -29,7 +32,7 @@ const outputBundleOptions = populateOutputBundleOptions(
   nextBuildDirectory,
 );
 
-await addRouteOverrides(outputBundleOptions.outputDirectoryAppPath, distDir);
+await addRouteOverrides(outputBundleOptions.outputDirectoryAppPath, distDir, adapterMetadata);
 
 await generateBuildOutput(
   root,
@@ -37,5 +40,6 @@ await generateBuildOutput(
   outputBundleOptions,
   nextBuildDirectory,
   process.env.FRAMEWORK_VERSION,
+  adapterMetadata,
 );
 await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);
