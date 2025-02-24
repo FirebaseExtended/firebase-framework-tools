@@ -33,17 +33,23 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
 
-// export async function loadRouteManifest(standalonePath: string, distDir: string): Promise<void> {
-//   console.log(`from loadRouteManifest - standalonePath: "${standalonePath}"`);
-//   console.log(`from loadRouteManifest - distDir: "${distDir}"`);
-//   const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
-//   console.log(`from loadRouteManifest - manifestPath: "${manifestPath}"`);
-//   const json = readFileSync(manifestPath, "utf-8");
-//   const currentRoutesManifest = JSON.parse(json) as RoutesManifest;
-//   console.log(
-//     `from loadRouteManifest - currentRoutesManifest: "${JSON.stringify(currentRoutesManifest)}"`,
-//   );
-// }
+export async function loadRouteManifest(
+  standalonePath: string,
+  distDir: string,
+): Promise<RoutesManifest> {
+  const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
+  const json = readFileSync(manifestPath, "utf-8");
+  return JSON.parse(json) as RoutesManifest;
+}
+
+export async function writeRouteManifest(
+  standalonePath: string,
+  distDir: string,
+  manifest: RoutesManifest,
+): Promise<void> {
+  const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
+  await writeFile(manifestPath, JSON.stringify(manifest));
+}
 
 export const isMain = (meta: ImportMeta): boolean => {
   if (!meta) return false;

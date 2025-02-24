@@ -4,10 +4,10 @@ import {
   populateOutputBundleOptions,
   generateBuildOutput,
   validateOutputDirectory,
-  // loadRouteManifest,
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
+import { addRouteOverrides } from "../overrides.js";
 
 const root = process.cwd();
 const opts = getBuildOptions();
@@ -29,7 +29,7 @@ const outputBundleOptions = populateOutputBundleOptions(
   nextBuildDirectory,
 );
 
-// await loadRouteManifest(outputBundleOptions.outputDirectoryAppPath, distDir);
+await addRouteOverrides(outputBundleOptions.outputDirectoryAppPath, distDir);
 
 await generateBuildOutput(
   root,
