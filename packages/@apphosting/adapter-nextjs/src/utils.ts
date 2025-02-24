@@ -7,7 +7,8 @@ import { stringify as yamlStringify } from "yaml";
 import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
 import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
-import { OutputBundleConfig, Metadata, AdapterMetadata } from "@apphosting/common";
+import { OutputBundleConfig } from "@apphosting/common";
+import { AdapterMetadata } from "./interfaces.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
@@ -49,6 +50,11 @@ export async function writeRouteManifest(
 ): Promise<void> {
   const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
   await writeFile(manifestPath, JSON.stringify(customManifest));
+}
+
+export function middlewareExists(standalonePathDir: string, distdir: string): boolean {
+  const middlwarePath = join(standalonePathDir, distdir, "server/middleware.js");
+  return existsSync(middlwarePath);
 }
 
 export const isMain = (meta: ImportMeta): boolean => {

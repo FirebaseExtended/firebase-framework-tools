@@ -1,5 +1,5 @@
-import { AdapterMetadata } from "@apphosting/common/dist/index.js";
-import { loadRouteManifest, writeRouteManifest } from "./utils.js";
+import { AdapterMetadata } from "./interfaces.js";
+import { loadRouteManifest, writeRouteManifest, middlewareExists } from "./utils.js";
 
 export async function addRouteOverrides(
   appPath: string,
@@ -14,6 +14,14 @@ export async function addRouteOverrides(
         key: "x-fah-adapter",
         value: `nextjs-${adapterMetadata.adapterVersion}`,
       },
+      ...(middlewareExists(appPath, distDir)
+        ? [
+            {
+              key: "x-fah-middleware",
+              value: "true",
+            },
+          ]
+        : []),
     ],
     regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
   });
