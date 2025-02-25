@@ -36,19 +36,16 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
 
-export async function loadRouteManifest(
-  standalonePath: string,
-  distDir: string,
-): Promise<RoutesManifest> {
+export function loadRouteManifest(standalonePath: string, distDir: string): RoutesManifest {
   const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
   const json = readFileSync(manifestPath, "utf-8");
   return JSON.parse(json) as RoutesManifest;
 }
 
-export async function loadMiddlewareManifest(
+export function loadMiddlewareManifest(
   standalonePath: string,
   distDir: string,
-): Promise<MiddlewareManifest> {
+): MiddlewareManifest {
   const manifestPath = join(standalonePath, distDir, `server/${MIDDLEWARE_MANIFEST}`);
   const json = readFileSync(manifestPath, "utf-8");
   return JSON.parse(json) as MiddlewareManifest;

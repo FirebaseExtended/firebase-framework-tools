@@ -7,8 +7,8 @@ export async function addRouteOverrides(
   distDir: string,
   adapterMetadata: AdapterMetadata,
 ) {
-  const middlewareManifest = await loadMiddlewareManifest(appPath, distDir);
-  const routeManifest = await loadRouteManifest(appPath, distDir);
+  const middlewareManifest = loadMiddlewareManifest(appPath, distDir);
+  const routeManifest = loadRouteManifest(appPath, distDir);
   routeManifest.headers.push({
     source: "/:path*",
     headers: [
