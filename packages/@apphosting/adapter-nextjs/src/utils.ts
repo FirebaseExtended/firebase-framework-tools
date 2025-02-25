@@ -8,8 +8,7 @@ import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
 import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common";
-import { AdapterMetadata } from "./interfaces.js";
-import { MiddlewareManifest } from "next/dist/build/webpack/plugins/middleware-plugin.js";
+import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
 import { MIDDLEWARE_MANIFEST } from "next/constants.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand

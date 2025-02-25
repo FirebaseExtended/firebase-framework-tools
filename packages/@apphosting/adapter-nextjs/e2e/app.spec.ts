@@ -1,7 +1,17 @@
 import * as assert from "assert";
 import { posix } from "path";
+import fsExtra from "fs-extra";
 
 export const host = process.env.HOST;
+
+const { readJson } = fsExtra;
+let adapterVersion: string;
+
+before(async () => {
+  const packageJson = await readJson("package.json");
+  adapterVersion = packageJson.version;
+  if (!adapterVersion) throw new Error("couldn't parse package.json version");
+});
 
 if (!host) {
   throw new Error("HOST environment variable expected");
@@ -113,5 +123,26 @@ describe("app", () => {
       response.headers.get("cache-control"),
       "private, no-cache, no-store, max-age=0, must-revalidate",
     );
+  });
+
+  it("should have x-fah-adapter header on all routes", async () => {
+    const routes = [
+      "/",
+      "/ssg",
+      "/ssr",
+      "/ssr/streaming",
+      "/isr/time",
+      "/isr/demand",
+      "/nonexistent-route",
+    ];
+
+    for (const route of routes) {
+      const response = await fetch(posix.join(host, route));
+      assert.equal(
+        response.headers.get("x-fah-adapter"),
+        `nextjs-${adapterVersion}`,
+        `Route ${route} missing x-fah-adapter header`,
+      );
+    }
   });
 });

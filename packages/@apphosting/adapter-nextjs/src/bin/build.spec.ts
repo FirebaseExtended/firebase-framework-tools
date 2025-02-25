@@ -193,6 +193,7 @@ metadata:
       expectedOutputBundleOptions,
     );
   });
+
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });

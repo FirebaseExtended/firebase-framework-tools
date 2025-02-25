@@ -71,7 +71,6 @@ export interface RoutesManifest {
     localeDetection?: false;
   };
 }
-
 // The output bundle options are specified here
 export interface OutputBundleOptions {
   /**
@@ -111,4 +110,37 @@ export interface AdapterMetadata {
 export interface Metadata extends AdapterMetadata {
   framework: string;
   frameworkVersion: string;
+}
+
+export interface AssetBinding {
+  filePath: string;
+  name: string;
+}
+
+export interface MiddlewareMatcher {
+  regexp: string;
+  locale?: false;
+  has?: RouteHas[];
+  missing?: RouteHas[];
+  originalSource: string;
+}
+
+export interface EdgeFunctionDefinition {
+  files: string[];
+  name: string;
+  page: string;
+  matchers: MiddlewareMatcher[];
+  wasm?: AssetBinding[];
+  assets?: AssetBinding[];
+  regions?: string[] | string;
+}
+export interface MiddlewareManifest {
+  version: number;
+  sortedMiddleware: string[];
+  middleware: {
+    [page: string]: EdgeFunctionDefinition;
+  };
+  functions: {
+    [page: string]: EdgeFunctionDefinition;
+  };
 }

@@ -1,5 +1,4 @@
-import { MiddlewareManifest } from "next/dist/build/webpack/plugins/middleware-plugin.js";
-import { AdapterMetadata } from "./interfaces.js";
+import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
 import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from "./utils.js";
 
 export async function addRouteOverrides(
