@@ -3,7 +3,7 @@ import { spawn } from "child_process";
 
 import { isMain } from "../utils.js";
 
-export const CREATE_NEXT_APP_VERSION = "~14.1.0";
+export const CREATE_NEXT_APP_VERSION = "~14.0.0";
 
 const main = isMain(import.meta);
 
