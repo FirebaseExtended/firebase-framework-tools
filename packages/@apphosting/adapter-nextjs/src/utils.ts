@@ -9,6 +9,8 @@ import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common";
 import { AdapterMetadata } from "./interfaces.js";
+import { MiddlewareManifest } from "next/dist/build/webpack/plugins/middleware-plugin.js";
+import { MIDDLEWARE_MANIFEST } from "next/constants.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
@@ -43,6 +45,15 @@ export async function loadRouteManifest(
   return JSON.parse(json) as RoutesManifest;
 }
 
+export async function loadMiddlewareManifest(
+  standalonePath: string,
+  distDir: string,
+): Promise<MiddlewareManifest> {
+  const manifestPath = join(standalonePath, distDir, MIDDLEWARE_MANIFEST);
+  const json = readFileSync(manifestPath, "utf-8");
+  return JSON.parse(json) as MiddlewareManifest;
+}
+
 export async function writeRouteManifest(
   standalonePath: string,
   distDir: string,
@@ -50,11 +61,6 @@ export async function writeRouteManifest(
 ): Promise<void> {
   const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
   await writeFile(manifestPath, JSON.stringify(customManifest));
-}
-
-export function middlewareExists(standalonePathDir: string, distdir: string): boolean {
-  const middlwarePath = join(standalonePathDir, distdir, "server/middleware.js");
-  return existsSync(middlwarePath);
 }
 
 export const isMain = (meta: ImportMeta): boolean => {

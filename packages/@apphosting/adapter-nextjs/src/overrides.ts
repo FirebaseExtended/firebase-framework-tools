@@ -1,11 +1,13 @@
+import { MiddlewareManifest } from "next/dist/build/webpack/plugins/middleware-plugin.js";
 import { AdapterMetadata } from "./interfaces.js";
-import { loadRouteManifest, writeRouteManifest, middlewareExists } from "./utils.js";
+import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from "./utils.js";
 
 export async function addRouteOverrides(
   appPath: string,
   distDir: string,
   adapterMetadata: AdapterMetadata,
 ) {
+  const middlewareManifest = await loadMiddlewareManifest(appPath, distDir);
   const routeManifest = await loadRouteManifest(appPath, distDir);
   routeManifest.headers.push({
     source: "/:path*",
@@ -14,7 +16,7 @@ export async function addRouteOverrides(
         key: "x-fah-adapter",
         value: `nextjs-${adapterMetadata.adapterVersion}`,
       },
-      ...(middlewareExists(appPath, distDir)
+      ...(middlewareExists(middlewareManifest)
         ? [
             {
               key: "x-fah-middleware",
@@ -27,4 +29,8 @@ export async function addRouteOverrides(
   });
 
   await writeRouteManifest(appPath, distDir, routeManifest);
+}
+
+function middlewareExists(middlewareManifest: MiddlewareManifest) {
+  return Object.keys(middlewareManifest.middleware).length > 0;
 }
