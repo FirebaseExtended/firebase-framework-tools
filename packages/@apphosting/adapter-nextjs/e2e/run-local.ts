@@ -70,6 +70,7 @@ const run = spawn(runScript, runArgs, {
   env: {
     NODE_ENV: "production",
     PORT: port.toString(),
+    PATH: process.env.PATH,
   },
 });
 run.stderr.on("data", (data) => console.error(data.toString()));
