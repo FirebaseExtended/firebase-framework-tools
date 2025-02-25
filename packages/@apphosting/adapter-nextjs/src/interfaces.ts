@@ -101,6 +101,7 @@ export interface OutputBundleOptions {
   outputStaticDirectoryPath: string;
 }
 
+// Metadata schema for adapter metadata
 export interface AdapterMetadata {
   adapterPackageName: string;
   adapterVersion: string;
@@ -112,11 +113,13 @@ export interface Metadata extends AdapterMetadata {
   frameworkVersion: string;
 }
 
+// Metadata schema for asset bindings
 export interface AssetBinding {
   filePath: string;
   name: string;
 }
 
+// Metadata schema for middleware matchers
 export interface MiddlewareMatcher {
   regexp: string;
   locale?: false;
@@ -125,6 +128,7 @@ export interface MiddlewareMatcher {
   originalSource: string;
 }
 
+// Metadata schema for edge function definitions
 export interface EdgeFunctionDefinition {
   files: string[];
   name: string;
@@ -134,6 +138,8 @@ export interface EdgeFunctionDefinition {
   assets?: AssetBinding[];
   regions?: string[] | string;
 }
+
+// Metadata schema for middleware manifest
 export interface MiddlewareManifest {
   version: number;
   sortedMiddleware: string[];
