@@ -49,7 +49,7 @@ export async function loadMiddlewareManifest(
   standalonePath: string,
   distDir: string,
 ): Promise<MiddlewareManifest> {
-  const manifestPath = join(standalonePath, distDir, MIDDLEWARE_MANIFEST);
+  const manifestPath = join(standalonePath, distDir, `server/${MIDDLEWARE_MANIFEST}`);
   const json = readFileSync(manifestPath, "utf-8");
   return JSON.parse(json) as MiddlewareManifest;
 }
