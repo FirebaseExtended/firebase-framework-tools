@@ -125,7 +125,7 @@ describe("app", () => {
     );
   });
 
-  it("should have x-fah-adapter header on all routes", async () => {
+  it("should have x-fah-adapter header and no x-fah-middleware header on all routes", async () => {
     const routes = [
       "/",
       "/ssg",
@@ -142,6 +142,11 @@ describe("app", () => {
         response.headers.get("x-fah-adapter"),
         `nextjs-${adapterVersion}`,
         `Route ${route} missing x-fah-adapter header`,
+      );
+      assert.equal(
+        response.headers.get("x-fah-middleware"),
+        null,
+        `Route ${route} should not have x-fah-middleware header`,
       );
     }
   });

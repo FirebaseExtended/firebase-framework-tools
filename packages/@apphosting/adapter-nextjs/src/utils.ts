@@ -35,12 +35,24 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
 
+/**
+ * Loads the route manifest from the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @returns The route manifest.
+ */
 export function loadRouteManifest(standalonePath: string, distDir: string): RoutesManifest {
   const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
   const json = readFileSync(manifestPath, "utf-8");
   return JSON.parse(json) as RoutesManifest;
 }
 
+/**
+ * Loads the middleware manifest from the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @returns The middleware manifest.
+ */
 export function loadMiddlewareManifest(
   standalonePath: string,
   distDir: string,
@@ -50,6 +62,12 @@ export function loadMiddlewareManifest(
   return JSON.parse(json) as MiddlewareManifest;
 }
 
+/**
+ * Writes the route manifest to the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @param customManifest The route manifest to write.
+ */
 export async function writeRouteManifest(
   standalonePath: string,
   distDir: string,
