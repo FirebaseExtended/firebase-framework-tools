@@ -4,12 +4,14 @@ import fs from "fs";
 import yaml from "yaml";
 import path from "path";
 import os from "os";
-import { OutputBundleOptions } from "../interfaces.js";
+import { OutputBundleOptions, AdapterMetadata } from "../interfaces.js";
 
 describe("build commands", () => {
   let tmpDir: string;
   let outputBundleOptions: OutputBundleOptions;
   let defaultNextVersion: string;
+  let adapterMetadata: AdapterMetadata;
+
   beforeEach(() => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
@@ -21,10 +23,14 @@ describe("build commands", () => {
       serverFilePath: path.join(tmpDir, ".next", "standalone", "server.js"),
     };
     defaultNextVersion = "14.0.3";
+    adapterMetadata = {
+      adapterPackageName: "@apphosting/adapter-nextjs",
+      adapterVersion: "14.0.1",
+    };
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateBuildOutput, validateOutputDirectory, getAdapterMetadata } = await importUtils;
+    const { generateBuildOutput, validateOutputDirectory } = await importUtils;
     const files = {
       ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
@@ -34,7 +40,6 @@ describe("build commands", () => {
         "redirects":[]
       }`,
     };
-    const adapterMetadata = getAdapterMetadata();
     generateTestFiles(tmpDir, files);
     await generateBuildOutput(
       tmpDir,
@@ -98,10 +103,7 @@ metadata:
       },
       path.join(tmpDir, ".next"),
       defaultNextVersion,
-      {
-        adapterPackageName: "@apphosting/adapter-nextjs",
-        adapterVersion: "14.0.1",
-      },
+      adapterMetadata,
     );
 
     const expectedFiles = {

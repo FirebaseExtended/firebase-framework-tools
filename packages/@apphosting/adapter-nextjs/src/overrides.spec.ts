@@ -54,14 +54,35 @@ describe("route overrides", () => {
       fs.readFileSync(routesManifestPath, "utf-8"),
     ) as RoutesManifest;
 
-    assert.strictEqual(updatedManifest.headers.length, 2);
-    assert.deepStrictEqual(updatedManifest.headers[0], initialManifest.headers[0]);
+    const expectedManifest: RoutesManifest = {
+      version: 3,
+      basePath: "",
+      pages404: true,
+      staticRoutes: [],
+      dynamicRoutes: [],
+      dataRoutes: [],
+      redirects: [],
+      rewrites: [],
+      headers: [
+        {
+          source: "/existing",
+          headers: [{ key: "X-Custom", value: "test" }],
+          regex: "^/existing$",
+        },
+        {
+          source: "/:path*",
+          regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
+          headers: [
+            {
+              key: "x-fah-adapter",
+              value: "nextjs-1.0.0",
+            },
+          ],
+        },
+      ],
+    };
 
-    const firebaseHeaders = updatedManifest.headers[1];
-    assert.strictEqual(firebaseHeaders.source, "/:path*");
-    assert.strictEqual(firebaseHeaders.headers.length, 1);
-    assert.strictEqual(firebaseHeaders.headers[0].key, "x-fah-adapter");
-    assert.strictEqual(firebaseHeaders.headers[0].value, "nextjs-1.0.0");
+    assert.deepStrictEqual(updatedManifest, expectedManifest);
   });
 
   it("should add middleware header when middleware exists", async () => {
@@ -79,7 +100,7 @@ describe("route overrides", () => {
     };
 
     const middlewareManifest: MiddlewareManifest = {
-      version: 1,
+      version: 3,
       sortedMiddleware: ["/"],
       middleware: {
         "/": {
@@ -111,13 +132,31 @@ describe("route overrides", () => {
 
     assert.strictEqual(updatedManifest.headers.length, 1);
 
-    const headers = updatedManifest.headers[0];
-    assert.strictEqual(headers.source, "/:path*");
-    assert.strictEqual(headers.headers.length, 2);
-    assert.strictEqual(headers.headers[0].key, "x-fah-adapter");
-    assert.strictEqual(headers.headers[0].value, "nextjs-1.0.0");
-    assert.strictEqual(headers.headers[1].key, "x-fah-middleware");
-    assert.strictEqual(headers.headers[1].value, "true");
+    const expectedManifest: RoutesManifest = {
+      version: 3,
+      basePath: "",
+      pages404: true,
+      staticRoutes: [],
+      dynamicRoutes: [],
+      dataRoutes: [],
+      rewrites: [],
+      redirects: [],
+      headers: [
+        {
+          source: "/:path*",
+          regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
+          headers: [
+            {
+              key: "x-fah-adapter",
+              value: "nextjs-1.0.0",
+            },
+            { key: "x-fah-middleware", value: "true" },
+          ],
+        },
+      ],
+    };
+
+    assert.deepStrictEqual(updatedManifest, expectedManifest);
   });
 
   afterEach(() => {
