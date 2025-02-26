@@ -1,16 +1,17 @@
 import * as assert from "assert";
 import { posix } from "path";
-import { getAdapterMetadata } from "../dist/utils.js";
-export const host = process.env.HOST;
+import fsExtra from "fs-extra";
 
+export const host = process.env.HOST;
 if (!host) {
   throw new Error("HOST environment variable expected");
 }
 
-let adapterMetadata: any;
-
+let adapterVersion: string;
 before(() => {
-  adapterMetadata = getAdapterMetadata();
+  const packageJson = fsExtra.readJSONSync("package.json");
+  adapterVersion = packageJson.version;
+  if (!adapterVersion) throw new Error("couldn't parse package.json version");
 });
 
 describe("middleware", () => {
@@ -29,7 +30,7 @@ describe("middleware", () => {
       const response = await fetch(posix.join(host, route));
       assert.equal(
         response.headers.get("x-fah-adapter"),
-        `nextjs-${adapterMetadata.adapterVersion}`,
+        `nextjs-${adapterVersion}`,
         `Route ${route} missing x-fah-adapter header`,
       );
       assert.equal(

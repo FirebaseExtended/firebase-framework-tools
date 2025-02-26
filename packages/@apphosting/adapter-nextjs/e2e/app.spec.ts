@@ -3,19 +3,16 @@ import { posix } from "path";
 import fsExtra from "fs-extra";
 
 export const host = process.env.HOST;
-
-const { readJson } = fsExtra;
-let adapterVersion: string;
-
-before(async () => {
-  const packageJson = await readJson("package.json");
-  adapterVersion = packageJson.version;
-  if (!adapterVersion) throw new Error("couldn't parse package.json version");
-});
-
 if (!host) {
   throw new Error("HOST environment variable expected");
 }
+
+let adapterVersion: string;
+before(() => {
+  const packageJson = fsExtra.readJSONSync("package.json");
+  adapterVersion = packageJson.version;
+  if (!adapterVersion) throw new Error("couldn't parse package.json version");
+});
 
 describe("app", () => {
   it("/", async () => {
