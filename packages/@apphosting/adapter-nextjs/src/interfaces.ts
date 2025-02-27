@@ -109,6 +109,11 @@ export interface AdapterMetadata {
   adapterVersion: string;
 }
 
+export interface FrameworkMetadata {
+  version: string;
+  middleware: boolean;
+}
+
 // Metadata schema for bundle.yaml outputted by next.js adapter
 export interface Metadata extends AdapterMetadata {
   framework: string;

@@ -5,6 +5,7 @@ import {
   generateBuildOutput,
   validateOutputDirectory,
   getAdapterMetadata,
+  getFrameworkMetadata,
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
@@ -22,8 +23,6 @@ if (!process.env.FRAMEWORK_VERSION) {
 }
 await runBuild();
 
-const adapterMetadata = getAdapterMetadata();
-
 const { distDir } = await loadConfig(root, opts.projectDirectory);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
 const outputBundleOptions = populateOutputBundleOptions(
@@ -32,14 +31,22 @@ const outputBundleOptions = populateOutputBundleOptions(
   nextBuildDirectory,
 );
 
-await addRouteOverrides(outputBundleOptions.outputDirectoryAppPath, distDir, adapterMetadata);
+const adapterMetadata = getAdapterMetadata();
+const frameworkMetadata = getFrameworkMetadata(outputBundleOptions.outputDirectoryAppPath, distDir);
+
+await addRouteOverrides(
+  outputBundleOptions.outputDirectoryAppPath,
+  distDir,
+  adapterMetadata,
+  frameworkMetadata,
+);
 
 await generateBuildOutput(
   root,
   opts.projectDirectory,
   outputBundleOptions,
   nextBuildDirectory,
-  process.env.FRAMEWORK_VERSION,
+  frameworkMetadata,
   adapterMetadata,
 );
 await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);

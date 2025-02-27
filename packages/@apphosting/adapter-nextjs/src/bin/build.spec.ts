@@ -4,12 +4,12 @@ import fs from "fs";
 import yaml from "yaml";
 import path from "path";
 import os from "os";
-import { OutputBundleOptions, AdapterMetadata } from "../interfaces.js";
+import { OutputBundleOptions, AdapterMetadata, FrameworkMetadata } from "../interfaces.js";
 
 describe("build commands", () => {
   let tmpDir: string;
   let outputBundleOptions: OutputBundleOptions;
-  let defaultNextVersion: string;
+  let frameworkMetadata: FrameworkMetadata;
   let adapterMetadata: AdapterMetadata;
 
   beforeEach(() => {
@@ -22,7 +22,10 @@ describe("build commands", () => {
       outputStaticDirectoryPath: path.join(tmpDir, ".next", "standalone", ".next", "static"),
       serverFilePath: path.join(tmpDir, ".next", "standalone", "server.js"),
     };
-    defaultNextVersion = "14.0.3";
+    frameworkMetadata = {
+      version: "14.0.3",
+      middleware: false,
+    };
     adapterMetadata = {
       adapterPackageName: "@apphosting/adapter-nextjs",
       adapterVersion: "14.0.1",
@@ -46,7 +49,7 @@ describe("build commands", () => {
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
+      frameworkMetadata,
       adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
@@ -61,7 +64,8 @@ metadata:
   adapterPackageName: "@apphosting/adapter-nextjs"
   adapterVersion: ${adapterMetadata.adapterVersion}
   framework: nextjs
-  frameworkVersion: ${defaultNextVersion}
+  frameworkVersion: ${frameworkMetadata.version}
+  middleware: ${frameworkMetadata.middleware}
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
@@ -102,7 +106,7 @@ metadata:
         serverFilePath: path.join(tmpDir, ".next", "standalone", "apps", "next-app", "server.js"),
       },
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
+      frameworkMetadata,
       adapterMetadata,
     );
 
@@ -135,11 +139,8 @@ metadata:
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      {
-        adapterPackageName: "@apphosting/adapter-nextjs",
-        adapterVersion: "14.0.1",
-      },
+      frameworkMetadata,
+      adapterMetadata,
     );
     assert.rejects(
       async () => await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next")),
@@ -164,11 +165,8 @@ metadata:
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      {
-        adapterPackageName: "@apphosting/adapter-nextjs",
-        adapterVersion: "14.0.1",
-      },
+      frameworkMetadata,
+      adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 

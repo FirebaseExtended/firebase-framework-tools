@@ -36,6 +36,8 @@ export interface Metadata {
   framework: string;
   // Version of the framework that is being supported, e.g. "18.0.1"
   frameworkVersion?: string;
+  // Indicates if the app is using a middleware
+  middleware?: boolean;
 }
 
 // Represents a single environment variable.

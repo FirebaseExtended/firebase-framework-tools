@@ -8,7 +8,7 @@ import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
 import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common";
-import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
+import { AdapterMetadata, MiddlewareManifest, FrameworkMetadata } from "./interfaces.js";
 import { MIDDLEWARE_MANIFEST } from "next/constants.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
@@ -117,20 +117,22 @@ export function populateOutputBundleOptions(
  * @param rootDir The root directory of the uploaded source code.
  * @param outputBundleOptions The target location of built artifacts in the output bundle.
  * @param nextBuildDirectory The location of the .next directory.
+ * @param frameworkMetadata The metadata for the framework.
+ * @param adapterMetadata The metadata for the adapter.
  */
 export async function generateBuildOutput(
   rootDir: string,
   appDir: string,
   opts: OutputBundleOptions,
   nextBuildDirectory: string,
-  nextVersion: string,
+  frameworkMetadata: FrameworkMetadata,
   adapterMetadata: AdapterMetadata,
 ): Promise<void> {
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
     move(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
     moveResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
-    generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
+    generateBundleYaml(opts, rootDir, frameworkMetadata, adapterMetadata),
   ]);
   return;
 }
@@ -169,11 +171,21 @@ export function getAdapterMetadata(): AdapterMetadata {
   };
 }
 
+export function getFrameworkMetadata(appPath: string, distDir: string): FrameworkMetadata {
+  const middlewareManifest = loadMiddlewareManifest(appPath, distDir);
+  const middlewareExists = Object.keys(middlewareManifest.middleware).length > 0;
+
+  return {
+    version: process.env.FRAMEWORK_VERSION!,
+    middleware: middlewareExists,
+  };
+}
+
 // generate bundle.yaml
 async function generateBundleYaml(
   opts: OutputBundleOptions,
   cwd: string,
-  nextVersion: string,
+  frameworkMetadata: FrameworkMetadata,
   adapterMetadata: AdapterMetadata,
 ): Promise<void> {
   await mkdir(opts.outputDirectoryBasePath);
@@ -185,7 +197,8 @@ async function generateBundleYaml(
     metadata: {
       ...adapterMetadata,
       framework: "nextjs",
-      frameworkVersion: nextVersion,
+      frameworkVersion: frameworkMetadata.version,
+      middleware: frameworkMetadata.middleware,
     },
   };
   await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
