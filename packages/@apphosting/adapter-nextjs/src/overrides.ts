@@ -1,5 +1,20 @@
 import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
-import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from "./utils.js";
+import {
+  loadRouteManifest,
+  writeRouteManifest,
+  loadMiddlewareManifest,
+  loadRequiredServerFiles,
+  writeRequiredServerFiles,
+} from "./utils.js";
+
+export async function addAppHostingOverrides(
+  appPath: string,
+  distDir: string,
+  adapterMetadata: AdapterMetadata,
+) {
+  await addRouteOverrides(appPath, distDir, adapterMetadata);
+  await addNextConfigOverrides(appPath, distDir);
+}
 
 /**
  * Modifies the app's route manifest (routes-manifest.json) to add Firebase App Hosting
@@ -13,7 +28,7 @@ import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from ".
  * @param distDir The path to the dist directory.
  * @param adapterMetadata The adapter metadata.
  */
-export async function addRouteOverrides(
+async function addRouteOverrides(
   appPath: string,
   distDir: string,
   adapterMetadata: AdapterMetadata,
@@ -48,6 +63,15 @@ export async function addRouteOverrides(
   });
 
   await writeRouteManifest(appPath, distDir, routeManifest);
+}
+
+async function addNextConfigOverrides(appPath: string, distDir: string) {
+  let requiredServerFiles = loadRequiredServerFiles(appPath, distDir);
+  requiredServerFiles.config.images = {
+    ...requiredServerFiles.config.images,
+    unoptimized: true,
+  };
+  await writeRequiredServerFiles(appPath, distDir, requiredServerFiles);
 }
 
 function middlewareExists(middlewareManifest: MiddlewareManifest) {

@@ -1,6 +1,7 @@
 import type { RouteHas } from "next/dist/lib/load-custom-routes.js";
 import type { AssetBinding } from "next/dist/build/webpack/loaders/get-module-build-info.js";
 import type { MiddlewareMatcher } from "next/dist/build//analysis/get-page-static-info.js";
+import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 export interface RoutesManifestRewriteObject {
   beforeFiles?: RoutesManifestRewrite[];
@@ -128,6 +129,15 @@ export interface MiddlewareManifest {
   functions: {
     [page: string]: EdgeFunctionDefinition;
   };
+}
+
+export interface RequiredServerFilesManifest {
+  version: number;
+  config: NextConfigComplete;
+  appDir: string;
+  relativeAppDir: string;
+  files: string[];
+  ignore: string[];
 }
 
 // Next.js exposed internal interface for edge function definitions

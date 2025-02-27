@@ -8,7 +8,7 @@ import {
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
-import { addRouteOverrides } from "../overrides.js";
+import { addAppHostingOverrides } from "../overrides.js";
 
 const root = process.cwd();
 const opts = getBuildOptions();
@@ -24,8 +24,7 @@ await runBuild();
 
 const adapterMetadata = getAdapterMetadata();
 
-const { distDir, images } = await loadConfig(root, opts.projectDirectory);
-console.log(`images config: ${JSON.stringify(images)}`);
+const { distDir } = await loadConfig(root, opts.projectDirectory);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
 const outputBundleOptions = populateOutputBundleOptions(
   root,
@@ -33,7 +32,7 @@ const outputBundleOptions = populateOutputBundleOptions(
   nextBuildDirectory,
 );
 
-await addRouteOverrides(outputBundleOptions.outputDirectoryAppPath, distDir, adapterMetadata);
+await addAppHostingOverrides(outputBundleOptions.outputDirectoryAppPath, distDir, adapterMetadata);
 
 await generateBuildOutput(
   root,
