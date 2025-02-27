@@ -24,7 +24,8 @@ await runBuild();
 
 const adapterMetadata = getAdapterMetadata();
 
-const { distDir } = await loadConfig(root, opts.projectDirectory);
+const { distDir, images } = await loadConfig(root, opts.projectDirectory);
+console.log(`images config: ${JSON.stringify(images)}`);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
 const outputBundleOptions = populateOutputBundleOptions(
   root,

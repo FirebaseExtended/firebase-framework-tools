@@ -32,7 +32,9 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
     await import(configPath);
 
   const loadConfig = nextServerConfig.default;
-  return await loadConfig(PHASE_PRODUCTION_BUILD, root);
+  return await loadConfig(PHASE_PRODUCTION_BUILD, root, {
+    customConfig: { images: { unoptimized: true } },
+  });
 }
 
 /**
