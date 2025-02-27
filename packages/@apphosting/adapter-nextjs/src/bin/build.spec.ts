@@ -4,12 +4,14 @@ import fs from "fs";
 import yaml from "yaml";
 import path from "path";
 import os from "os";
-import { OutputBundleOptions } from "../interfaces.js";
+import { OutputBundleOptions, AdapterMetadata } from "../interfaces.js";
 
 describe("build commands", () => {
   let tmpDir: string;
   let outputBundleOptions: OutputBundleOptions;
   let defaultNextVersion: string;
+  let adapterMetadata: AdapterMetadata;
+
   beforeEach(() => {
     tmpDir = generateTmpDir();
     outputBundleOptions = {
@@ -21,20 +23,23 @@ describe("build commands", () => {
       serverFilePath: path.join(tmpDir, ".next", "standalone", "server.js"),
     };
     defaultNextVersion = "14.0.3";
+    adapterMetadata = {
+      adapterPackageName: "@apphosting/adapter-nextjs",
+      adapterVersion: "14.0.1",
+    };
   });
 
   it("expects all output bundle files to be generated", async () => {
-    const { generateBuildOutput, validateOutputDirectory, createMetadata } = await importUtils;
+    const { generateBuildOutput, validateOutputDirectory } = await importUtils;
     const files = {
       ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
       ".next/routes-manifest.json": `{
-        "headers":[], 
-        "rewrites":[], 
+        "headers":[],
+        "rewrites":[],
         "redirects":[]
       }`,
     };
-    const packageVersion = createMetadata(defaultNextVersion).adapterVersion;
     generateTestFiles(tmpDir, files);
     await generateBuildOutput(
       tmpDir,
@@ -42,6 +47,7 @@ describe("build commands", () => {
       outputBundleOptions,
       path.join(tmpDir, ".next"),
       defaultNextVersion,
+      adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
@@ -53,7 +59,7 @@ runConfig:
   runCommand: node .next/standalone/server.js
 metadata:
   adapterPackageName: "@apphosting/adapter-nextjs"
-  adapterVersion: ${packageVersion}
+  adapterVersion: ${adapterMetadata.adapterVersion}
   framework: nextjs
   frameworkVersion: ${defaultNextVersion}
 `,
@@ -97,6 +103,7 @@ metadata:
       },
       path.join(tmpDir, ".next"),
       defaultNextVersion,
+      adapterMetadata,
     );
 
     const expectedFiles = {
@@ -117,8 +124,8 @@ metadata:
       ".next/standalone/notserver.js": "",
       ".next/static/staticfile": "",
       ".next/routes-manifest.json": `{
-        "headers":[{"source":"source", "headers":["header1"]}], 
-        "rewrites":[{"source":"source", "destination":"destination"}], 
+        "headers":[{"source":"source", "headers":["header1"]}],
+        "rewrites":[{"source":"source", "destination":"destination"}],
         "redirects":[{"source":"source", "destination":"destination"}]
       }`,
     };
@@ -129,6 +136,10 @@ metadata:
       outputBundleOptions,
       path.join(tmpDir, ".next"),
       defaultNextVersion,
+      {
+        adapterPackageName: "@apphosting/adapter-nextjs",
+        adapterVersion: "14.0.1",
+      },
     );
     assert.rejects(
       async () => await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next")),
@@ -142,8 +153,8 @@ metadata:
       "public/publicfile": "",
       extrafile: "",
       ".next/routes-manifest.json": `{
-        "headers":[], 
-        "rewrites":[], 
+        "headers":[],
+        "rewrites":[],
         "redirects":[]
       }`,
     };
@@ -154,6 +165,10 @@ metadata:
       outputBundleOptions,
       path.join(tmpDir, ".next"),
       defaultNextVersion,
+      {
+        adapterPackageName: "@apphosting/adapter-nextjs",
+        adapterVersion: "14.0.1",
+      },
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
@@ -180,6 +195,7 @@ metadata:
       expectedOutputBundleOptions,
     );
   });
+
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
