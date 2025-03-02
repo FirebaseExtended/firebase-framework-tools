@@ -8,7 +8,8 @@ import {
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
-import { addRouteOverrides } from "../overrides.js";
+import { addRouteOverrides } from "../overrides/after-build.js";
+import { setImagesUnoptimizedInConfigs } from "../overrides/before-build.js";
 
 const root = process.cwd();
 const opts = getBuildOptions();
@@ -20,6 +21,8 @@ process.env.NEXT_TELEMETRY_DISABLED = "1";
 if (!process.env.FRAMEWORK_VERSION) {
   throw new Error("Could not find the nextjs version of the application");
 }
+
+await setImagesUnoptimizedInConfigs(root);
 await runBuild();
 
 const adapterMetadata = getAdapterMetadata();

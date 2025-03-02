@@ -1,5 +1,5 @@
-import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
-import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from "./utils.js";
+import { AdapterMetadata, MiddlewareManifest } from "../interfaces.js";
+import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from "../utils.js";
 
 /**
  * Modifies the app's route manifest (routes-manifest.json) to add Firebase App Hosting
