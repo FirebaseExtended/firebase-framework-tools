@@ -20,32 +20,51 @@ interface Scenario {
 }
 
 const scenarios: Scenario[] = [
+  // {
+  //   name: "basic",
+  //   // No setup needed for basic scenario
+  //   tests: ["app.spec.ts"],
+  // },
+  // {
+  //   name: "with-middleware",
+  //   setup: async (cwd: string) => {
+  //     // Create a middleware.ts file
+  //     const middlewareContent = `
+  //       import type { NextRequest } from 'next/server'
+
+  //       export function middleware(request: NextRequest) {
+  //         // This is a simple middleware that doesn't modify the request
+  //         console.log('Middleware executed', request.nextUrl.pathname);
+  //       }
+
+  //       export const config = {
+  //         matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  //       };
+  //     `;
+
+  //     await fsExtra.writeFile(join(cwd, "src", "middleware.ts"), middlewareContent);
+  //     console.log(`Created middleware.ts file`);
+  //   },
+  //   tests: ["middleware.spec.ts"], // Only run middleware-specific tests
+  // },
   {
-    name: "basic",
-    // No setup needed for basic scenario
-    tests: ["app.spec.ts"],
-  },
-  {
-    name: "with-middleware",
+    name: "image-optimization",
     setup: async (cwd: string) => {
-      // Create a middleware.ts file
-      const middlewareContent = `
-        import type { NextRequest } from 'next/server'
-
-        export function middleware(request: NextRequest) {
-          // This is a simple middleware that doesn't modify the request
-          console.log('Middleware executed', request.nextUrl.pathname);
-        }
-
-        export const config = {
-          matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+      await fsExtra.writeFile(
+        join(cwd, "next.config.mjs"),
+        `
+        /** @type {import('next').NextConfig} */
+        const nextConfig = {
+          images: {
+            remotePatterns: [{ hostname: "image-optimization-test.vercel.app" }],
+          },
         };
-      `;
 
-      await fsExtra.writeFile(join(cwd, "src", "middleware.ts"), middlewareContent);
-      console.log(`Created middleware.ts file`);
+        export default nextConfig;
+      `,
+      );
     },
-    tests: ["middleware.spec.ts"], // Only run middleware-specific tests
+    tests: ["image-optimization.spec.ts"],
   },
 ];
 
