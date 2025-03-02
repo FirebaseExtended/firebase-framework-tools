@@ -86,7 +86,6 @@ export async function setImagesUnoptimizedInConfigs(directory: string): Promise<
     await setImagesUnoptimized(configFile);
     console.log(`Updated: ${configFile}`);
   } catch (error) {
-    console.error("Error updating overriding Next.js config files:", error);
-    throw error;
+    throw new Error(`Error updating overriding Next.js config files: ${(error as Error).message}`);
   }
 }
