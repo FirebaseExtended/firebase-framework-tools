@@ -7,12 +7,8 @@ import {
 import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from "./utils.js";
 
 /**
- * Modifies the app's route manifest (routes-manifest.json) to add Firebase App Hosting
- * specific overrides (i.e headers).
- *
- * This function adds the following headers to all routes:
- * - x-fah-adapter: The Firebase App Hosting adapter version used to build the app.
- * - x-fah-middleware: When middleware is enabled.
+ * Modifies NextJS compiled manifest files (routes-manifest.json) to add
+ * Firebase App Hosting specific overrides (custom headers and rewrites).
  *
  * @param appPath The path to the app directory.
  * @param distDir The path to the dist directory.
@@ -31,12 +27,23 @@ export async function addAppHostingOverrides(
   await writeRouteManifest(appPath, distDir, routeManifest);
 }
 
-async function addCustomHeaders(
+/**
+ * This function adds the following headers to all routes:
+ * - x-fah-adapter: The Firebase App Hosting adapter version used to build the app.
+ * - x-fah-middleware: When middleware is enabled.
+ *
+ * @param routeManifest A NextJS route manifest.
+ * @param adapterMetadata The adapter metadata.
+ * @param middlewareManifest The middleware manifest.
+ * @returns The updated route manifest.
+ */
+export async function addCustomHeaders(
   routeManifest: RoutesManifest,
   adapterMetadata: AdapterMetadata,
   middlewareManifest: MiddlewareManifest,
 ): Promise<RoutesManifest> {
-  routeManifest.headers.push({
+  const updatedManifest = JSON.parse(JSON.stringify(routeManifest)) as RoutesManifest;
+  updatedManifest.headers.push({
     source: "/:path*",
     headers: [
       {
@@ -63,10 +70,19 @@ async function addCustomHeaders(
     regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
   });
 
-  return routeManifest;
+  return updatedManifest;
 }
 
-async function addImageOptimizationRewrites(
+/**
+ * This adds custom route rewrites to the route manifest to bypass NextJS image
+ * optimization. When the NextJS image optimization feature is enabled
+ * (via the Next Image Component), it will rewrite all image requests to
+ * NextJS image service (/_next/image?url="some url") to the original image URL.
+ *
+ * @param routeManifest A NextJS route manifest.
+ * @returns The updated route manifest.
+ */
+export async function addImageOptimizationRewrites(
   routeManifest: RoutesManifest,
 ): Promise<RoutesManifest> {
   const IMAGE_OPTIMIZATION_REWRITES: RoutesManifestRewrite[] = [
@@ -98,8 +114,9 @@ async function addImageOptimizationRewrites(
     },
   ];
 
-  if (!routeManifest.rewrites) {
-    routeManifest.rewrites = {
+  const updatedManifest = JSON.parse(JSON.stringify(routeManifest)) as RoutesManifest;
+  if (!updatedManifest.rewrites) {
+    updatedManifest.rewrites = {
       beforeFiles: [],
       afterFiles: [],
       fallback: [],
@@ -107,31 +124,39 @@ async function addImageOptimizationRewrites(
   }
 
   // Avoid image optimization rewrite if there are already rewrite rules for /_next/image
-  if (Array.isArray(routeManifest.rewrites)) {
-    if (routeManifest.rewrites.some((r) => r.source.startsWith("/_next/image"))) {
+  if (Array.isArray(updatedManifest.rewrites)) {
+    if (updatedManifest.rewrites.some((r) => r.source.startsWith("/_next/image"))) {
       console.log("Rewrite already exists for /_next/image");
-      return routeManifest;
+      return updatedManifest;
     }
   } else {
-    if (routeManifest.rewrites.beforeFiles?.some((r) => r.source.startsWith("/_next/image"))) {
+    if (updatedManifest.rewrites.beforeFiles?.some((r) => r.source.startsWith("/_next/image"))) {
       console.log("Rewrite already exists for /_next/image");
-      return routeManifest;
+      return updatedManifest;
     }
   }
 
   // Add the image optimization rewrites
-  if (Array.isArray(routeManifest.rewrites)) {
-    routeManifest.rewrites.push(...IMAGE_OPTIMIZATION_REWRITES);
+  if (Array.isArray(updatedManifest.rewrites)) {
+    updatedManifest.rewrites.push(...IMAGE_OPTIMIZATION_REWRITES);
   } else {
     // Maintain the structure with beforeFiles, afterFiles, and fallback
-    if (!routeManifest.rewrites.beforeFiles) {
-      routeManifest.rewrites.beforeFiles = [];
+    if (!updatedManifest.rewrites.beforeFiles) {
+      updatedManifest.rewrites.beforeFiles = [];
     }
 
-    routeManifest.rewrites.beforeFiles.push(...IMAGE_OPTIMIZATION_REWRITES);
+    if (!updatedManifest.rewrites.afterFiles) {
+      updatedManifest.rewrites.afterFiles = [];
+    }
+
+    if (!updatedManifest.rewrites.fallback) {
+      updatedManifest.rewrites.fallback = [];
+    }
+
+    updatedManifest.rewrites.beforeFiles.push(...IMAGE_OPTIMIZATION_REWRITES);
   }
 
-  return routeManifest;
+  return updatedManifest;
 }
 
 function middlewareExists(middlewareManifest: MiddlewareManifest) {
