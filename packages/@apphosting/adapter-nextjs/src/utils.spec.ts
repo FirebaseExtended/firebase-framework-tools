@@ -40,7 +40,7 @@ describe("manifest utils", () => {
 
   it("should load middleware manifest", async () => {
     const mockMiddleware: MiddlewareManifest = {
-      version: 1,
+      version: 3,
       sortedMiddleware: ["/"],
       functions: {},
       middleware: {

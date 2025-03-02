@@ -5,7 +5,7 @@ import os from "os";
 import { RoutesManifest, MiddlewareManifest } from "./interfaces.js";
 const importOverrides = import("@apphosting/adapter-nextjs/dist/overrides.js");
 
-describe("route overrides", () => {
+describe("app hosting overrides", () => {
   let tmpDir: string;
   let routesManifestPath: string;
   let middlewareManifestPath: string;
@@ -20,7 +20,7 @@ describe("route overrides", () => {
   });
 
   it("should add default fah headers to routes manifest", async () => {
-    const { addRouteOverrides } = await importOverrides;
+    const { addAppHostingOverrides } = await importOverrides;
     const initialManifest: RoutesManifest = {
       version: 3,
       basePath: "",
@@ -45,7 +45,7 @@ describe("route overrides", () => {
       JSON.stringify({ version: 1, sortedMiddleware: [], middleware: {}, functions: {} }),
     );
 
-    await addRouteOverrides(tmpDir, ".next", {
+    await addAppHostingOverrides(tmpDir, ".next", {
       adapterPackageName: "@apphosting/adapter-nextjs",
       adapterVersion: "1.0.0",
     });
@@ -54,39 +54,29 @@ describe("route overrides", () => {
       fs.readFileSync(routesManifestPath, "utf-8"),
     ) as RoutesManifest;
 
-    const expectedManifest: RoutesManifest = {
-      version: 3,
-      basePath: "",
-      pages404: true,
-      staticRoutes: [],
-      dynamicRoutes: [],
-      dataRoutes: [],
-      redirects: [],
-      rewrites: [],
-      headers: [
-        {
-          source: "/existing",
-          headers: [{ key: "X-Custom", value: "test" }],
-          regex: "^/existing$",
-        },
-        {
-          source: "/:path*",
-          regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
-          headers: [
-            {
-              key: "x-fah-adapter",
-              value: "nextjs-1.0.0",
-            },
-          ],
-        },
-      ],
-    };
+    const expectedHeaders = [
+      {
+        source: "/existing",
+        headers: [{ key: "X-Custom", value: "test" }],
+        regex: "^/existing$",
+      },
+      {
+        source: "/:path*",
+        regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
+        headers: [
+          {
+            key: "x-fah-adapter",
+            value: "nextjs-1.0.0",
+          },
+        ],
+      },
+    ];
 
-    assert.deepStrictEqual(updatedManifest, expectedManifest);
+    assert.deepStrictEqual(updatedManifest.headers, expectedHeaders);
   });
 
   it("should add middleware header when middleware exists", async () => {
-    const { addRouteOverrides } = await importOverrides;
+    const { addAppHostingOverrides } = await importOverrides;
     const initialManifest: RoutesManifest = {
       version: 3,
       basePath: "",
@@ -121,7 +111,7 @@ describe("route overrides", () => {
     fs.writeFileSync(routesManifestPath, JSON.stringify(initialManifest));
     fs.writeFileSync(middlewareManifestPath, JSON.stringify(middlewareManifest));
 
-    await addRouteOverrides(tmpDir, ".next", {
+    await addAppHostingOverrides(tmpDir, ".next", {
       adapterPackageName: "@apphosting/adapter-nextjs",
       adapterVersion: "1.0.0",
     });
@@ -132,31 +122,21 @@ describe("route overrides", () => {
 
     assert.strictEqual(updatedManifest.headers.length, 1);
 
-    const expectedManifest: RoutesManifest = {
-      version: 3,
-      basePath: "",
-      pages404: true,
-      staticRoutes: [],
-      dynamicRoutes: [],
-      dataRoutes: [],
-      rewrites: [],
-      redirects: [],
-      headers: [
-        {
-          source: "/:path*",
-          regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
-          headers: [
-            {
-              key: "x-fah-adapter",
-              value: "nextjs-1.0.0",
-            },
-            { key: "x-fah-middleware", value: "true" },
-          ],
-        },
-      ],
-    };
+    const expectedHeaders = [
+      {
+        source: "/:path*",
+        regex: "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$",
+        headers: [
+          {
+            key: "x-fah-adapter",
+            value: "nextjs-1.0.0",
+          },
+          { key: "x-fah-middleware", value: "true" },
+        ],
+      },
+    ];
 
-    assert.deepStrictEqual(updatedManifest, expectedManifest);
+    assert.deepStrictEqual(updatedManifest.headers, expectedHeaders);
   });
 
   afterEach(() => {

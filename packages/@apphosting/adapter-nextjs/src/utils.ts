@@ -4,13 +4,11 @@ import { join, dirname, relative, normalize } from "path";
 import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
-import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
+import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST, MIDDLEWARE_MANIFEST } from "./constants.js";
 import { OutputBundleOptions, RequiredServerFilesManifest, RoutesManifest } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common";
 import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
-import { MIDDLEWARE_MANIFEST, SERVER_FILES_MANIFEST } from "next/constants.js";
-
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
   fsExtra;
@@ -33,21 +31,6 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
 
   const loadConfig = nextServerConfig.default;
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
-}
-
-/**
- * Loads the required server files manifest (required-server-files.json) from the standalone directory.
- * @param standalonePath The path to the standalone directory.
- * @param distDir The name of the dist directory.
- * @returns The required server files manifest.
- */
-export function loadRequiredServerFiles(
-  standalonePath: string,
-  distDir: string,
-): RequiredServerFilesManifest {
-  const manifestPath = join(standalonePath, distDir, SERVER_FILES_MANIFEST);
-  const json = readFileSync(manifestPath, "utf-8");
-  return JSON.parse(json) as RequiredServerFilesManifest;
 }
 
 /**
@@ -75,21 +58,6 @@ export function loadMiddlewareManifest(
   const manifestPath = join(standalonePath, distDir, `server/${MIDDLEWARE_MANIFEST}`);
   const json = readFileSync(manifestPath, "utf-8");
   return JSON.parse(json) as MiddlewareManifest;
-}
-
-/**
- * Writes the required server files manifest to the standalone directory.
- * @param standalonePath The path to the standalone directory.
- * @param distDir The name of the dist directory.
- * @param customConfig The custom config to write.
- */
-export async function writeRequiredServerFiles(
-  standalonePath: string,
-  distDir: string,
-  customConfig: RequiredServerFilesManifest,
-): Promise<void> {
-  const manifestPath = join(standalonePath, distDir, SERVER_FILES_MANIFEST);
-  await writeFile(manifestPath, JSON.stringify(customConfig));
 }
 
 /**

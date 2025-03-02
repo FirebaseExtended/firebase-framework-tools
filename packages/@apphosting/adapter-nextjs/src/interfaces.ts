@@ -23,6 +23,7 @@ export interface RoutesManifestRedirect {
 export interface RoutesManifestRewrite {
   source: string;
   destination: string;
+  basePath?: boolean;
   has?: RouteHas[];
   missing?: RouteHas[];
   regex: string;
