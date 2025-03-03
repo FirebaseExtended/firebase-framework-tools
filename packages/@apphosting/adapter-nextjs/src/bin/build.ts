@@ -8,7 +8,7 @@ import {
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
-import { addRouteOverrides } from "../overrides.js";
+import { addRouteOverrides, overrideNextConfig } from "../overrides.js";
 
 const root = process.cwd();
 const opts = getBuildOptions();
@@ -22,7 +22,7 @@ if (!process.env.FRAMEWORK_VERSION) {
 }
 
 const { distDir, configFileName } = await loadConfig(root, opts.projectDirectory);
-
+await overrideNextConfig(configFileName);
 await runBuild();
 
 const adapterMetadata = getAdapterMetadata();
