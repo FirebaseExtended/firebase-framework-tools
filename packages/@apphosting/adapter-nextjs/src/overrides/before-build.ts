@@ -1,9 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 import { glob } from "glob";
-import { loadConfig, writeFile } from "../utils.js";
-import { PHASE_PRODUCTION_BUILD } from "../constants.js";
-import { NextConfigComplete } from "next/dist/server/config-shared.js";
+import { loadConfig } from "../utils.js";
+import { NextConfig } from "next/dist/server/config-shared.js";
 
 /**
  * Finds the Next.js config file in the given directory
@@ -50,7 +49,7 @@ async function setImagesUnoptimized(configFilePath: string, projectRoot: string)
       ...(config.images || {}),
       unoptimized: true,
     },
-  } as NextConfigComplete;
+  } as NextConfig;
 
   // Get the file extension to determine which template to use
   const fileExtension = path.extname(configFilePath);
