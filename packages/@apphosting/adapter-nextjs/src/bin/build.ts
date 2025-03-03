@@ -20,11 +20,12 @@ process.env.NEXT_TELEMETRY_DISABLED = "1";
 if (!process.env.FRAMEWORK_VERSION) {
   throw new Error("Could not find the nextjs version of the application");
 }
+
+const { distDir, configFileName } = await loadConfig(root, opts.projectDirectory);
+
 await runBuild();
 
 const adapterMetadata = getAdapterMetadata();
-
-const { distDir } = await loadConfig(root, opts.projectDirectory);
 const nextBuildDirectory = join(opts.projectDirectory, distDir);
 const outputBundleOptions = populateOutputBundleOptions(
   root,

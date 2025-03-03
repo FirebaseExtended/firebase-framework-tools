@@ -1,6 +1,8 @@
 import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
 import { loadRouteManifest, writeRouteManifest, loadMiddlewareManifest } from "./utils.js";
 
+export async function overrideNextConfig(nextConfigFileName: string) {}
+
 /**
  * Modifies the app's route manifest (routes-manifest.json) to add Firebase App Hosting
  * specific overrides (i.e headers).
@@ -36,8 +38,8 @@ export async function addRouteOverrides(
           ]
         : []),
     ],
-    /* 
-      NextJs converts the source string to a regex using path-to-regexp (https://github.com/pillarjs/path-to-regexp) at 
+    /*
+      NextJs converts the source string to a regex using path-to-regexp (https://github.com/pillarjs/path-to-regexp) at
       build time: https://github.com/vercel/next.js/blob/canary/packages/next/src/build/index.ts#L1273.
       This regex is then used to match the route against the request path.
 
