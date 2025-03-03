@@ -22,7 +22,7 @@ if (!process.env.FRAMEWORK_VERSION) {
   throw new Error("Could not find the nextjs version of the application");
 }
 
-await setImagesUnoptimizedInConfigs(root);
+await setImagesUnoptimizedInConfigs(root); // TODO: need to make sure this handles monorepos
 await runBuild();
 
 const adapterMetadata = getAdapterMetadata();
