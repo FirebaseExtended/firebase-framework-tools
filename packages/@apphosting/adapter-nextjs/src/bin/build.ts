@@ -22,7 +22,7 @@ if (!process.env.FRAMEWORK_VERSION) {
 }
 
 const { distDir, configFileName } = await loadConfig(root, opts.projectDirectory);
-await overrideNextConfig(configFileName);
+await overrideNextConfig(root, configFileName);
 await runBuild();
 
 const adapterMetadata = getAdapterMetadata();

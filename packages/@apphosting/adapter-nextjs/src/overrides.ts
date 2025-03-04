@@ -9,10 +9,9 @@ import {
 import { join } from "path";
 import { readFileSync } from "fs";
 
-export async function overrideNextConfig(nextConfigFileName: string) {
+export async function overrideNextConfig(projectRoot: string, nextConfigFileName: string) {
   // Check if the file exists in the current working directory
-  const cwd = process.cwd();
-  const configPath = join(cwd, nextConfigFileName);
+  const configPath = join(projectRoot, nextConfigFileName);
 
   if (!(await exists(configPath))) {
     console.log(`No Next.js config file found at ${configPath}`);
@@ -27,7 +26,7 @@ export async function overrideNextConfig(nextConfigFileName: string) {
   // Rename the original config file
   try {
     const originalContent = readFileSync(configPath, "utf-8");
-    await writeFile(join(cwd, originalConfigName), originalContent);
+    await writeFile(join(projectRoot, originalConfigName), originalContent);
 
     // Create a new config file with the appropriate import
     let importStatement;
@@ -68,7 +67,7 @@ ${fileExtension === "mjs" ? "export default config;" : "module.exports = config;
 `;
 
     // Write the new config file
-    await writeFile(join(cwd, newConfigName), newConfigContent);
+    await writeFile(join(projectRoot, newConfigName), newConfigContent);
     console.log(`Successfully created ${newConfigName} with Firebase App Hosting overrides`);
   } catch (error) {
     console.error(`Error overriding Next.js config: ${error}`);
