@@ -4,12 +4,15 @@ import { join, dirname, relative, normalize } from "path";
 import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
-import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
-import { OutputBundleOptions, RoutesManifest } from "./interfaces.js";
+import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST, MIDDLEWARE_MANIFEST } from "./constants.js";
+import {
+  OutputBundleOptions,
+  RoutesManifest,
+  AdapterMetadata,
+  MiddlewareManifest,
+} from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common";
-import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
-import { MIDDLEWARE_MANIFEST } from "next/constants.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
