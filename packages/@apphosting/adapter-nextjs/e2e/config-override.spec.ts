@@ -58,12 +58,7 @@ describe("next.config override", () => {
 
     // Check for the custom header that was set in the next.config
     const customHeader = response.headers.get("x-custom-header") ?? "";
-    const validValues = [
-      "js-config-value",
-      "ts-config-value",
-      "mjs-config-value",
-      "complex-config-value",
-    ];
+    const validValues = ["js-config-value", "ts-config-value", "mjs-config-value"];
     assert.ok(
       validValues.includes(customHeader),
       `Expected header to be one of ${validValues.join(", ")} but got "${customHeader}"`,
@@ -84,11 +79,7 @@ describe("next.config override", () => {
 
   it("should handle object-style config correctly", async function () {
     // Only run this test for scenarios with object-style config
-    if (
-      !scenario.includes("object-style") &&
-      !scenario.includes("with-complex-config") &&
-      !scenario.includes("with-empty-config")
-    ) {
+    if (!scenario.includes("object-style") && !scenario.includes("with-empty-config")) {
       this.skip();
     }
 
