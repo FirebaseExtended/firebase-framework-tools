@@ -6,7 +6,7 @@ import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 import fsExtra from "fs-extra";
 
-const { readFileSync, mkdirp, rmdir } = fsExtra;
+const { readFileSync, mkdirp, rm } = fsExtra;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,6 +18,11 @@ interface Scenario {
   setup?: (cwd: string) => Promise<void>; // Optional setup function before building the app
   tests?: string[]; // List of test files to run
 }
+
+// Load test data for config override
+const configOverrideTestScenarios = parseYaml(
+  readFileSync(join(__dirname, "config-override-test-cases.yaml"), "utf8"),
+).tests;
 
 const scenarios: Scenario[] = [
   // {
@@ -47,133 +52,30 @@ const scenarios: Scenario[] = [
   //   },
   //   tests: ["middleware.spec.ts"], // Only run middleware-specific tests
   // },
-  // New scenarios for testing Next.js config override behavior
-  {
-    name: "with-js-config-object-style",
-    setup: async (cwd: string) => {
-      // Create a next.config.js file with object-style config
-      const configContent = `
-        /** @type {import('next').NextConfig} */
-        const nextConfig = {
-          reactStrictMode: true,
-          async headers() {
-            return [
-              {
-                source: '/:path*',
-                headers: [
-                  {
-                    key: 'x-custom-header',
-                    value: 'js-config-value',
-                  },
-                  {
-                    key: 'x-config-type',
-                    value: 'object',
-                  },
-                ],
-              },
-            ];
-          },
-        };
-        
-        module.exports = nextConfig;
-      `;
-
-      await fsExtra.writeFile(join(cwd, "next.config.js"), configContent);
-      console.log(`Created next.config.js file with object-style config`);
-    },
-    tests: ["config-override.spec.ts"],
-  },
-  // {
-  //   name: "with-js-config-object-style",
-  //   setup: async (cwd: string) => {
-  //     // Create a next.config.js file with object-style config
-  //     const configContent = `
-  //       /** @type {import('next').NextConfig} */
-  //       const nextConfig = {
-  //         reactStrictMode: true,
-  //         async headers() {
-  //           return [
-  //             {
-  //               source: '/:path*',
-  //               headers: [
-  //                 {
-  //                   key: 'x-custom-header',
-  //                   value: 'js-config-value',
-  //                 },
-  //                 {
-  //                   key: 'x-config-type',
-  //                   value: 'object',
-  //                 },
-  //               ],
-  //             },
-  //           ];
-  //         },
-  //         // This should be overridden by the adapter
-  //         images: {
-  //           unoptimized: false,
-  //           domains: ['example.com'],
-  //         },
-  //       };
-
-  //       module.exports = nextConfig;
-  //     `;
-
-  //     await fsExtra.writeFile(join(cwd, "next.config.js"), configContent);
-  //     console.log(`Created next.config.js file with object-style config`);
-  //   },
-  //   tests: ["config-override.spec.ts"],
-  // },
-  // {
-  //   name: "with-js-config-function-style",
-  //   setup: async (cwd: string) => {
-  //     // Create a next.config.js file with function-style config
-  //     const configContent = `
-  //       /** @type {import('next').NextConfig} */
-  //       const nextConfig = (phase, { defaultConfig }) => {
-  //         return {
-  //           reactStrictMode: true,
-  //           async headers() {
-  //             return [
-  //               {
-  //                 source: '/:path*',
-  //                 headers: [
-  //                   {
-  //                     key: 'x-custom-header',
-  //                     value: 'js-config-value',
-  //                   },
-  //                   {
-  //                     key: 'x-config-type',
-  //                     value: 'function',
-  //                   },
-  //                 ],
-  //               },
-  //             ];
-  //           },
-  //           // This should be overridden by the adapter
-  //           images: {
-  //             unoptimized: false,
-  //             domains: ['example.com'],
-  //           },
-  //         };
-  //       };
-
-  //       module.exports = nextConfig;
-  //     `;
-
-  //     await fsExtra.writeFile(join(cwd, "next.config.js"), configContent);
-  //     console.log(`Created next.config.js file with function-style config`);
-  //   },
-  //   tests: ["config-override.spec.ts"],
-  // },
+  ...configOverrideTestScenarios.map(
+    (scenario: { name: string; config: string; file: string }) => ({
+      name: scenario.name,
+      setup: async (cwd: string) => {
+        const configContent = scenario.config;
+        await fsExtra.writeFile(join(cwd, scenario.file), configContent);
+        console.log(`Created ${scenario.file} file with ${scenario.name} config`);
+      },
+      tests: ["config-override.spec.ts"],
+    }),
+  ),
 ];
 
 const errors: any[] = [];
 
-await rmdir(join(__dirname, "runs"), { recursive: true }).catch(() => undefined);
+await rm(join(__dirname, "runs"), { recursive: true }).catch(() => undefined);
 
 // Run each scenario
 for (const scenario of scenarios) {
-  console.log(`\n\nRunning scenario: ${scenario.name}`);
+  console.log(
+    `\n\n${"=".repeat(80)}\n${" ".repeat(
+      5,
+    )}RUNNING SCENARIO: ${scenario.name.toUpperCase()}${" ".repeat(5)}\n${"=".repeat(80)}`,
+  );
 
   const runId = `${scenario.name}-${Math.random().toString().split(".")[1]}`;
   const cwd = join(__dirname, "runs", runId);
