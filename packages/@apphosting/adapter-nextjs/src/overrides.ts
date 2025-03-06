@@ -7,7 +7,7 @@ import {
   writeFile,
 } from "./utils.js";
 import { join } from "path";
-import { readFileSync } from "fs";
+import { rename as renamePromise } from "fs/promises";
 
 export async function overrideNextConfig(projectRoot: string, nextConfigFileName: string) {
   // Check if the file exists in the current working directory
@@ -25,8 +25,8 @@ export async function overrideNextConfig(projectRoot: string, nextConfigFileName
 
   // Rename the original config file
   try {
-    const originalContent = readFileSync(configPath, "utf-8");
-    await writeFile(join(projectRoot, originalConfigName), originalContent);
+    const originalPath = join(projectRoot, originalConfigName);
+    await renamePromise(configPath, originalPath);
 
     // Create a new config file with the appropriate import
     let importStatement;
