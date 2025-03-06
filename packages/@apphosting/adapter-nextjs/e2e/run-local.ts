@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 import fsExtra from "fs-extra";
+import { glob } from "glob";
 
 const { readFileSync, mkdirp, rm } = fsExtra;
 
@@ -25,38 +26,46 @@ const configOverrideTestScenarios = parseYaml(
 ).tests;
 
 const scenarios: Scenario[] = [
-  // {
-  //   name: "basic",
-  //   // No setup needed for basic scenario
-  //   tests: ["app.spec.ts"],
-  // },
-  // {
-  //   name: "with-middleware",
-  //   setup: async (cwd: string) => {
-  //     // Create a middleware.ts file
-  //     const middlewareContent = `
-  //       import type { NextRequest } from 'next/server'
+  {
+    name: "basic",
+    // No setup needed for basic scenario
+    tests: ["app.spec.ts"],
+  },
+  {
+    name: "with-middleware",
+    setup: async (cwd: string) => {
+      // Create a middleware.ts file
+      const middlewareContent = `
+        import type { NextRequest } from 'next/server'
 
-  //       export function middleware(request: NextRequest) {
-  //         // This is a simple middleware that doesn't modify the request
-  //         console.log('Middleware executed', request.nextUrl.pathname);
-  //       }
+        export function middleware(request: NextRequest) {
+          // This is a simple middleware that doesn't modify the request
+          console.log('Middleware executed', request.nextUrl.pathname);
+        }
 
-  //       export const config = {
-  //         matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  //       };
-  //     `;
+        export const config = {
+          matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        };
+      `;
 
-  //     await fsExtra.writeFile(join(cwd, "src", "middleware.ts"), middlewareContent);
-  //     console.log(`Created middleware.ts file`);
-  //   },
-  //   tests: ["middleware.spec.ts"], // Only run middleware-specific tests
-  // },
+      await fsExtra.writeFile(join(cwd, "src", "middleware.ts"), middlewareContent);
+      console.log(`Created middleware.ts file`);
+    },
+    tests: ["middleware.spec.ts"], // Only run middleware-specific tests
+  },
   ...configOverrideTestScenarios.map(
     (scenario: { name: string; config: string; file: string }) => ({
       name: scenario.name,
       setup: async (cwd: string) => {
         const configContent = scenario.config;
+
+        // Remove any existing next.config.* files
+        const configFiles = await glob(join(cwd, "next.config.*"));
+        for (const file of configFiles) {
+          await fsExtra.remove(file);
+          console.log(`Removed existing config file: ${file}`);
+        }
+
         await fsExtra.writeFile(join(cwd, scenario.file), configContent);
         console.log(`Created ${scenario.file} file with ${scenario.name} config`);
       },
