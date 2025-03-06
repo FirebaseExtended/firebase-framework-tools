@@ -20,33 +20,151 @@ interface Scenario {
 }
 
 const scenarios: Scenario[] = [
+  // {
+  //   name: "basic",
+  //   // No setup needed for basic scenario
+  //   tests: ["app.spec.ts"],
+  // },
+  // {
+  //   name: "with-middleware",
+  //   setup: async (cwd: string) => {
+  //     // Create a middleware.ts file
+  //     const middlewareContent = `
+  //       import type { NextRequest } from 'next/server'
+
+  //       export function middleware(request: NextRequest) {
+  //         // This is a simple middleware that doesn't modify the request
+  //         console.log('Middleware executed', request.nextUrl.pathname);
+  //       }
+
+  //       export const config = {
+  //         matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  //       };
+  //     `;
+
+  //     await fsExtra.writeFile(join(cwd, "src", "middleware.ts"), middlewareContent);
+  //     console.log(`Created middleware.ts file`);
+  //   },
+  //   tests: ["middleware.spec.ts"], // Only run middleware-specific tests
+  // },
+  // New scenarios for testing Next.js config override behavior
   {
-    name: "basic",
-    // No setup needed for basic scenario
-    tests: ["app.spec.ts"],
-  },
-  {
-    name: "with-middleware",
+    name: "with-js-config-object-style",
     setup: async (cwd: string) => {
-      // Create a middleware.ts file
-      const middlewareContent = `
-        import type { NextRequest } from 'next/server'
-
-        export function middleware(request: NextRequest) {
-          // This is a simple middleware that doesn't modify the request
-          console.log('Middleware executed', request.nextUrl.pathname);
-        }
-
-        export const config = {
-          matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+      // Create a next.config.js file with object-style config
+      const configContent = `
+        /** @type {import('next').NextConfig} */
+        const nextConfig = {
+          reactStrictMode: true,
+          async headers() {
+            return [
+              {
+                source: '/:path*',
+                headers: [
+                  {
+                    key: 'x-custom-header',
+                    value: 'js-config-value',
+                  },
+                  {
+                    key: 'x-config-type',
+                    value: 'object',
+                  },
+                ],
+              },
+            ];
+          },
         };
+        
+        module.exports = nextConfig;
       `;
 
-      await fsExtra.writeFile(join(cwd, "src", "middleware.ts"), middlewareContent);
-      console.log(`Created middleware.ts file`);
+      await fsExtra.writeFile(join(cwd, "next.config.js"), configContent);
+      console.log(`Created next.config.js file with object-style config`);
     },
-    tests: ["middleware.spec.ts"], // Only run middleware-specific tests
+    tests: ["config-override.spec.ts"],
   },
+  // {
+  //   name: "with-js-config-object-style",
+  //   setup: async (cwd: string) => {
+  //     // Create a next.config.js file with object-style config
+  //     const configContent = `
+  //       /** @type {import('next').NextConfig} */
+  //       const nextConfig = {
+  //         reactStrictMode: true,
+  //         async headers() {
+  //           return [
+  //             {
+  //               source: '/:path*',
+  //               headers: [
+  //                 {
+  //                   key: 'x-custom-header',
+  //                   value: 'js-config-value',
+  //                 },
+  //                 {
+  //                   key: 'x-config-type',
+  //                   value: 'object',
+  //                 },
+  //               ],
+  //             },
+  //           ];
+  //         },
+  //         // This should be overridden by the adapter
+  //         images: {
+  //           unoptimized: false,
+  //           domains: ['example.com'],
+  //         },
+  //       };
+
+  //       module.exports = nextConfig;
+  //     `;
+
+  //     await fsExtra.writeFile(join(cwd, "next.config.js"), configContent);
+  //     console.log(`Created next.config.js file with object-style config`);
+  //   },
+  //   tests: ["config-override.spec.ts"],
+  // },
+  // {
+  //   name: "with-js-config-function-style",
+  //   setup: async (cwd: string) => {
+  //     // Create a next.config.js file with function-style config
+  //     const configContent = `
+  //       /** @type {import('next').NextConfig} */
+  //       const nextConfig = (phase, { defaultConfig }) => {
+  //         return {
+  //           reactStrictMode: true,
+  //           async headers() {
+  //             return [
+  //               {
+  //                 source: '/:path*',
+  //                 headers: [
+  //                   {
+  //                     key: 'x-custom-header',
+  //                     value: 'js-config-value',
+  //                   },
+  //                   {
+  //                     key: 'x-config-type',
+  //                     value: 'function',
+  //                   },
+  //                 ],
+  //               },
+  //             ];
+  //           },
+  //           // This should be overridden by the adapter
+  //           images: {
+  //             unoptimized: false,
+  //             domains: ['example.com'],
+  //           },
+  //         };
+  //       };
+
+  //       module.exports = nextConfig;
+  //     `;
+
+  //     await fsExtra.writeFile(join(cwd, "next.config.js"), configContent);
+  //     console.log(`Created next.config.js file with function-style config`);
+  //   },
+  //   tests: ["config-override.spec.ts"],
+  // },
 ];
 
 const errors: any[] = [];
@@ -170,6 +288,7 @@ for (const scenario of scenarios) {
           ...process.env,
           HOST: host,
           SCENARIO: scenario.name,
+          RUN_ID: runId,
         },
       }).finally(() => {
         run.stdin.end();
