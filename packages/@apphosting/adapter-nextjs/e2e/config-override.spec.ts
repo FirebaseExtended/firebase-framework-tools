@@ -27,13 +27,20 @@ const compiledFilesPath = posix.join(
   ".next",
 );
 
+const requiredServerFilePath = posix.join(compiledFilesPath, "required-server-files.json");
+
 describe("next.config override", () => {
   it("should have images optimization disabled", async function () {
-    if (scenario.includes("with-empty-config")) {
+    if (
+      scenario.includes("with-empty-config") ||
+      scenario.includes("with-images-unoptimized-false") ||
+      scenario.includes("with-custom-image-loader")
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       this.skip();
     }
 
-    const serverFiles = await fsExtra.readJson(`${compiledFilesPath}/required-server-files.json`);
+    const serverFiles = await fsExtra.readJson(requiredServerFilePath);
     const config = serverFiles.config;
 
     // Verify that images.unoptimized is set to true
@@ -47,6 +54,7 @@ describe("next.config override", () => {
 
   it("should preserve other user set next configs", async function () {
     if (scenario.includes("with-empty-config")) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       this.skip();
     }
 
@@ -68,6 +76,7 @@ describe("next.config override", () => {
   it("should handle function-style config correctly", async function () {
     // Only run this test for scenarios with function-style config
     if (!scenario.includes("function-style")) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       this.skip();
     }
 
@@ -80,6 +89,7 @@ describe("next.config override", () => {
   it("should handle object-style config correctly", async function () {
     // Only run this test for scenarios with object-style config
     if (!scenario.includes("object-style") && !scenario.includes("with-empty-config")) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       this.skip();
     }
 
@@ -91,5 +101,25 @@ describe("next.config override", () => {
     if (!scenario.includes("with-empty-config")) {
       assert.equal(response.headers.get("x-config-type") ?? "", "object");
     }
+  });
+
+  it("should not override images.unoptimized if user explicitly defines configs", async function () {
+    if (
+      !scenario.includes("with-images-unoptimized-false") &&
+      !scenario.includes("with-custom-image-loader")
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
+      this.skip();
+    }
+
+    const serverFiles = await fsExtra.readJson(requiredServerFilePath);
+    const config = serverFiles.config;
+
+    assert.ok(config.images, "Config should have images property");
+    assert.strictEqual(
+      config.images.unoptimized,
+      false,
+      "Images should have unoptimized set to false",
+    );
   });
 });

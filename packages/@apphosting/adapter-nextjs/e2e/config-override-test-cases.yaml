@@ -142,3 +142,61 @@ tests:
 
       module.exports = nextConfig
     file: next.config.js
+  - name: with-images-unoptimized-false
+    config: |
+      /** @type {import('next').NextConfig} */
+      const nextConfig = {
+        reactStrictMode: true,
+        images: {
+          unoptimized: false,
+        },
+        async headers() {
+          return [
+            {
+              source: '/:path*',
+              headers: [
+                {
+                  key: 'x-custom-header',
+                  value: 'js-config-value',
+                },
+                {
+                  key: 'x-config-type',
+                  value: 'object',
+                },
+              ],
+            },
+          ];
+        },
+      };
+
+      module.exports = nextConfig;
+    file: next.config.js
+  - name: with-custom-image-loader
+    config: |
+      /** @type {import('next').NextConfig} */
+      const nextConfig = {
+        images: {
+          loader: "akamai",
+          path: "",
+        },
+        async headers() {
+          return [
+            {
+              source: '/:path*',
+              headers: [
+                {
+                  key: 'x-custom-header',
+                  value: 'js-config-value',
+                },
+                {
+                  key: 'x-config-type',
+                  value: 'object',
+                },
+              ],
+            },
+          ];
+        },
+      };
+
+      module.exports = nextConfig;
+    file: next.config.js
