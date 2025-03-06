@@ -60,6 +60,7 @@ const scenarios: Scenario[] = [
         const configContent = scenario.config;
 
         // Remove any existing next.config.* files
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         const configFiles = await glob(join(cwd, "next.config.*"));
         for (const file of configFiles) {
           await fsExtra.remove(file);
