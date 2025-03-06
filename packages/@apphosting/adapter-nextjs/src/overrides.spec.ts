@@ -179,12 +179,12 @@ describe("next config overrides", () => {
   });
 
   const config = typeof originalConfig === 'function' 
-    ? (...args) => {
-        const resolvedConfig = originalConfig(...args);
+    ? async (...args) => {
+        const resolvedConfig = await originalConfig(...args);
         return fahOptimizedConfig(resolvedConfig);
       }
     : fahOptimizedConfig(originalConfig);
-    `;
+  `;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-overrides"));

@@ -54,12 +54,6 @@ describe("next.config override", () => {
     // We'll check for the custom header that was set in the next.config
     const response = await fetch(posix.join(host, "/"));
 
-    // Log all headers individually for debugging
-    console.log("Response headers:");
-    response.headers.forEach((value, key) => {
-      console.log(`  ${key}: ${value}`);
-    });
-
     assert.ok(response.ok);
 
     // Check for the custom header that was set in the next.config

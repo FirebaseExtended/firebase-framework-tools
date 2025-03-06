@@ -69,8 +69,8 @@ function getCustomNextConfig(importStatement: string, fileExtension: string) {
   });
 
   const config = typeof originalConfig === 'function' 
-    ? (...args) => {
-        const resolvedConfig = originalConfig(...args);
+    ? async (...args) => {
+        const resolvedConfig = await originalConfig(...args);
         return fahOptimizedConfig(resolvedConfig);
       }
     : fahOptimizedConfig(originalConfig);
