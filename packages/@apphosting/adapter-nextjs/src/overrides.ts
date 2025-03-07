@@ -9,6 +9,10 @@ import {
 import { join } from "path";
 import { rename as renamePromise } from "fs/promises";
 
+/**
+ * Overrides the user's Next Config file (next.config.[ts|js|mjs]) to add configs
+ * optimized for Firebase App Hosting.
+ */
 export async function overrideNextConfig(projectRoot: string, nextConfigFileName: string) {
   // Check if the file exists in the current working directory
   const configPath = join(projectRoot, nextConfigFileName);
@@ -52,6 +56,17 @@ export async function overrideNextConfig(projectRoot: string, nextConfigFileName
   }
 }
 
+/**
+ * Returns a custom Next.js config that optimizes the app for Firebase App Hosting.
+ *
+ * Current overrides include:
+ * - images.unoptimized = true, unless user explicitly sets images.unoptimized to false or
+ * is using a custom image loader.
+ *
+ * @param importStatement The import statement for the original config.
+ * @param fileExtension The file extension of the original config.
+ * @returns The custom Next.js config.
+ */
 function getCustomNextConfig(importStatement: string, fileExtension: string) {
   return `
   // @ts-nocheck
