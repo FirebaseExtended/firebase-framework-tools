@@ -58,9 +58,10 @@ const scenarios: Scenario[] = [
       setup: async (cwd: string) => {
         const configContent = scenario.config;
         const files = await fsExtra.readdir(cwd);
-        const configFiles = files.filter(file => file.startsWith('next.config.'))
-                                 .map(file => join(cwd, file));
-        
+        const configFiles = files
+          .filter((file) => file.startsWith("next.config."))
+          .map((file) => join(cwd, file));
+
         for (const file of configFiles) {
           await fsExtra.remove(file);
           console.log(`Removed existing config file: ${file}`);
