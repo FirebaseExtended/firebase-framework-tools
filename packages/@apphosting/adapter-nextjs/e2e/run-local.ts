@@ -20,12 +20,10 @@ interface Scenario {
   tests?: string[]; // List of test files to run
 }
 
-console.log(`reading config-override-test-cases.yaml`);
 // Load test data for config override
 const configOverrideTestScenarios = parseYaml(
   readFileSync(join(__dirname, "config-override-test-cases.yaml"), "utf8"),
 ).tests;
-console.log(`config-override-test-cases.yaml parsed`);
 
 const scenarios: Scenario[] = [
   {
