@@ -5,9 +5,8 @@ import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
 import { spawn } from "child_process";
 import fsExtra from "fs-extra";
-import { glob } from "glob";
 
-const { readFileSync, mkdirp, rm } = fsExtra;
+const { readFileSync, mkdirp, rmdir } = fsExtra;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -58,10 +57,10 @@ const scenarios: Scenario[] = [
       name: scenario.name,
       setup: async (cwd: string) => {
         const configContent = scenario.config;
-
-        // Remove any existing next.config.* files
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        const configFiles = await glob(join(cwd, "next.config.*"));
+        const files = await fsExtra.readdir(cwd);
+        const configFiles = files.filter(file => file.startsWith('next.config.'))
+                                 .map(file => join(cwd, file));
+        
         for (const file of configFiles) {
           await fsExtra.remove(file);
           console.log(`Removed existing config file: ${file}`);
@@ -77,7 +76,7 @@ const scenarios: Scenario[] = [
 
 const errors: any[] = [];
 
-await rm(join(__dirname, "runs"), { recursive: true }).catch(() => undefined);
+await rmdir(join(__dirname, "runs"), { recursive: true }).catch(() => undefined);
 
 // Run each scenario
 for (const scenario of scenarios) {
