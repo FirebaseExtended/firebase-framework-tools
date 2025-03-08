@@ -8,7 +8,11 @@ import {
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
-import { addRouteOverrides, overrideNextConfig } from "../overrides.js";
+import {
+  addRouteOverrides,
+  overrideNextConfig,
+  validateNextConfigOverrides,
+} from "../overrides.js";
 
 const root = process.cwd();
 const opts = getBuildOptions();
@@ -21,19 +25,26 @@ if (!process.env.FRAMEWORK_VERSION) {
   throw new Error("Could not find the nextjs version of the application");
 }
 
-const { distDir, configFileName } = await loadConfig(root, opts.projectDirectory);
-await overrideNextConfig(root, configFileName);
+const originalConfig = await loadConfig(root, opts.projectDirectory);
+
+await overrideNextConfig(root, originalConfig.configFileName);
+await validateNextConfigOverrides(root, opts.projectDirectory);
+
 await runBuild();
 
 const adapterMetadata = getAdapterMetadata();
-const nextBuildDirectory = join(opts.projectDirectory, distDir);
+const nextBuildDirectory = join(opts.projectDirectory, originalConfig.distDir);
 const outputBundleOptions = populateOutputBundleOptions(
   root,
   opts.projectDirectory,
   nextBuildDirectory,
 );
 
-await addRouteOverrides(outputBundleOptions.outputDirectoryAppPath, distDir, adapterMetadata);
+await addRouteOverrides(
+  outputBundleOptions.outputDirectoryAppPath,
+  originalConfig.distDir,
+  adapterMetadata,
+);
 
 await generateBuildOutput(
   root,

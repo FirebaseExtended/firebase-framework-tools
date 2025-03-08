@@ -314,6 +314,16 @@ describe("next config overrides", () => {
       `),
     );
   });
+
+  it("should not do anything if no next.config.* file exists", async () => {
+    const { overrideNextConfig } = await importOverrides;
+    await overrideNextConfig(tmpDir, "next.config.js");
+
+    // Assert that no next.config* files were created
+    const files = fs.readdirSync(tmpDir);
+    const nextConfigFiles = files.filter((file) => file.startsWith("next.config"));
+    assert.strictEqual(nextConfigFiles.length, 0, "No next.config files should exist");
+  });
 });
 
 // Normalize whitespace for comparison
