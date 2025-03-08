@@ -100,19 +100,13 @@ function getCustomNextConfig(importStatement: string, fileExtension: string) {
       }
     : fahOptimizedConfig(originalConfig);
 
-  const firebaseAppHostingSymbol = Symbol("__createdByFirebaseAppHosting__");
-  config[firebaseAppHostingSymbol] = true;
-
   ${fileExtension === ".mjs" ? "export default config;" : "module.exports = config;"}
   `;
 }
 
 export async function validateNextConfigOverrides(root: string, projectRoot: string) {
   try {
-    const overriddenConfig = await loadConfig(root, projectRoot);
-    if (!overriddenConfig.__createdByFirebaseAppHosting__) {
-      throw new Error("Firebase App Hosting overrides are missing");
-    }
+    await loadConfig(root, projectRoot);
   } catch (error) {
     throw new Error(
       `Invalid Next.js config: ${error instanceof Error ? error.message : "Unknown error"}`,
