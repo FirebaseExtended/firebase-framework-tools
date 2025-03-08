@@ -6,7 +6,7 @@ import {
   exists,
   writeFile,
 } from "./utils.js";
-import { join } from "path";
+import { join, extname } from "path";
 import { rename as renamePromise } from "fs/promises";
 
 /**
@@ -23,9 +23,8 @@ export async function overrideNextConfig(projectRoot: string, nextConfigFileName
   }
 
   // Determine the file extension
-  const fileExtension = nextConfigFileName.split(".").pop() || "js";
+  const fileExtension = extname(nextConfigFileName);
   const originalConfigName = `next.config.original.${fileExtension}`;
-  const newConfigName = `next.config.${fileExtension}`;
 
   // Rename the original config file
   try {
@@ -34,22 +33,31 @@ export async function overrideNextConfig(projectRoot: string, nextConfigFileName
 
     // Create a new config file with the appropriate import
     let importStatement;
-    if (fileExtension === "js" || fileExtension === "cjs") {
-      importStatement = `const originalConfig = require('./${originalConfigName}');`;
-    } else if (fileExtension === "mjs") {
-      importStatement = `import originalConfig from './${originalConfigName}';`;
-    } else if (fileExtension === "ts") {
-      importStatement = `import originalConfig from './${originalConfigName.replace(".ts", "")}';`;
-    } else {
-      throw new Error(`Unsupported file extension: ${fileExtension}`);
+    switch (fileExtension) {
+      case "js":
+        importStatement = `const originalConfig = require('./${originalConfigName}');`;
+        break;
+      case "mjs":
+        importStatement = `import originalConfig from './${originalConfigName}';`;
+        break;
+      case "ts":
+        importStatement = `import originalConfig from './${originalConfigName.replace(
+          ".ts",
+          "",
+        )}';`;
+        break;
+      default:
+        throw new Error(
+          `Unsupported file extension for Next Config: "${fileExtension}", please use "js", "mjs", or "ts"`,
+        );
     }
 
     // Create the new config content with our overrides
     const newConfigContent = getCustomNextConfig(importStatement, fileExtension);
 
     // Write the new config file
-    await writeFile(join(projectRoot, newConfigName), newConfigContent);
-    console.log(`Successfully created ${newConfigName} with Firebase App Hosting overrides`);
+    await writeFile(join(projectRoot, nextConfigFileName), newConfigContent);
+    console.log(`Successfully created ${nextConfigFileName} with Firebase App Hosting overrides`);
   } catch (error) {
     console.error(`Error overriding Next.js config: ${error}`);
     throw error;
