@@ -9,13 +9,13 @@ import {
 } from "./utils.js";
 import { join, extname } from "path";
 import { rename as renamePromise } from "fs/promises";
-import { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 /**
  * Overrides the user's Next Config file (next.config.[ts|js|mjs]) to add configs
  * optimized for Firebase App Hosting.
  */
 export async function overrideNextConfig(projectRoot: string, nextConfigFileName: string) {
+  console.log(`Overriding Next Config to add configs optmized for Firebase App Hosting`);
   // Check if the file exists in the current working directory
   const configPath = join(projectRoot, nextConfigFileName);
 
@@ -87,13 +87,13 @@ function getCustomNextConfig(importStatement: string, fileExtension: string) {
     ...config,
     images: {
       ...(config.images || {}),
-      ...(config.images?.unoptimized === undefined && config.images?.loader === undefined 
-          ? { unoptimized: true } 
+      ...(config.images?.unoptimized === undefined && config.images?.loader === undefined
+          ? { unoptimized: true }
           : {}),
     },
   });
 
-  const config = typeof originalConfig === 'function' 
+  const config = typeof originalConfig === 'function'
     ? async (...args) => {
         const resolvedConfig = await originalConfig(...args);
         return fahOptimizedConfig(resolvedConfig);
@@ -104,12 +104,41 @@ function getCustomNextConfig(importStatement: string, fileExtension: string) {
   `;
 }
 
-export async function validateNextConfigOverrides(root: string, projectRoot: string) {
+/**
+ * This function is used to validate the state of an app after running the
+ * overrideNextConfig. It validates that:
+ *  1. original next config is preserved
+ *  2. a new next config is created
+ *  3. new next config can be loaded by NextJs without any issues.
+ */
+export async function validateNextConfigOverride(
+  root: string,
+  projectRoot: string,
+  originalConfigFileName: string,
+) {
+  const originalConfigExtension = extname(originalConfigFileName);
+  const newConfigFileName = `next.config.original${originalConfigExtension}`;
+  const newConfigFilePath = join(root, newConfigFileName);
+  if (!(await exists(newConfigFilePath))) {
+    throw new Error(
+      `Next Config Override Failed: New Next.js config file not found at ${newConfigFilePath}`,
+    );
+  }
+
+  const originalNextConfigFilePath = join(root, originalConfigFileName);
+  if (!(await exists(originalNextConfigFilePath))) {
+    throw new Error(
+      `Next Config Override Failed: Original Next.js config file not found at ${originalNextConfigFilePath}`,
+    );
+  }
+
   try {
     await loadConfig(root, projectRoot);
   } catch (error) {
     throw new Error(
-      `Invalid Next.js config: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Resulting Next Config is invalid: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
     );
   }
 }
