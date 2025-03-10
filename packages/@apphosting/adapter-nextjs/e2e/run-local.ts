@@ -19,6 +19,11 @@ interface Scenario {
   tests?: string[]; // List of test files to run
 }
 
+// Load test data for config override
+const configOverrideTestScenarios = parseYaml(
+  readFileSync(join(__dirname, "config-override-test-cases.yaml"), "utf8"),
+).tests;
+
 const scenarios: Scenario[] = [
   {
     name: "basic",
@@ -47,6 +52,27 @@ const scenarios: Scenario[] = [
     },
     tests: ["middleware.spec.ts"], // Only run middleware-specific tests
   },
+  ...configOverrideTestScenarios.map(
+    (scenario: { name: string; config: string; file: string }) => ({
+      name: scenario.name,
+      setup: async (cwd: string) => {
+        const configContent = scenario.config;
+        const files = await fsExtra.readdir(cwd);
+        const configFiles = files
+          .filter((file) => file.startsWith("next.config."))
+          .map((file) => join(cwd, file));
+
+        for (const file of configFiles) {
+          await fsExtra.remove(file);
+          console.log(`Removed existing config file: ${file}`);
+        }
+
+        await fsExtra.writeFile(join(cwd, scenario.file), configContent);
+        console.log(`Created ${scenario.file} file with ${scenario.name} config`);
+      },
+      tests: ["config-override.spec.ts"],
+    }),
+  ),
 ];
 
 const errors: any[] = [];
@@ -55,7 +81,11 @@ await rmdir(join(__dirname, "runs"), { recursive: true }).catch(() => undefined)
 
 // Run each scenario
 for (const scenario of scenarios) {
-  console.log(`\n\nRunning scenario: ${scenario.name}`);
+  console.log(
+    `\n\n${"=".repeat(80)}\n${" ".repeat(
+      5,
+    )}RUNNING SCENARIO: ${scenario.name.toUpperCase()}${" ".repeat(5)}\n${"=".repeat(80)}`,
+  );
 
   const runId = `${scenario.name}-${Math.random().toString().split(".")[1]}`;
   const cwd = join(__dirname, "runs", runId);
@@ -170,6 +200,7 @@ for (const scenario of scenarios) {
           ...process.env,
           HOST: host,
           SCENARIO: scenario.name,
+          RUN_ID: runId,
         },
       }).finally(() => {
         run.stdin.end();
