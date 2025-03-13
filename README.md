@@ -18,7 +18,7 @@ Any framework that can generate a build output in accordance with the App Hostin
 The output bundle primarily consists of a `bundle.yaml` file that sits inside of the `.apphosting` directory. This bundle.yaml contains all the ways that frameworks can configure App Hosting when users deploy their applications.
 
 > [!NOTE]  
-> App Hosting technically supports all all node applications, but no custom framework features will be enabled without the output bundle.
+> App Hosting technically supports all node applications, but no custom framework features will be enabled without the output bundle.
 
 ## Output bundle Schema
 
