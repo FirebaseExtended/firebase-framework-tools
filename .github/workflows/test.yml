@@ -94,7 +94,7 @@ jobs:
         run: rsync -a artifact/ packages
       - name: Test
         run: npm run test
-        #TODO: investigate and remove the node18 block
+        #TODO: investigate and remove from continue-on-error node18 
         continue-on-error: ${{ matrix.node == 22 || matrix.node == 18 }}
 
   lint:
