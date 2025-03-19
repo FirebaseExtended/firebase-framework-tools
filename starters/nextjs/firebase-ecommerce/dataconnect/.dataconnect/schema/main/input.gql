@@ -796,6 +796,10 @@ input OrderItem_Data {
   ✨ Generated from Field `OrderItem`.`quantity` of type `Int!`
   """
   quantity: Int
+  """
+  ✨ `_expr` server value variant of `quantity` (✨ Generated from Field `OrderItem`.`quantity` of type `Int!`)
+  """
+  quantity_expr: Int_Expr
 }
 """
 ✨ Generated filter input type for table 'OrderItem'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1264,6 +1268,10 @@ input ProductCollection_Data {
   ✨ Generated from Field `ProductCollection`.`displayPosition` of type `Int!`
   """
   displayPosition: Int
+  """
+  ✨ `_expr` server value variant of `displayPosition` (✨ Generated from Field `ProductCollection`.`displayPosition` of type `Int!`)
+  """
+  displayPosition_expr: Int_Expr
 }
 """
 ✨ Generated filter input type for table 'ProductCollection'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1411,6 +1419,10 @@ input ProductImage_Data {
   """
   displayPosition: Int
   """
+  ✨ `_expr` server value variant of `displayPosition` (✨ Generated from Field `ProductImage`.`displayPosition` of type `Int!`)
+  """
+  displayPosition_expr: Int_Expr
+  """
   ✨ Generated from Field `ProductImage`.`featured` of type `Boolean!`
   """
   featured: Boolean
@@ -1418,6 +1430,10 @@ input ProductImage_Data {
   ✨ Generated from Field `ProductImage`.`height` of type `Int!`
   """
   height: Int
+  """
+  ✨ `_expr` server value variant of `height` (✨ Generated from Field `ProductImage`.`height` of type `Int!`)
+  """
+  height_expr: Int_Expr
   """
   ✨ Generated from Field `ProductImage`.`url` of type `String!`
   """
@@ -1430,6 +1446,10 @@ input ProductImage_Data {
   ✨ Generated from Field `ProductImage`.`width` of type `Int!`
   """
   width: Int
+  """
+  ✨ `_expr` server value variant of `width` (✨ Generated from Field `ProductImage`.`width` of type `Int!`)
+  """
+  width_expr: Int_Expr
 }
 """
 ✨ Generated filter input type for table 'ProductImage'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1774,6 +1794,10 @@ input ProductReview_Data {
   ✨ Generated from Field `ProductReview`.`rating` of type `Int!`
   """
   rating: Int
+  """
+  ✨ `_expr` server value variant of `rating` (✨ Generated from Field `ProductReview`.`rating` of type `Int!`)
+  """
+  rating_expr: Int_Expr
 }
 """
 ✨ Generated filter input type for table 'ProductReview'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -1948,6 +1972,10 @@ input ProductVariant_Data {
   ✨ Generated from Field `ProductVariant`.`inventoryQuantity` of type `Int!`
   """
   inventoryQuantity: Int
+  """
+  ✨ `_expr` server value variant of `inventoryQuantity` (✨ Generated from Field `ProductVariant`.`inventoryQuantity` of type `Int!`)
+  """
+  inventoryQuantity_expr: Int_Expr
   """
   ✨ Generated from Field `ProductVariant`.`price` of type `Float!`
   """

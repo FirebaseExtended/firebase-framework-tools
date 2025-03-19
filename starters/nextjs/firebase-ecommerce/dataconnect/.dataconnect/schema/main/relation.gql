@@ -47,6 +47,10 @@ extend type Collection {
     """
     limit: Int = 100
   ): [Product!]! @fdc_generated(from: "ProductCollection", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Collection", purpose: METADATA_FIELD)
 }
 extend type Customer {
   """
@@ -121,6 +125,10 @@ extend type Customer {
     """
     limit: Int = 100
   ): [Product!]! @fdc_generated(from: "ProductReview", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Customer", purpose: METADATA_FIELD)
 }
 extend type Order {
   """
@@ -147,6 +155,16 @@ extend type Order {
     """
     limit: Int = 100
   ): [OrderItem!]! @fdc_generated(from: "OrderItem.order", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Order", purpose: METADATA_FIELD)
+}
+extend type OrderItem {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "OrderItem", purpose: METADATA_FIELD)
 }
 extend type Product {
   """
@@ -341,6 +359,16 @@ extend type Product {
     """
     limit: Int = 100
   ): [Customer!]! @fdc_generated(from: "ProductReview", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Product", purpose: METADATA_FIELD)
+}
+extend type ProductCollection {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ProductCollection", purpose: METADATA_FIELD)
 }
 extend type ProductImage {
   """
@@ -391,6 +419,22 @@ extend type ProductImage {
     """
     limit: Int = 100
   ): [Product!]! @fdc_generated(from: "Product.featuredImage", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ProductImage", purpose: METADATA_FIELD)
+}
+extend type ProductOption {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ProductOption", purpose: METADATA_FIELD)
+}
+extend type ProductReview {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ProductReview", purpose: METADATA_FIELD)
 }
 extend type ProductVariant {
   """
@@ -417,6 +461,10 @@ extend type ProductVariant {
     """
     limit: Int = 100
   ): [SelectedOption!]! @fdc_generated(from: "SelectedOption.productVariant", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "ProductVariant", purpose: METADATA_FIELD)
 }
 extend type SEO {
   """
@@ -467,4 +515,14 @@ extend type SEO {
     """
     limit: Int = 100
   ): [Product!]! @fdc_generated(from: "Product.seo", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "SEO", purpose: METADATA_FIELD)
+}
+extend type SelectedOption {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "SelectedOption", purpose: METADATA_FIELD)
 }
