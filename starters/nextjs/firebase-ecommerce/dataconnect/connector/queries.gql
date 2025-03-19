@@ -200,41 +200,10 @@ query SearchProductReviewContentUsingL2Similarity($query: String!) @auth(level: 
 
 # Get the orders of a customer by ID, admin access only
 query GetOrdersByCustomerId($customerId: String!) @auth(level: USER) {
-  orders(where: { customer: { id: { eq: $customerId } } }) {
-    id
-    customerId @check(expr: "this == auth.uid", message: "You may only see your own orders.")
-    processedAt
-    chargeId
-    paymentIntentId
-    receiptUrl
-    subtotalPrice
-    totalPrice
-    financialStatus
-    fulfillmentStatus
-    orderItems_on_order {
-      id
-      quantity
-      price
-      product {
-        id
-        title
-        handle
-        productImages_on_product(orderBy: [{ displayPosition: ASC }], limit: 1) {
-          url
-          altText
-          width
-          height
-        }
-      }
-    }
-  }
-}
-
-# Get the orders of the current logged in customer
-query GetCurrentCustomerOrders @auth(level: USER) {
-  orders: customer(key: { id_expr: "auth.uid" }) {
+  orders: customer(id: $customerId) {
     orders_on_customer {
       id
+      customerId @check(expr: "this == auth.uid", message: "You may only see your own orders.")
       processedAt
       chargeId
       paymentIntentId
@@ -267,7 +236,8 @@ query GetCurrentCustomerOrders @auth(level: USER) {
 query GetOrderById($id: UUID!) @auth(level: USER) {
   order(id: $id) {
     id
-    customerId @check(expr: "this == auth.uid", message: "Customers can only view orders they placed.")
+    customerId
+      @check(expr: "this == auth.uid", message: "Customers can only view orders they placed.")
     processedAt
     receiptUrl
     totalPrice
