@@ -5,6 +5,7 @@ export interface OutputBundleConfig {
   version: "v1";
   runConfig: RunConfig;
   metadata: Metadata;
+  outputFiles?: OutputFiles;
 }
 
 // Fields needed to configure the App Hosting server
@@ -37,6 +38,19 @@ export interface Metadata {
   // Version of the framework that is being supported, e.g. "18.0.1"
   frameworkVersion?: string;
 }
+
+// Optional outputFiles to configure outputFiles and optimize server files + static assets. 
+// If this is not set then all of the source code will be uploaded
+interface OutputFiles {
+  serverApp: ServerApp
+}
+
+// ServerApp holds a list of directories + files relative to the app root dir that frameworks need to deploy to the App Hosting server, 
+// generally this will be the output/dist directory (e.g. .output or dist). To include all files set this to [“.”]
+interface ServerApp {
+  include:  string[]
+}
+  
 
 // Represents a single environment variable.
 export interface EnvVarConfig {
