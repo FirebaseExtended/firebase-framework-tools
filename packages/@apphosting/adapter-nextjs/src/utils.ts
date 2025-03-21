@@ -42,7 +42,7 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
  * Loads the route manifest from the standalone directory.
  * @param standalonePath The path to the standalone directory.
  * @param distDir The path to the dist directory.
- * @returns The route manifest.
+ * @return The route manifest.
  */
 export function loadRouteManifest(standalonePath: string, distDir: string): RoutesManifest {
   const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
@@ -54,7 +54,7 @@ export function loadRouteManifest(standalonePath: string, distDir: string): Rout
  * Loads the middleware manifest from the standalone directory.
  * @param standalonePath The path to the standalone directory.
  * @param distDir The path to the dist directory.
- * @returns The middleware manifest.
+ * @return The middleware manifest.
  */
 export function loadMiddlewareManifest(
   standalonePath: string,
