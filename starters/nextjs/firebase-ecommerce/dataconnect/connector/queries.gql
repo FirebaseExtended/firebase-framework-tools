@@ -8,6 +8,7 @@ query ListCustomers @auth(level: NO_ACCESS) {
   }
 }
 
+# Get all reviews under a product by handle
 query GetReviewsByHandle($handle: String!) @auth(level: PUBLIC) {
   products(where: { handle: { eq: $handle } }) {
     productReviews_on_product(orderBy: [{ date: DESC }]) {
@@ -24,6 +25,7 @@ query GetReviewsByHandle($handle: String!) @auth(level: PUBLIC) {
   }
 }
 
+# Get a product by handle
 query GetProductByHandle($handle: String!) @auth(level: PUBLIC) {
   product(first: { where: { handle: { eq: $handle } } }) {
     id
@@ -65,6 +67,7 @@ query GetProductByHandle($handle: String!) @auth(level: PUBLIC) {
   }
 }
 
+# Get a collection by handle
 query GetCollectionByHandle($handle: String!, $page: String) @auth(level: PUBLIC) {
   collections(where: { handle: { eq: $handle }, page: { eq: $page } }) {
     id
@@ -112,6 +115,7 @@ query GetCollectionByHandle($handle: String!, $page: String) @auth(level: PUBLIC
   }
 }
 
+# Get collections by page
 query GetCollectionsByPage($page: String) @auth(level: PUBLIC) {
   collections(where: { page: { eq: $page } }) {
     id
@@ -150,6 +154,7 @@ query GetCollectionsByPage($page: String) @auth(level: PUBLIC) {
   }
 }
 
+# Get products by its description using vector search
 query SearchProductDescriptionUsingL2Similarity($query: String!) @auth(level: PUBLIC) {
   products_descriptionEmbedding_similarity(
     compare_embed: { model: "textembedding-gecko@003", text: $query }
@@ -163,6 +168,7 @@ query SearchProductDescriptionUsingL2Similarity($query: String!) @auth(level: PU
   }
 }
 
+# Get products by its title using vector search
 query SearchProductTitleUsingL2Similarity($query: String!) @auth(level: PUBLIC) {
   products_titleEmbedding_similarity(
     compare_embed: { model: "textembedding-gecko@003", text: $query }
@@ -176,6 +182,7 @@ query SearchProductTitleUsingL2Similarity($query: String!) @auth(level: PUBLIC) 
   }
 }
 
+# Get products by its reviews using vector search
 query SearchProductReviewContentUsingL2Similarity($query: String!) @auth(level: PUBLIC) {
   productReviews_contentEmbedding_similarity(
     compare_embed: { model: "textembedding-gecko@003", text: $query }
@@ -191,39 +198,46 @@ query SearchProductReviewContentUsingL2Similarity($query: String!) @auth(level: 
   }
 }
 
-query GetOrdersByCustomerId($customerId: String!) @auth(level: PUBLIC) {
-  orders(where: { customer: { id: { eq: $customerId } } }) {
-    id
-    processedAt
-    chargeId
-    paymentIntentId
-    receiptUrl
-    subtotalPrice
-    totalPrice
-    financialStatus
-    fulfillmentStatus
-    orderItems_on_order {
+# Get the orders of a customer by ID
+query GetOrdersByCustomerId($customerId: String!) @auth(level: USER) {
+  orders: customer(id: $customerId) {
+    orders_on_customer {
       id
-      quantity
-      price
-      product {
+      customerId @check(expr: "this == auth.uid", message: "You may only see your own orders.")
+      processedAt
+      chargeId
+      paymentIntentId
+      receiptUrl
+      subtotalPrice
+      totalPrice
+      financialStatus
+      fulfillmentStatus
+      orderItems_on_order {
         id
-        title
-        handle
-        productImages_on_product(orderBy: [{ displayPosition: ASC }], limit: 1) {
-          url
-          altText
-          width
-          height
+        quantity
+        price
+        product {
+          id
+          title
+          handle
+          productImages_on_product(orderBy: [{ displayPosition: ASC }], limit: 1) {
+            url
+            altText
+            width
+            height
+          }
         }
       }
     }
   }
 }
 
-query GetOrderById($id: UUID!) @auth(level: PUBLIC) {
+# Get a order of the logged in customer by ID
+query GetOrderById($id: UUID!) @auth(level: USER) {
   order(id: $id) {
     id
+    customerId
+      @check(expr: "this == auth.uid", message: "Customers can only view orders they placed.")
     processedAt
     receiptUrl
     totalPrice

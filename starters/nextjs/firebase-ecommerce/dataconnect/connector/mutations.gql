@@ -4,7 +4,7 @@ mutation UpsertCustomer(
   $email: String!
   $phone: String!
   $acceptsMarketing: Boolean!
-) @auth(level: PUBLIC) {
+) @auth(level: USER) {
   customer_upsert(
     data: {
       id_expr: "auth.uid"
@@ -20,14 +20,13 @@ mutation UpsertCustomer(
 # Create a new review
 mutation CreateProductReview(
   $productId: UUID!
-  $customerId: String!
   $rating: Int!
   $content: String!
-) @auth(level: PUBLIC) {
+) @auth(level: USER) {
   productReview_insert(
     data: {
-      product: { id: $productId }
-      customer: { id: $customerId }
+      productId: $productId
+      customerId_expr: "auth.uid"
       rating: $rating
       content: $content
       contentEmbedding_embed: { model: "textembedding-gecko@003", text: $content }
@@ -46,10 +45,10 @@ mutation CreateOrder(
   $totalPrice: Float!
   $financialStatus: String!
   $fulfillmentStatus: String!
-) @auth(level: PUBLIC) {
+) @auth(level: USER) {
   order_insert(
     data: {
-      customer: { id: $customerId }
+      customerId_expr: "auth.uid"
       chargeId: $chargeId
       paymentIntentId: $paymentIntentId
       receiptUrl: $receiptUrl
@@ -70,7 +69,12 @@ mutation UpdateOrderByPaymentIntentId(
   $receiptUrl: String
   $processedAt: Date
   $chargeId: String
-) @auth(level: PUBLIC) {
+) @auth(level: USER) {
+  query @redact {
+    order(first: { where: { paymentIntentId: { eq: $paymentIntentId } } }) {
+      customerId @check(expr: "this == auth.uid", message: "You can only update the payment method of your own order.")
+    }
+  }
   order_update(
     first: { where: { paymentIntentId: { eq: $paymentIntentId } } }
     data: {
@@ -90,6 +94,11 @@ mutation UpdateOrderByChargeId(
   $processedAt: Date
   $chargeId: String
 ) @auth(level: PUBLIC) {
+  query @redact {
+    order(first: { where: { chargeId: { eq: $chargeId } } }) {
+      customerId @check(expr: "this == auth.uid", message: "You can only update the charge of your own order.")
+    }
+  }
   order_update(
     first: { where: { chargeId: { eq: $chargeId } } }
     data: {
@@ -102,7 +111,12 @@ mutation UpdateOrderByChargeId(
 }
 
 mutation CreateOrderItem($orderId: UUID!, $productId: UUID!, $quantity: Int!, $price: Float!)
-@auth(level: PUBLIC) {
+@auth(level: USER) {
+  query @redact {
+    order(id: $orderId) {
+      customerId @check(expr: "this == auth.uid", message: "You can only add to your own order.")
+    }
+  }
   orderItem_insert(
     data: {
       order: { id: $orderId }
