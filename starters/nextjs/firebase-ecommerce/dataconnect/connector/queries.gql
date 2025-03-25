@@ -198,7 +198,7 @@ query SearchProductReviewContentUsingL2Similarity($query: String!) @auth(level: 
   }
 }
 
-# Get the orders of a customer by ID, admin access only
+# Get the orders of a customer by ID
 query GetOrdersByCustomerId($customerId: String!) @auth(level: USER) {
   orders: customer(id: $customerId) {
     orders_on_customer {
