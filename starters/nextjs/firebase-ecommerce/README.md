@@ -28,8 +28,8 @@ The application provides a quick and easy to use shopping experience with featur
 
 1. Create a new Firebase project in the [Firebase Console](https://console.firebase.google.com).
 2. Enable **Email/Password Authentication**.
-3. Add Firebase app secrets to `.env.local`.
-4. Include Firebase app secrets in **App Hosting**.
+3. Replace the relevant commented-out environment varialbes in `apphosting.yaml`
+   with your firebase config.
 
 #### Firebase Data Connect
 
@@ -37,7 +37,9 @@ The application provides a quick and easy to use shopping experience with featur
 2. Create a new Data Connect instance and service.
 3. Set up billing for the Firebase project.
 4. Switch to the Blaze plan.
-5. Define the required schema, queries, and mutations.
+5. Modify `dataconnect/dataconnect.yaml` to specify `serviceId`, `location`,
+   `schema.datasource.postgresql.database` and
+   `schema.datasource.postgressql.cloudSql.instanceId`
 6. Deploy the schema, queries, and mutations to production.
 
 #### Firebase Storage
@@ -48,13 +50,18 @@ The application provides a quick and easy to use shopping experience with featur
 #### Firebase App Hosting
 
 1. Connect the Firebase app to your GitHub repository.
-2. Create a new backend for the application.
-3. Deploy secrets to app hosting using the Firebase CLI.
-4. Deploy the application to Firebase Hosting.
+2. Create a new backend for the application, but do not deploy yet.
+   We need to set up environment variables first for the app to work.
 
 ### Stripe Setup
 
 1. Create a new Stripe account.
+2. Follow the instructions in apphosting.yaml to create the
+   public and private keys for your stripe application.
+3. Create a webhook that listen to "Events on your account" at
+   <your domain>/api/stripe/webhook that receives at least
+   the following events: `payment_intent.succeeded`, `payment_intent.failed`,
+   `charge.succeeded`, `charge.updated`.
 2. Add API keys (Publishable and Secret) to `.env.local`.
 3. Set up a webhook endpoint in the Firebase project.
 4. Add the webhook secret to `.env.local`.
@@ -63,10 +70,11 @@ The application provides a quick and easy to use shopping experience with featur
 
 ## Environment Variables
 
-The following environment variables must be configured in `.env.local`:
+The following environment variables must be configured in `apphosting.yaml`
+(there are comments for where to find these values)
 
-- **Firebase Secrets**: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`.
-- **Stripe Secrets**: `NEXT_PUBLIC_STRIPE_PUB_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- **Firebase Config**: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`.
+- **Stripe Config**: `NEXT_PUBLIC_STRIPE_PUB_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - **Google/Gemini API Key**: `GOOGLE_API_KEY`
 
 ## Application Features
@@ -148,14 +156,13 @@ To run this project locally, follow these steps:
    ```
    npm install
    ```
-4. Copy the example environment variables:
+4. Fill in `apphosting.yaml` as guided by the comments.
+5. Initialize the firebase emulator suite with `firebase init emulators`. You may
+   create an `apphosting.emulator.yaml` if you choose to use different configurations
+   during local development or you can test against your production config.
+5. Start the emulator
    ```
-   cp .env.example .env.local
-   ```
-   • Fill in the required values (Firebase config, Stripe keys, Google API key, etc.).
-5. Start the development server:
-   ```
-   npm run dev
+   firebase emulators:start
    ```
 6. Open the application in your browser at:
    ```
