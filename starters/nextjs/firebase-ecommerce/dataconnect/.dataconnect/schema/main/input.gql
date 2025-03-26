@@ -571,17 +571,33 @@ input Order_Data {
   """
   subtotalPrice: Float
   """
+  ✨ `_expr` server value variant of `subtotalPrice` (✨ Generated from Field `Order`.`subtotalPrice` of type `Float!`)
+  """
+  subtotalPrice_expr: Float_Expr
+  """
   ✨ Generated from Field `Order`.`totalPrice` of type `Float!`
   """
   totalPrice: Float
+  """
+  ✨ `_expr` server value variant of `totalPrice` (✨ Generated from Field `Order`.`totalPrice` of type `Float!`)
+  """
+  totalPrice_expr: Float_Expr
   """
   ✨ Generated from Field `Order`.`totalShippingPrice` of type `Float!`
   """
   totalShippingPrice: Float
   """
+  ✨ `_expr` server value variant of `totalShippingPrice` (✨ Generated from Field `Order`.`totalShippingPrice` of type `Float!`)
+  """
+  totalShippingPrice_expr: Float_Expr
+  """
   ✨ Generated from Field `Order`.`totalTax` of type `Float!`
   """
   totalTax: Float
+  """
+  ✨ `_expr` server value variant of `totalTax` (✨ Generated from Field `Order`.`totalTax` of type `Float!`)
+  """
+  totalTax_expr: Float_Expr
 }
 """
 ✨ Generated filter input type for table 'Order'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
@@ -792,6 +808,10 @@ input OrderItem_Data {
   ✨ Generated from Field `OrderItem`.`price` of type `Float!`
   """
   price: Float
+  """
+  ✨ `_expr` server value variant of `price` (✨ Generated from Field `OrderItem`.`price` of type `Float!`)
+  """
+  price_expr: Float_Expr
   """
   ✨ Generated from Field `OrderItem`.`quantity` of type `Int!`
   """
@@ -1980,6 +2000,10 @@ input ProductVariant_Data {
   ✨ Generated from Field `ProductVariant`.`price` of type `Float!`
   """
   price: Float
+  """
+  ✨ `_expr` server value variant of `price` (✨ Generated from Field `ProductVariant`.`price` of type `Float!`)
+  """
+  price_expr: Float_Expr
   """
   ✨ Generated from Field `ProductVariant`.`sku` of type `String`
   """

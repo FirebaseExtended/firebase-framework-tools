@@ -198,9 +198,19 @@ input UUID_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: UUID
+  eq: UUID @fdc_oneOf(group: "eq")
+  """
+  Match if field is exactly equal to the result of the provided server value
+  expression.
+  """
+  eq_expr: UUID_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: UUID
+  ne: UUID @fdc_oneOf(group: "ne")
+  """
+  Match if field is not equal to the result of the provided server value
+  expression.
+  """
+  ne_expr: UUID_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [UUID!]
   "Match if field value is not among the provided list of values."
@@ -322,21 +332,51 @@ input Float_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: Float
+  eq: Float @fdc_oneOf(group: "eq")
+  """
+  Match if field is exactly equal to the result of the provided server value
+  expression.
+  """
+  eq_expr: Float_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: Float
+  ne: Float @fdc_oneOf(group: "ne")
+  """
+  Match if field is not equal to the result of the provided server value
+  expression.
+  """
+  ne_expr: Float_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [Float!]
   "Match if field value is not among the provided list of values."
   nin: [Float!]
   "Match if field value is greater than the provided value."
-  gt: Float
+  gt: Float @fdc_oneOf(group: "gt")
+  """
+  Match if field value is greater than the result of the provided server value
+  expression.
+  """
+  gt_expr: Float_Expr @fdc_oneOf(group: "gt")
   "Match if field value is greater than or equal to the provided value."
-  ge: Float
+  ge: Float @fdc_oneOf(group: "ge")
+  """
+  Match if field value is greater than or equal to the result of the provided
+  server value expression.
+  """
+  ge_expr: Float_Expr @fdc_oneOf(group: "ge")
   "Match if field value is less than the provided value."
-  lt: Float
+  lt: Float @fdc_oneOf(group: "lt")
+  """
+  Match if field value is less than the result of the provided server value
+  expression.
+  """
+  lt_expr: Float_Expr @fdc_oneOf(group: "lt")
   "Match if field value is less than or equal to the provided value."
-  le: Float
+  le: Float @fdc_oneOf(group: "le")
+  """
+  Match if field value is less than or equal to the result of the provided
+  server value expression.
+  """
+  le_expr: Float_Expr @fdc_oneOf(group: "le")
 }
 
 "Query filter criteria for `[Float!]` scalar fields."
@@ -722,8 +762,6 @@ scalar UUID_Expr
 
 """
 A Common Expression Language (CEL) expression that returns a Int at runtime.
-
-**Limitation**: Currently, only a limited set of expressions are supported.
 """
 scalar Int_Expr
   @specifiedBy(url: "https://github.com/google/cel-spec")
@@ -732,6 +770,17 @@ scalar Int_Expr
   @fdc_forbiddenAsFieldType
   @fdc_example(value: "2 * 4", description: "Evaluates to 8.")
   @fdc_example(value: "vars.foo.size()", description: "Assuming `vars.foo` is a string, it will evaluate to the length of the string.")
+
+"""
+A Common Expression Language (CEL) expression that returns a Float at runtime.
+"""
+scalar Float_Expr
+  @specifiedBy(url: "https://github.com/google/cel-spec")
+  @fdc_celExpression(returnType: "float")
+  @fdc_forbiddenAsVariableType
+  @fdc_forbiddenAsFieldType
+  @fdc_example(value: "2.0 * 4.0", description: "Evaluates to 8.0.")
+
 """
 A Common Expression Language (CEL) expression whose return type is unspecified.
 
@@ -1640,54 +1689,34 @@ input Timestamp_ListFilter {
 
 "Update input of a `Date` value."
 input Date_Update {
-  "Set the field to the provided date."
-  set: Date @fdc_oneOf(group: "set")
-  "Set the field to the provided date CEL expression."
-  set_expr: Date_Expr @fdc_oneOf(group: "set")
-  "Set the field to the provided relative date."
-  set_date: Date_Relative @fdc_oneOf(group: "set")
+  "Increment the field by a provided duration."
+  inc: Date_Duration @fdc_oneOf
+  "Decrement the field by a provided duration."
+  dec: Date_Duration @fdc_oneOf
 }
 
 "Update input of a `Date` list value."
 input Date_ListUpdate {
-  "Replace the current list with the provided list of `Date` values."
-  set: [Date!]
   "Append the provided `Date` values to the existing list."
-  append: [Date!]
+  append: [Date!] @fdc_oneOf
   "Prepend the provided `Date` values to the existing list."
-  prepend: [Date!]
-  "Remove the date value at the specified index."
-  delete: Int
-  "The index of the list to perform updates."
-  i: Int
-  "Update the date value at the specified index."
-  update: Date
+  prepend: [Date!] @fdc_oneOf
 }
 
 "Update input of a `Timestamp` value."
 input Timestamp_Update {
-  "Set the field to the provided timestamp."
-  set: Timestamp @fdc_oneOf(group: "set")
-  "Set the field to the provided timestamp CEL expression."
-  set_expr: Timestamp_Expr @fdc_oneOf(group: "set")
-  "Set the field to the provided relative timestamp."
-  set_time: Timestamp_Relative @fdc_oneOf(group: "set")
+  "Increment the field by a provided duration."
+  inc: Timestamp_Duration @fdc_oneOf
+  "Decrement the field by a provided duration."
+  dec: Timestamp_Duration @fdc_oneOf
 }
 
 "Update input of an `Timestamp` list value."
 input Timestamp_ListUpdate {
-  "Replace the current list with the provided list of `Timestamp` values."
-  set: [Timestamp!]
   "Append the provided `Timestamp` values to the existing list."
-  append: [Timestamp!]
+  append: [Timestamp!] @fdc_oneOf
   "Prepend the provided `Timestamp` values to the existing list."
-  prepend: [Timestamp!]
-  "Remove the timestamp value at the specified index."
-  delete: Int
-  "The index of the list to perform updates."
-  i: Int
-  "Update the timestamp value at the specified index."
-  update: Timestamp
+  prepend: [Timestamp!] @fdc_oneOf
 }
 
 
@@ -1775,132 +1804,84 @@ enum Date_Interval @fdc_forbiddenAsFieldType {
   YEAR
 }
 
-"Update input of a `String` value."
-input String_Update {
-  "Set the field to a provided value."
-  set: String @fdc_oneOf(group: "set")
-  "Set the field to a provided server value expression."
-  set_expr: String_Expr @fdc_oneOf(group: "set")
-}
-
 "Update input of a `String` list value."
 input String_ListUpdate {
-  "Set the list with the provided values."
-  set: [String!]
   "Append the provided values to the existing list."
-  append: [String!]
+  append: [String!] @fdc_oneOf
   "Prepend the provided values to the existing list."
-  prepend: [String!]
-}
-
-"Update input of a `UUID` value."
-input UUID_Update {
-  "Set the field to a provided UUID."
-  set: UUID @fdc_oneOf(group: "set")
-  "Set the field to a provided UUID expression."
-  set_expr: UUID_Expr @fdc_oneOf(group: "set")
+  prepend: [String!] @fdc_oneOf
 }
 
 "Update input of an `ID` list value."
 input UUID_ListUpdate {
-  "Set the list with the provided list of UUIDs."
-  set: [UUID!]
   "Append the provided UUIDs to the existing list."
-  append: [UUID!]
+  append: [UUID!] @fdc_oneOf
   "Prepend the provided UUIDs to the existing list."
-  prepend: [UUID!]
+  prepend: [UUID!] @fdc_oneOf
 }
 
 "Update input of an `Int` value."
 input Int_Update {
-  "Set the field to a provided value."
-  set: Int
   "Increment the field by a provided value."
-  inc: Int
+  inc: Int @fdc_oneOf
   "Decrement the field by a provided value."
-  dec: Int
+  dec: Int @fdc_oneOf
 }
 
 "Update input of an `Int` list value."
 input Int_ListUpdate {
-  "Set the list with the provided values."
-  set: [Int!]
   "Append the provided list of values to the existing list."
-  append: [Int!]
+  append: [Int!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Int!]
+  prepend: [Int!] @fdc_oneOf
 }
 
 "Update input of an `Int64` value."
 input Int64_Update {
-  "Set the field to a provided value."
-  set: Int64
   "Increment the field by a provided value."
-  inc: Int64
+  inc: Int64 @fdc_oneOf
   "Decrement the field by a provided value."
-  dec: Int64
+  dec: Int64 @fdc_oneOf
 }
 
 "Update input of an `Int64` list value."
 input Int64_ListUpdate {
-  "Replace the list with the provided values."
-  set: [Int64!]
   "Append the provided list of values to the existing list."
-  append: [Int64!]
+  append: [Int64!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Int64!]
+  prepend: [Int64!] @fdc_oneOf
 }
 
 "Update input of a `Float` value."
 input Float_Update {
-  "Set the field to a provided value."
-  set: Float
   "Increment the field by a provided value."
-  inc: Float
+  inc: Float @fdc_oneOf
   "Decrement the field by a provided value."
-  dec: Float
+  dec: Float @fdc_oneOf
 }
 
 "Update input of a `Float` list value."
 input Float_ListUpdate {
-  "Set the list with the provided values."
-  set: [Float!]
   "Append the provided list of values to the existing list."
-  append: [Float!]
+  append: [Float!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Float!]
-}
-
-"Update input of a `Boolean` value."
-input Boolean_Update {
-  "Set the field to a provided value."
-  set: Boolean
+  prepend: [Float!] @fdc_oneOf
 }
 
 "Update input of a `Boolean` list value."
 input Boolean_ListUpdate {
-  "Set the list with the provided values."
-  set: [Boolean!]
   "Append the provided list of values to the existing list."
-  append: [Boolean!]
+  append: [Boolean!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Boolean!]
-}
-
-"Update input of an `Any` value."
-input Any_Update {
-  "Set the field to a provided value."
-  set: Any
+  prepend: [Boolean!] @fdc_oneOf
 }
 
 "Update input of an `Any` list value."
 input Any_ListUpdate {
-  "Set the list with the provided values."
-  set: [Any!]
   "Append the provided list of values to the existing list."
-  append: [Any!]
+  append: [Any!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Any!]
+  prepend: [Any!] @fdc_oneOf
 }
 
 type Query {
@@ -1961,31 +1942,6 @@ input Vector_ListFilter {
   includesAll: [Vector!]
   "Match if the list contains none of the provided vectors."
   excludesAll: [Vector!]
-}
-
-"Update input of a Vector value."
-input Vector_Update {
-  "Set the field to the provided vector value."
-  set: Vector @fdc_oneOf(group: "set")
-  "Set the field to the vector embedding result from a text input."
-  set_embed: Vector_Embed @fdc_oneOf(group: "set")
-}
-
-
-"Update input of a Vector list value."
-input Vector_ListUpdate {
-  "Replace the current list with the provided list of Vector values."
-  set: [Vector]
-  "Append the provided Vector values to the existing list."
-  append: [Vector]
-  "Prepend the provided Vector values to the existing list."
-  prepend: [Vector]
-  "Delete the vector at the specified index."
-  delete: Int
-  "The index of the vector to be updated."
-  i: Int
-  "Update the vector at the specified index."
-  update: Vector
 }
 
 """

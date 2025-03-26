@@ -166,7 +166,7 @@ To run this project locally, follow these steps:
    ```
 6. Open the application in your browser at:
    ```
-   http://localhost:3000
+   http://localhost:5002
    ```
 
 ---
