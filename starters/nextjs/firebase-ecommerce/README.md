@@ -77,6 +77,11 @@ The following environment variables must be configured in `apphosting.yaml`
 - **Stripe Config**: `NEXT_PUBLIC_STRIPE_PUB_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - **Google/Gemini API Key**: `GOOGLE_API_KEY`
 
+## Deploy
+Once you have set up Stripe, Data Connect, and configured your App Hosting environment, it's time to deploy!
+If you have automatic rollouts enabled, simply push your changes. Otherwise, after pushing, go to the
+Firebase console and click "Create Rollout".
+
 ## Application Features
 
 ### Homepage
