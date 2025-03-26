@@ -40,7 +40,7 @@ env:
   # prompted. The value for STRIPE_ACCOUNT_ID can be found in the upper right corner of the
   # webhook details page.
   # - variable: NEXT_PUBLIC_STRIPE_PUB_KEY
-  #  value: <YOUR VALUE HERE>
+  #   value: <YOUR VALUE HERE>
   # - variable: STRIPE_SECRET_KEY
   #   secret: stripe-secret-key
   # - variable: STRIPE_ACCOUNT_ID
