@@ -1,16 +1,9 @@
 import { connectorConfig } from '@firebasegen/default-connector'
-import { initializeApp, getApps } from 'firebase/app'
-import { getDataConnect } from 'firebase/data-connect'
+import { firebaseApp } from "@/lib/firebase";
+import { connectDataConnectEmulator, getDataConnect } from 'firebase/data-connect'
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+export const dc = getDataConnect(firebaseApp, connectorConfig)
+if (process.env.FIREBASE_DATACONNECT_EMULATOR_HOST) {
+  const [host, port,] = process.env.FIREBASE_DATACONNECT_EMULATOR_HOST.split(":");
+  connectDataConnectEmulator(dc, host, +port);
 }
-
-const firebase_app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-
-export const dc = getDataConnect(firebase_app, connectorConfig)
