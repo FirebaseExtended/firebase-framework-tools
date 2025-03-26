@@ -12,7 +12,6 @@
   - [*SearchProductTitleUsingL2Similarity*](#searchproducttitleusingl2similarity)
   - [*SearchProductReviewContentUsingL2Similarity*](#searchproductreviewcontentusingl2similarity)
   - [*GetOrdersByCustomerId*](#getordersbycustomerid)
-  - [*GetCurrentCustomerOrders*](#getcurrentcustomerorders)
   - [*GetOrderById*](#getorderbyid)
 - [**Mutations**](#mutations)
   - [*UpsertCustomer*](#upsertcustomer)
@@ -988,34 +987,36 @@ Recall that executing the `GetOrdersByCustomerId` query returns a `QueryPromise`
 The `data` property is an object of type `GetOrdersByCustomerIdData`, which is defined in [default-connector/index.d.ts](./index.d.ts). It has the following fields:
 ```javascript
 export interface GetOrdersByCustomerIdData {
-  orders: ({
-    id: UUIDString;
-    customerId: string;
-    processedAt: DateString;
-    chargeId?: string | null;
-    paymentIntentId?: string | null;
-    receiptUrl?: string | null;
-    subtotalPrice: number;
-    totalPrice: number;
-    financialStatus: string;
-    fulfillmentStatus: string;
-    orderItems_on_order: ({
+  orders?: {
+    orders_on_customer: ({
       id: UUIDString;
-      quantity: number;
-      price: number;
-      product: {
+      customerId: string;
+      processedAt: DateString;
+      chargeId?: string | null;
+      paymentIntentId?: string | null;
+      receiptUrl?: string | null;
+      subtotalPrice: number;
+      totalPrice: number;
+      financialStatus: string;
+      fulfillmentStatus: string;
+      orderItems_on_order: ({
         id: UUIDString;
-        title: string;
-        handle: string;
-        productImages_on_product: ({
-          url: string;
-          altText?: string | null;
-          width: number;
-          height: number;
-        })[];
-      } & Product_Key;
-    } & OrderItem_Key)[];
-  } & Order_Key)[];
+        quantity: number;
+        price: number;
+        product: {
+          id: UUIDString;
+          title: string;
+          handle: string;
+          productImages_on_product: ({
+            url: string;
+            altText?: string | null;
+            width: number;
+            height: number;
+          })[];
+        } & Product_Key;
+      } & OrderItem_Key)[];
+    } & Order_Key)[];
+  };
 }
 ```
 ### Using `GetOrdersByCustomerId`'s action shortcut function
@@ -1067,110 +1068,6 @@ const ref = getOrdersByCustomerIdRef({ customerId: ..., });
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = getOrdersByCustomerIdRef(dataConnect, getOrdersByCustomerIdVars);
-
-// Call `executeQuery()` on the reference to execute the query.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await executeQuery(ref);
-
-console.log(data.orders);
-
-// Or, you can use the `Promise` API.
-executeQuery(ref).then((response) => {
-  const data = response.data;
-  console.log(data.orders);
-});
-```
-
-## GetCurrentCustomerOrders
-You can execute the `GetCurrentCustomerOrders` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [default-connector/index.d.ts](./index.d.ts):
-```javascript
-getCurrentCustomerOrders(): QueryPromise<GetCurrentCustomerOrdersData, undefined>;
-
-getCurrentCustomerOrdersRef(): QueryRef<GetCurrentCustomerOrdersData, undefined>;
-```
-You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
-```javascript
-getCurrentCustomerOrders(dc: DataConnect): QueryPromise<GetCurrentCustomerOrdersData, undefined>;
-
-getCurrentCustomerOrdersRef(dc: DataConnect): QueryRef<GetCurrentCustomerOrdersData, undefined>;
-```
-
-### Variables
-The `GetCurrentCustomerOrders` query has no variables.
-### Return Type
-Recall that executing the `GetCurrentCustomerOrders` query returns a `QueryPromise` that resolves to an object with a `data` property.
-
-The `data` property is an object of type `GetCurrentCustomerOrdersData`, which is defined in [default-connector/index.d.ts](./index.d.ts). It has the following fields:
-```javascript
-export interface GetCurrentCustomerOrdersData {
-  orders?: {
-    orders_on_customer: ({
-      id: UUIDString;
-      processedAt: DateString;
-      chargeId?: string | null;
-      paymentIntentId?: string | null;
-      receiptUrl?: string | null;
-      subtotalPrice: number;
-      totalPrice: number;
-      financialStatus: string;
-      fulfillmentStatus: string;
-      orderItems_on_order: ({
-        id: UUIDString;
-        quantity: number;
-        price: number;
-        product: {
-          id: UUIDString;
-          title: string;
-          handle: string;
-          productImages_on_product: ({
-            url: string;
-            altText?: string | null;
-            width: number;
-            height: number;
-          })[];
-        } & Product_Key;
-      } & OrderItem_Key)[];
-    } & Order_Key)[];
-  };
-}
-```
-### Using `GetCurrentCustomerOrders`'s action shortcut function
-
-```javascript
-import { getDataConnect, DataConnect } from 'firebase/data-connect';
-import { connectorConfig, getCurrentCustomerOrders } from '@firebasegen/default-connector';
-
-
-// Call the `getCurrentCustomerOrders()` function to execute the query.
-// You can use the `await` keyword to wait for the promise to resolve.
-const { data } = await getCurrentCustomerOrders();
-
-// You can also pass in a `DataConnect` instance to the action shortcut function.
-const dataConnect = getDataConnect(connectorConfig);
-const { data } = await getCurrentCustomerOrders(dataConnect);
-
-console.log(data.orders);
-
-// Or, you can use the `Promise` API.
-getCurrentCustomerOrders().then((response) => {
-  const data = response.data;
-  console.log(data.orders);
-});
-```
-
-### Using `GetCurrentCustomerOrders`'s `QueryRef` function
-
-```javascript
-import { getDataConnect, DataConnect, executeQuery } from 'firebase/data-connect';
-import { connectorConfig, getCurrentCustomerOrdersRef } from '@firebasegen/default-connector';
-
-
-// Call the `getCurrentCustomerOrdersRef()` function to get a reference to the query.
-const ref = getCurrentCustomerOrdersRef();
-
-// You can also pass in a `DataConnect` instance to the `QueryRef` function.
-const dataConnect = getDataConnect(connectorConfig);
-const ref = getCurrentCustomerOrdersRef(dataConnect);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.

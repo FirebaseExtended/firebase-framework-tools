@@ -41,3 +41,8 @@ vsce-debug.log*
 firebase-debug.log*
 firebase-debug.*
 .firebase
+.firebaserc
+
+# dataconnect
+dataconnect-generated/
+dataconnect/.dataconnect/

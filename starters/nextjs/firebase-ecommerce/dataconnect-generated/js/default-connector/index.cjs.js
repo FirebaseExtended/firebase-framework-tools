@@ -127,14 +127,6 @@ exports.getOrdersByCustomerIdRef = function getOrdersByCustomerIdRef(dcOrVars, v
 exports.getOrdersByCustomerId = function getOrdersByCustomerId(dcOrVars, vars) {
   return executeQuery(getOrdersByCustomerIdRef(dcOrVars, vars));
 };
-exports.getCurrentCustomerOrdersRef = function getCurrentCustomerOrdersRef(dc) {
-  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetCurrentCustomerOrders');
-}
-exports.getCurrentCustomerOrders = function getCurrentCustomerOrders(dc) {
-  return executeQuery(getCurrentCustomerOrdersRef(dc));
-};
 exports.getOrderByIdRef = function getOrderByIdRef(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
