@@ -28,7 +28,7 @@ The application provides a quick and easy to use shopping experience with featur
 
 1. Create a new Firebase project in the [Firebase Console](https://console.firebase.google.com).
 2. Enable **Email/Password Authentication**.
-3. Replace the relevant commented-out environment varialbes in `apphosting.yaml`
+3. Replace the relevant commented-out environment variables in `apphosting.yaml`
    with your firebase config.
 
 #### Firebase Data Connect
