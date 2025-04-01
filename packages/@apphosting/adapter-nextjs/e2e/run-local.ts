@@ -68,7 +68,7 @@ const scenarios: Scenario[] = [
 
         // skip creating the test config if data is not provided
         if (!scenario.config || !scenario.file) {
-          return
+          return;
         }
 
         const configContent = scenario.config;

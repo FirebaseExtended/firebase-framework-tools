@@ -340,18 +340,12 @@ describe("validateNextConfigOverride", () => {
   let root: string;
   let projectRoot: string;
   let originalConfigFileName: string;
-  let newConfigFileName: string;
-  let originalConfigPath: string;
-  let newConfigPath: string;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-next-config-override"));
     root = tmpDir;
     projectRoot = tmpDir;
     originalConfigFileName = "next.config.js";
-    newConfigFileName = "next.config.original.js";
-    originalConfigPath = path.join(root, originalConfigFileName);
-    newConfigPath = path.join(root, newConfigFileName);
 
     fs.mkdirSync(root, { recursive: true });
   });

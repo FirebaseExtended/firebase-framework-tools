@@ -5,7 +5,6 @@ import {
   generateBuildOutput,
   validateOutputDirectory,
   getAdapterMetadata,
-  exists,
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
