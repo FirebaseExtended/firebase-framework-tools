@@ -35,11 +35,8 @@ const originalConfig = await loadConfig(root, opts.projectDirectory);
  * Note: loadConfig always returns a fileName (default: next.config.js) even if
  * one does not exist in the app's root: https://github.com/vercel/next.js/blob/23681508ca34b66a6ef55965c5eac57de20eb67f/packages/next/src/server/config.ts#L1115
  */
-const originalConfigPath = join(root, originalConfig.configFileName);
-if (await exists(originalConfigPath)) {
-  await overrideNextConfig(root, originalConfig.configFileName);
-  await validateNextConfigOverride(root, opts.projectDirectory, originalConfig.configFileName);
-}
+await overrideNextConfig(root, originalConfig.configFileName);
+await validateNextConfigOverride(root, opts.projectDirectory, originalConfig.configFileName);
 
 await runBuild();
 
