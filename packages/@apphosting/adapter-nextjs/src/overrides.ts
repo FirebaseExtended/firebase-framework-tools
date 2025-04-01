@@ -87,10 +87,9 @@ export async function overrideNextConfig(projectRoot: string, nextConfigFileName
  * Current overrides include:
  * - images.unoptimized = true, unless user explicitly sets images.unoptimized to false or
  * is using a custom image loader.
- *
  * @param importStatement The import statement for the original config.
  * @param fileExtension The file extension of the original config. Use ".js", ".mjs", or ".ts"
- * @returns The custom Next.js config.
+ * @return The custom Next.js config.
  */
 function getCustomNextConfig(importStatement: string, fileExtension: string) {
   return `
@@ -176,7 +175,6 @@ export async function validateNextConfigOverride(
  * This function adds the following headers to all routes:
  * - x-fah-adapter: The Firebase App Hosting adapter version used to build the app.
  * - x-fah-middleware: When middleware is enabled.
- *
  * @param appPath The path to the app directory.
  * @param distDir The path to the dist directory.
  * @param adapterMetadata The adapter metadata.
