@@ -4,10 +4,15 @@ import { join, dirname, relative, normalize } from "path";
 import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
 
-import { PHASE_PRODUCTION_BUILD } from "./constants.js";
-import { OutputBundleOptions } from "./interfaces.js";
+import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST, MIDDLEWARE_MANIFEST } from "./constants.js";
+import {
+  OutputBundleOptions,
+  RoutesManifest,
+  AdapterMetadata,
+  MiddlewareManifest,
+} from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
-import { OutputBundleConfig, Metadata } from "@apphosting/common";
+import { OutputBundleConfig } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
@@ -31,6 +36,48 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
 
   const loadConfig = nextServerConfig.default;
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
+}
+
+/**
+ * Loads the route manifest from the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @return The route manifest.
+ */
+export function loadRouteManifest(standalonePath: string, distDir: string): RoutesManifest {
+  const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
+  const json = readFileSync(manifestPath, "utf-8");
+  return JSON.parse(json) as RoutesManifest;
+}
+
+/**
+ * Loads the middleware manifest from the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @return The middleware manifest.
+ */
+export function loadMiddlewareManifest(
+  standalonePath: string,
+  distDir: string,
+): MiddlewareManifest {
+  const manifestPath = join(standalonePath, distDir, `server/${MIDDLEWARE_MANIFEST}`);
+  const json = readFileSync(manifestPath, "utf-8");
+  return JSON.parse(json) as MiddlewareManifest;
+}
+
+/**
+ * Writes the route manifest to the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @param customManifest The route manifest to write.
+ */
+export async function writeRouteManifest(
+  standalonePath: string,
+  distDir: string,
+  customManifest: RoutesManifest,
+): Promise<void> {
+  const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
+  await writeFile(manifestPath, JSON.stringify(customManifest));
 }
 
 export const isMain = (meta: ImportMeta): boolean => {
@@ -80,12 +127,13 @@ export async function generateBuildOutput(
   opts: OutputBundleOptions,
   nextBuildDirectory: string,
   nextVersion: string,
+  adapterMetadata: AdapterMetadata,
 ): Promise<void> {
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
     move(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
     moveResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
-    generateBundleYaml(opts, rootDir, nextVersion),
+    generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
   ]);
   return;
 }
@@ -110,21 +158,17 @@ async function moveResources(
   return;
 }
 
-/**
- * Create metadata needed for outputting adapter and framework metrics in bundle.yaml.
- */
-export function createMetadata(nextVersion: string): Metadata {
+export function getAdapterMetadata(): AdapterMetadata {
   const directoryName = dirname(fileURLToPath(import.meta.url));
   const packageJsonPath = `${directoryName}/../package.json`;
   if (!existsSync(packageJsonPath)) {
     throw new Error(`Next.js adapter package.json file does not exist at ${packageJsonPath}`);
   }
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+
   return {
     adapterPackageName: packageJson.name,
     adapterVersion: packageJson.version,
-    framework: "nextjs",
-    frameworkVersion: nextVersion,
   };
 }
 
@@ -133,6 +177,7 @@ async function generateBundleYaml(
   opts: OutputBundleOptions,
   cwd: string,
   nextVersion: string,
+  adapterMetadata: AdapterMetadata,
 ): Promise<void> {
   await mkdir(opts.outputDirectoryBasePath);
   const outputBundle: OutputBundleConfig = {
@@ -140,7 +185,11 @@ async function generateBundleYaml(
     runConfig: {
       runCommand: `node ${normalize(relative(cwd, opts.serverFilePath))}`,
     },
-    metadata: createMetadata(nextVersion),
+    metadata: {
+      ...adapterMetadata,
+      framework: "nextjs",
+      frameworkVersion: nextVersion,
+    },
   };
   await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
   return;
