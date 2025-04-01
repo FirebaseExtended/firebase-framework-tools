@@ -53,10 +53,9 @@ const scenarios: Scenario[] = [
     tests: ["middleware.spec.ts"], // Only run middleware-specific tests
   },
   ...configOverrideTestScenarios.map(
-    (scenario: { name: string; config: string; file: string }) => ({
+    (scenario: { name: string; config?: string; file?: string }) => ({
       name: scenario.name,
       setup: async (cwd: string) => {
-        const configContent = scenario.config;
         const files = await fsExtra.readdir(cwd);
         const configFiles = files
           .filter((file) => file.startsWith("next.config."))
@@ -67,6 +66,12 @@ const scenarios: Scenario[] = [
           console.log(`Removed existing config file: ${file}`);
         }
 
+        // skip creating the test config if data is not provided
+        if (!scenario.config || !scenario.file) {
+          return
+        }
+
+        const configContent = scenario.config;
         await fsExtra.writeFile(join(cwd, scenario.file), configContent);
         console.log(`Created ${scenario.file} file with ${scenario.name} config`);
       },

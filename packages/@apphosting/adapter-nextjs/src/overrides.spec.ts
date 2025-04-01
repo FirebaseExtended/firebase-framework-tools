@@ -172,13 +172,13 @@ describe("next config overrides", () => {
     ...config,
     images: {
       ...(config.images || {}),
-      ...(config.images?.unoptimized === undefined && config.images?.loader === undefined 
-          ? { unoptimized: true } 
+      ...(config.images?.unoptimized === undefined && config.images?.loader === undefined
+          ? { unoptimized: true }
           : {}),
     },
   });
 
-  const config = typeof originalConfig === 'function' 
+  const config = typeof originalConfig === 'function'
     ? async (...args) => {
         const resolvedConfig = await originalConfig(...args);
         return fahOptimizedConfig(resolvedConfig);
@@ -186,6 +186,18 @@ describe("next config overrides", () => {
     : fahOptimizedConfig(originalConfig);
   `;
 
+  const defaultNextConfig = `
+    // @ts-nocheck
+
+    /** @type {import('next').NextConfig} */
+    const nextConfig = {
+      images: {
+        unoptimized: true,
+      }
+    }
+
+    module.exports = nextConfig
+  `
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-overrides"));
   });
@@ -194,12 +206,12 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     // @ts-check
- 
+
     /** @type {import('next').NextConfig} */
     const nextConfig = {
       /* config options here */
     }
-    
+
     module.exports = nextConfig
     `;
 
@@ -213,7 +225,7 @@ describe("next config overrides", () => {
       normalizeWhitespace(`
       // @ts-nocheck
       const originalConfig = require('./next.config.original.js');
-      
+
       ${nextConfigOverrideBody}
 
       module.exports = config;
@@ -225,14 +237,14 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     // @ts-check
-    
+
     /**
      * @type {import('next').NextConfig}
      */
     const nextConfig = {
       /* config options here */
     }
-    
+
     export default nextConfig
     `;
 
@@ -257,7 +269,7 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     // @ts-check
-    
+
     export default (phase, { defaultConfig }) => {
       /**
        * @type {import('next').NextConfig}
@@ -280,7 +292,7 @@ describe("next config overrides", () => {
       import originalConfig from './next.config.original.mjs';
 
       ${nextConfigOverrideBody}
-      
+
       export default config;
       `),
     );
@@ -290,11 +302,11 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     import type { NextConfig } from 'next'
-    
+
     const nextConfig: NextConfig = {
       /* config options here */
     }
-    
+
     export default nextConfig
     `;
 
@@ -307,22 +319,21 @@ describe("next config overrides", () => {
       normalizeWhitespace(`
       // @ts-nocheck
       import originalConfig from './next.config.original';
-      
+
       ${nextConfigOverrideBody}
-      
+
       module.exports = config;
       `),
     );
   });
 
-  it("should not do anything if no next.config.* file exists", async () => {
+  it("should create a default next.config.js file if one does not exist yet", async () => {
     const { overrideNextConfig } = await importOverrides;
     await overrideNextConfig(tmpDir, "next.config.js");
-
-    // Assert that no next.config* files were created
-    const files = fs.readdirSync(tmpDir);
-    const nextConfigFiles = files.filter((file) => file.startsWith("next.config"));
-    assert.strictEqual(nextConfigFiles.length, 0, "No next.config files should exist");
+    const updatedConfig = fs.readFileSync(path.join(tmpDir, "next.config.js"), "utf-8");
+    assert.equal(
+      normalizeWhitespace(updatedConfig), normalizeWhitespace(defaultNextConfig),
+    );
   });
 });
 

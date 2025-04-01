@@ -10,6 +10,8 @@ import {
 import { join, extname } from "path";
 import { rename as renamePromise } from "fs/promises";
 
+const DEFAULT_NEXT_CONFIG_FILE = 'next.config.js'
+
 /**
  * Overrides the user's Next Config file (next.config.[ts|js|mjs]) to add configs
  * optimized for Firebase App Hosting.
@@ -19,10 +21,20 @@ export async function overrideNextConfig(projectRoot: string, nextConfigFileName
   // Check if the file exists in the current working directory
   const configPath = join(projectRoot, nextConfigFileName);
 
-  if (!(await exists(configPath))) {
-    console.log(`No Next.js config file found at ${configPath}`);
-    return;
+  if (!(await exists(configPath))){
+    console.log(`No Next config file found at ${configPath}, creating one with Firebase App Hosting overrides`);
+    try {
+      await writeFile(join(projectRoot, DEFAULT_NEXT_CONFIG_FILE), defaultNextConfigForFAH());
+    } catch (error) {
+      console.error(`Error creating ${DEFAULT_NEXT_CONFIG_FILE}: ${error}`);
+      throw error;
+    }
+
+    console.log(`Successfully created ${DEFAULT_NEXT_CONFIG_FILE} with Firebase App Hosting overrides`);
+    return
   }
+
+  // A Next Config already exists in the user's project, so it needs to be overriden
 
   // Determine the file extension
   const fileExtension = extname(nextConfigFileName);
@@ -102,6 +114,26 @@ function getCustomNextConfig(importStatement: string, fileExtension: string) {
 
   ${fileExtension === ".mjs" ? "export default config;" : "module.exports = config;"}
   `;
+}
+
+/**
+ * Returns the default Next Config file that is created in the user's project
+ * if one does not exist already. This config ensures the Next.Js app is optimized
+ * for Firebase App Hosting.
+ */
+function defaultNextConfigForFAH() {
+  return `
+    // @ts-nocheck
+
+    /** @type {import('next').NextConfig} */
+    const nextConfig = {
+      images: {
+        unoptimized: true,
+      }
+    }
+
+    module.exports = nextConfig
+  `
 }
 
 /**
