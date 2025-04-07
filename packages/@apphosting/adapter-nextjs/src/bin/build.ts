@@ -5,6 +5,7 @@ import {
   generateBuildOutput,
   validateOutputDirectory,
   getAdapterMetadata,
+  exists,
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
@@ -29,13 +30,19 @@ const originalConfig = await loadConfig(root, opts.projectDirectory);
  * load.
  *
  * If the app does not have a next.config.[js|mjs|ts] file in the first place,
- * then can skip config override.
+ * then one is created with the overrides.
  *
  * Note: loadConfig always returns a fileName (default: next.config.js) even if
  * one does not exist in the app's root: https://github.com/vercel/next.js/blob/23681508ca34b66a6ef55965c5eac57de20eb67f/packages/next/src/server/config.ts#L1115
  */
-await overrideNextConfig(root, originalConfig.configFileName);
-await validateNextConfigOverride(root, opts.projectDirectory, originalConfig.configFileName);
+const userNextConfigExists = await exists(join(root, originalConfig.configFileName));
+await overrideNextConfig(root, originalConfig.configFileName, userNextConfigExists);
+await validateNextConfigOverride(
+  root,
+  opts.projectDirectory,
+  originalConfig.configFileName,
+  userNextConfigExists,
+);
 
 await runBuild();
 
