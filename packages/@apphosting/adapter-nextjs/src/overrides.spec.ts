@@ -216,7 +216,7 @@ describe("next config overrides", () => {
     `;
 
     fs.writeFileSync(path.join(tmpDir, "next.config.js"), originalConfig);
-    await overrideNextConfig(tmpDir, "next.config.js");
+    await overrideNextConfig(tmpDir, "next.config.js", /* userNextConfigExists = */ true);
 
     const updatedConfig = fs.readFileSync(path.join(tmpDir, "next.config.js"), "utf-8");
 
@@ -249,7 +249,7 @@ describe("next config overrides", () => {
     `;
 
     fs.writeFileSync(path.join(tmpDir, "next.config.mjs"), originalConfig);
-    await overrideNextConfig(tmpDir, "next.config.mjs");
+    await overrideNextConfig(tmpDir, "next.config.mjs", /* userNextConfigExists = */ true);
 
     const updatedConfig = fs.readFileSync(path.join(tmpDir, "next.config.mjs"), "utf-8");
     assert.equal(
@@ -282,7 +282,7 @@ describe("next config overrides", () => {
     `;
 
     fs.writeFileSync(path.join(tmpDir, "next.config.mjs"), originalConfig);
-    await overrideNextConfig(tmpDir, "next.config.mjs");
+    await overrideNextConfig(tmpDir, "next.config.mjs", /* userNextConfigExists = */ true);
 
     const updatedConfig = fs.readFileSync(path.join(tmpDir, "next.config.mjs"), "utf-8");
     assert.equal(
@@ -311,7 +311,7 @@ describe("next config overrides", () => {
     `;
 
     fs.writeFileSync(path.join(tmpDir, "next.config.ts"), originalConfig);
-    await overrideNextConfig(tmpDir, "next.config.ts");
+    await overrideNextConfig(tmpDir, "next.config.ts", /* userNextConfigExists = */ true);
 
     const updatedConfig = fs.readFileSync(path.join(tmpDir, "next.config.ts"), "utf-8");
     assert.equal(
@@ -329,7 +329,7 @@ describe("next config overrides", () => {
 
   it("should create a default next.config.js file if one does not exist yet", async () => {
     const { overrideNextConfig } = await importOverrides;
-    await overrideNextConfig(tmpDir, "next.config.js");
+    await overrideNextConfig(tmpDir, "next.config.js", /* userNextConfigExists = */ false);
     const updatedConfig = fs.readFileSync(path.join(tmpDir, "next.config.js"), "utf-8");
     assert.equal(normalizeWhitespace(updatedConfig), normalizeWhitespace(defaultNextConfig));
   });
@@ -339,13 +339,19 @@ describe("validateNextConfigOverride", () => {
   let tmpDir: string;
   let root: string;
   let projectRoot: string;
-  let originalConfigFileName: string;
+  let configFileName: string;
+  let configFilePath: string;
+  let preservedConfigFileName: string;
+  let preservedConfigFilePath: string;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-next-config-override"));
     root = tmpDir;
     projectRoot = tmpDir;
-    originalConfigFileName = "next.config.js";
+    configFileName = "next.config.js";
+    configFilePath = path.join(root, configFileName);
+    preservedConfigFileName = "next.config.original.js";
+    preservedConfigFilePath = path.join(root, preservedConfigFileName);
 
     fs.mkdirSync(root, { recursive: true });
   });
@@ -354,12 +360,52 @@ describe("validateNextConfigOverride", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("should throw an error if next config file doesn't exist", async () => {
+  it("should throw an error if a next config file was not created because the user did not have one", async () => {
     const { validateNextConfigOverride } = await importOverrides;
 
     await assert.rejects(
-      async () => await validateNextConfigOverride(root, projectRoot, originalConfigFileName),
+      async () =>
+        await validateNextConfigOverride(
+          root,
+          projectRoot,
+          configFileName,
+          /* userNextConfigExists = */ false,
+        ),
       /Next.js config file not found/,
+    );
+  });
+
+  it("should throw an error when main config file doesn't exist", async () => {
+    fs.writeFileSync(preservedConfigFilePath, "module.exports = {}");
+
+    const { validateNextConfigOverride } = await importOverrides;
+
+    await assert.rejects(
+      async () =>
+        await validateNextConfigOverride(
+          root,
+          projectRoot,
+          configFileName,
+          /* userNextConfigExists = */ true,
+        ),
+      /Next Config Override Failed: Next.js config file not found/,
+    );
+  });
+
+  it("should throw an error when preserveed config file doesn't exist", async () => {
+    fs.writeFileSync(configFilePath, "module.exports = {}");
+
+    const { validateNextConfigOverride } = await importOverrides;
+
+    await assert.rejects(
+      async () =>
+        await validateNextConfigOverride(
+          root,
+          projectRoot,
+          configFileName,
+          /* userNextConfigExists = */ true,
+        ),
+      /User's original Next.js config file not preserved/,
     );
   });
 });
