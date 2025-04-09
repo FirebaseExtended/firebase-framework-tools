@@ -1,0 +1,7 @@
+{
+    "name": "Next.js adapter",
+    "platforms": [
+      "app_hosting"
+    ],
+    "content": "README.md"
+}

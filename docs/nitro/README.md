@@ -1,4 +1,4 @@
-# Nitro App Hosting Adapter
+# App Hosting Nitro Adapter
 
 ## Overview
 

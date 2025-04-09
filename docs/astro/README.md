@@ -1,4 +1,4 @@
-# Astro App Hosting Adapter
+# App Hosting Astro Adapter
 
 ## Overview
 
