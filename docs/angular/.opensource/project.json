@@ -3,5 +3,6 @@
     "platforms": [
       "app_hosting"
     ],
+    "description": "Official Angular adapter for Firebase App Hosting",
     "content": "README.md"
 }

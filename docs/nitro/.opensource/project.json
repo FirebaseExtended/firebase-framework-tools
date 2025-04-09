@@ -3,5 +3,6 @@
     "platforms": [
       "app_hosting"
     ],
+    "description": "Community-supported Nitro adapter for Firebase App Hosting",
     "content": "README.md"
 }
