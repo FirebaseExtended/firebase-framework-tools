@@ -1,0 +1,7 @@
+{
+    "name": "Nitro adapter",
+    "platforms": [
+      "app_hosting"
+    ],
+    "content": "README.md"
+}
