@@ -16,12 +16,9 @@ const DEFAULT_NEXT_CONFIG_FILE = "next.config.js";
  * Overrides the user's Next Config file (next.config.[ts|js|mjs]) to add configs
  * optimized for Firebase App Hosting.
  */
-export async function overrideNextConfig(
-  projectRoot: string,
-  nextConfigFileName: string,
-  userNextConfigExists: boolean,
-) {
+export async function overrideNextConfig(projectRoot: string, nextConfigFileName: string) {
   console.log(`Overriding Next Config to add configs optmized for Firebase App Hosting`);
+  const userNextConfigExists = await exists(join(projectRoot, nextConfigFileName));
   if (!userNextConfigExists) {
     console.log(`No Next config file found, creating one with Firebase App Hosting overrides`);
     try {
@@ -149,14 +146,14 @@ function defaultNextConfigForFAH() {
 export async function validateNextConfigOverride(
   root: string,
   projectRoot: string,
-  originalConfigFileName: string,
-  userNextConfigExists: boolean,
+  configFileName: string,
 ) {
+  const userNextConfigExists = await exists(join(projectRoot, configFileName));
   if (userNextConfigExists) {
     // Ensure user's existing next config is preserved in a next.config.origin.* file
-    const originalConfigExtension = extname(originalConfigFileName);
-    const prservedConfigFileName = `next.config.original${originalConfigExtension}`;
-    const preservedConfigFilePath = join(root, prservedConfigFileName);
+    const originalConfigExtension = extname(configFileName);
+    const preservedConfigFileName = `next.config.original${originalConfigExtension}`;
+    const preservedConfigFilePath = join(root, preservedConfigFileName);
     if (!(await exists(preservedConfigFilePath))) {
       throw new Error(
         `Next Config Override Failed: User's original Next.js config file not preserved ${preservedConfigFilePath}`,
@@ -164,10 +161,13 @@ export async function validateNextConfigOverride(
     }
   }
 
-  const originalNextConfigFilePath = join(root, originalConfigFileName);
-  if (!(await exists(originalNextConfigFilePath))) {
+  const configFilePath = join(
+    root,
+    userNextConfigExists ? configFileName : DEFAULT_NEXT_CONFIG_FILE,
+  );
+  if (!(await exists(configFilePath))) {
     throw new Error(
-      `Next Config Override Failed: Next.js config file not found at ${originalNextConfigFilePath}`,
+      `Next Config Override Failed: Next.js config file not found at ${configFilePath}`,
     );
   }
 
