@@ -3,6 +3,9 @@
     "platforms": [
       "app_hosting"
     ],
+    "related": [
+      "FirebaseExtended/firebase-framework-tools::docs::nuxt"
+    ],
     "description": "Community-supported Nitro adapter for Firebase App Hosting",
     "content": "README.md"
 }
