@@ -186,23 +186,22 @@ export async function addRouteOverrides(
   // Add the middleware header to all routes for which middleware is enabled
   const middlewareManifest = loadMiddlewareManifest(appPath, distDir);
   const rootMiddleware = middlewareManifest.middleware["/"];
-  if (!rootMiddleware?.matchers) {
-    console.log("No middleware found for root path, skipping route overrides");
-    return;
-  }
+  if (rootMiddleware?.matchers) {
+    console.log("Middleware detected, adding middleware headers to matching routes");
 
-  rootMiddleware.matchers.forEach((matcher) => {
-    routeManifest.headers.push({
-      source: matcher.regexp,
-      headers: [
-        {
-          key: "x-fah-middleware",
-          value: "true",
-        },
-      ],
-      regex: matcher.regexp,
+    rootMiddleware.matchers.forEach((matcher) => {
+      routeManifest.headers.push({
+        source: matcher.regexp,
+        headers: [
+          {
+            key: "x-fah-middleware",
+            value: "true",
+          },
+        ],
+        regex: matcher.regexp,
+      });
     });
-  });
+  }
 
   await writeRouteManifest(appPath, distDir, routeManifest);
 }

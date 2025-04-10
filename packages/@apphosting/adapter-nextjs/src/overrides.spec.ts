@@ -130,7 +130,7 @@ describe("route overrides", () => {
       fs.readFileSync(routesManifestPath, "utf-8"),
     ) as RoutesManifest;
 
-    assert.strictEqual(updatedManifest.headers.length, 1);
+    assert.strictEqual(updatedManifest.headers.length, 2);
 
     const expectedManifest: RoutesManifest = {
       version: 3,
