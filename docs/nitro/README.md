@@ -1,5 +1,4 @@
-# App Hosting Nitro Adapter
-
+# App Hosting Nitro Preset
 
 Applications powered by Nitro have zero-configuration support for Firebase App Hosting, using the Firebase App Hosting preset. [Learn more in the Nitro documentation](https://nitro.build/deploy/providers/firebase).
 
