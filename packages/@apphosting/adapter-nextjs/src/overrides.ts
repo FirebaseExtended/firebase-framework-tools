@@ -148,23 +148,12 @@ export async function validateNextConfigOverride(
   projectRoot: string,
   configFileName: string,
 ) {
-  const userNextConfigExists = await exists(join(projectRoot, configFileName));
-  if (userNextConfigExists) {
-    // Ensure user's existing next config is preserved in a next.config.origin.* file
-    const originalConfigExtension = extname(configFileName);
-    const preservedConfigFileName = `next.config.original${originalConfigExtension}`;
-    const preservedConfigFilePath = join(root, preservedConfigFileName);
-    if (!(await exists(preservedConfigFilePath))) {
-      throw new Error(
-        `Next Config Override Failed: User's original Next.js config file not preserved ${preservedConfigFilePath}`,
-      );
-    }
-  }
-
+  const userNextConfigExists = await exists(join(root, configFileName));
   const configFilePath = join(
     root,
     userNextConfigExists ? configFileName : DEFAULT_NEXT_CONFIG_FILE,
   );
+
   if (!(await exists(configFilePath))) {
     throw new Error(
       `Next Config Override Failed: Next.js config file not found at ${configFilePath}`,

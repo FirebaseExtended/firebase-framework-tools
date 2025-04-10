@@ -379,17 +379,6 @@ describe("validateNextConfigOverride", () => {
       /Next Config Override Failed: Next.js config file not found/,
     );
   });
-
-  it("should throw an error when preserveed config file doesn't exist", async () => {
-    fs.writeFileSync(configFilePath, "module.exports = {}");
-
-    const { validateNextConfigOverride } = await importOverrides;
-
-    await assert.rejects(
-      async () => await validateNextConfigOverride(root, projectRoot, configFileName),
-      /User's original Next.js config file not preserved/,
-    );
-  });
 });
 
 // Normalize whitespace for comparison
