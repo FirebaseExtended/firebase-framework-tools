@@ -340,7 +340,6 @@ describe("validateNextConfigOverride", () => {
   let root: string;
   let projectRoot: string;
   let configFileName: string;
-  let configFilePath: string;
   let preservedConfigFileName: string;
   let preservedConfigFilePath: string;
 
@@ -349,7 +348,6 @@ describe("validateNextConfigOverride", () => {
     root = tmpDir;
     projectRoot = tmpDir;
     configFileName = "next.config.js";
-    configFilePath = path.join(root, configFileName);
     preservedConfigFileName = "next.config.original.js";
     preservedConfigFilePath = path.join(root, preservedConfigFileName);
 
