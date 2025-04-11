@@ -191,7 +191,7 @@ export async function addRouteOverrides(
 
     rootMiddleware.matchers.forEach((matcher) => {
       routeManifest.headers.push({
-        source: matcher.regexp,
+        source: matcher.originalSource,
         headers: [
           {
             key: "x-fah-middleware",
