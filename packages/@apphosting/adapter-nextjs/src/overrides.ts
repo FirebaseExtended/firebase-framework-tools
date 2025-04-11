@@ -1,4 +1,4 @@
-import { AdapterMetadata, MiddlewareManifest } from "./interfaces.js";
+import { AdapterMetadata } from "./interfaces.js";
 import {
   loadRouteManifest,
   writeRouteManifest,
