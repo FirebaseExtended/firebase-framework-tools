@@ -50,40 +50,71 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     return;
   }
 
+  let angularBuilder = "";
   // dynamically load Angular so this can be used in an NPX context
   const angularCorePath = require.resolve("@angular/core", { paths: [process.cwd()] });
-  const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
-    require.resolve("@angular-devkit/core/node", {
-      paths: [process.cwd(), angularCorePath],
-    })
-  );
-  const { workspaces }: typeof import("@angular-devkit/core") = await import(
-    require.resolve("@angular-devkit/core", {
-      paths: [process.cwd(), angularCorePath],
-    })
-  );
-  const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
-  const { workspace } = await workspaces.readWorkspace(opts.projectDirectory, host);
-
-  const apps: string[] = [];
-  workspace.projects.forEach((value, key) => {
-    if (value.extensions.projectType === "application") apps.push(key);
-  });
-  const project = apps[0];
-  if (apps.length > 1 || !project) throw new Error("Unable to determine the application to deploy");
-
-  const workspaceProject = workspace.projects.get(project);
-  if (!workspaceProject) throw new Error(`No project ${project} found.`);
-
-  const target = "build";
-  if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
-
-  const { builder } = workspaceProject.targets.get(target)!;
-  if (!ALLOWED_BUILDERS.includes(builder)) {
-    throw new Error(
-      `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
+  try {
+    // Note: we assume that the user's app has @angular-devkit/core in their node_modules/
+    // because we expect them to have @angular-devkit/build-angular as a dependency which
+    // pulls in @angular-devkit/core as a dependency. However this assumption may not hold
+    // due to tree shaking.
+    const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
+      require.resolve("@angular-devkit/core/node", {
+	paths: [process.cwd(), angularCorePath],
+      })
     );
+    const { workspaces }: typeof import("@angular-devkit/core") = await import(
+      require.resolve("@angular-devkit/core", {
+	paths: [process.cwd(), angularCorePath],
+      })
+    );
+    const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
+    const { workspace } = await workspaces.readWorkspace(opts.projectDirectory, host);
+
+    const apps: string[] = [];
+    workspace.projects.forEach((value, key) => {
+      if (value.extensions.projectType === "application") apps.push(key);
+    });
+    const project = apps[0];
+    if (apps.length > 1 || !project) throw new Error("Unable to determine the application to deploy");
+
+    const workspaceProject = workspace.projects.get(project);
+    if (!workspaceProject) throw new Error(`No project ${project} found.`);
+
+    const target = "build";
+    if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
+
+    const { builder } = workspaceProject.targets.get(target)!;
+    angularBuilder = builder;
+  } catch (error) {
+
+    logger.warn("failed to determine angular builder from the workspace api: ", error);
+    try {
+      const root = process.cwd();
+      const angularJSON = JSON.parse((readFileSync(join(root, "angular.json"))).toString());
+      const apps: string[] = [];
+      Object.keys(angularJSON.projects).forEach(projectName => {
+	const project = angularJSON.projects[projectName];
+	if (project["projectType"] === "application") apps.push(projectName);
+      });
+      const project = apps[0];
+      if (apps.length > 1 || !project) throw new Error("Unable to determine the application to deploy");
+      angularBuilder = angularJSON.projects[project].architect.build.builder;
+    } catch (error) {
+      logger.warn("failed to determine angular builder from parsing angular.json: ", error);
+    };
+  };
+
+  if (angularBuilder !== "") {
+    if (!ALLOWED_BUILDERS.includes(angularBuilder)) {
+      throw new Error(
+	`Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
+      );
+    }
   }
+  // This is just a validation step and our methods for validation are flakey. If we failed to extract
+  // the angular builder for validation, the build will continue. It may fail further down the line
+  // but the failure reason should be non-ambigious.
 }
 
 // Populate file or directory paths we need for generating output directory
