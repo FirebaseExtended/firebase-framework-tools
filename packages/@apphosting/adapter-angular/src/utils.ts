@@ -76,11 +76,14 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
       if (value.extensions.projectType === "application") apps.push(key);
     });
     const project = apps[0];
-    if (apps.length > 1 || !project) throw new Error(
-      "Unable to determine the application to deploy");
+    if (apps.length > 1 || !project) {
+      throw new Error("Unable to determine the application to deploy");
+    }
 
     const workspaceProject = workspace.projects.get(project);
-    if (!workspaceProject) throw new Error(`No project ${project} found.`);
+    if (!workspaceProject) {
+      throw new Error(`No project ${project} found.`);
+    }
 
     const target = "build";
     if (!workspaceProject.targets.has(target)) throw new Error("Could not find build target.");
@@ -104,12 +107,12 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     } catch (error) {
       logger.warn("failed to determine angular builder from parsing angular.json: ", error);
     }
-  };
+  }
 
   if (angularBuilder !== "") {
     if (!ALLOWED_BUILDERS.includes(angularBuilder)) {
       throw new Error(
-	`Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
+        `Currently, only the following builders are supported: ${ALLOWED_BUILDERS.join(",")}.`,
       );
     }
   }
