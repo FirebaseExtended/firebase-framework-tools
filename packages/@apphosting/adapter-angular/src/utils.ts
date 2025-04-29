@@ -60,12 +60,12 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     // due to tree shaking.
     const { NodeJsAsyncHost }: typeof import("@angular-devkit/core/node") = await import(
       require.resolve("@angular-devkit/core/node", {
-	paths: [process.cwd(), angularCorePath],
+        paths: [process.cwd(), angularCorePath],
       })
     );
     const { workspaces }: typeof import("@angular-devkit/core") = await import(
       require.resolve("@angular-devkit/core", {
-	paths: [process.cwd(), angularCorePath],
+        paths: [process.cwd(), angularCorePath],
       })
     );
     const host = workspaces.createWorkspaceHost(new NodeJsAsyncHost());
@@ -76,7 +76,8 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
       if (value.extensions.projectType === "application") apps.push(key);
     });
     const project = apps[0];
-    if (apps.length > 1 || !project) throw new Error("Unable to determine the application to deploy");
+    if (apps.length > 1 || !project) throw new Error(
+      "Unable to determine the application to deploy");
 
     const workspaceProject = workspace.projects.get(project);
     if (!workspaceProject) throw new Error(`No project ${project} found.`);
@@ -87,22 +88,22 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     const { builder } = workspaceProject.targets.get(target)!;
     angularBuilder = builder;
   } catch (error) {
-
     logger.warn("failed to determine angular builder from the workspace api: ", error);
     try {
       const root = process.cwd();
-      const angularJSON = JSON.parse((readFileSync(join(root, "angular.json"))).toString());
+      const angularJSON = JSON.parse(readFileSync(join(root, "angular.json"))).toString();
       const apps: string[] = [];
-      Object.keys(angularJSON.projects).forEach(projectName => {
-	const project = angularJSON.projects[projectName];
-	if (project["projectType"] === "application") apps.push(projectName);
+      Object.keys(angularJSON.projects).forEach((projectName) => {
+        const project = angularJSON.projects[projectName];
+        if (project["projectType"] === "application") apps.push(projectName);
       });
       const project = apps[0];
-      if (apps.length > 1 || !project) throw new Error("Unable to determine the application to deploy");
+      if (apps.length > 1 || !project) throw new Error(
+        "Unable to determine the application to deploy");
       angularBuilder = angularJSON.projects[project].architect.build.builder;
     } catch (error) {
       logger.warn("failed to determine angular builder from parsing angular.json: ", error);
-    };
+    }
   };
 
   if (angularBuilder !== "") {
