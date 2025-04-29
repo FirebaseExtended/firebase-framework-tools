@@ -94,15 +94,15 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     logger.warn("failed to determine angular builder from the workspace api: ", error);
     try {
       const root = process.cwd();
-      const angularJSON = JSON.parse(readFileSync(join(root, "angular.json"))).toString();
+      const angularJSON = JSON.parse(readFileSync(join(root, "angular.json")).toString());
       const apps: string[] = [];
       Object.keys(angularJSON.projects).forEach((projectName) => {
         const project = angularJSON.projects[projectName];
         if (project["projectType"] === "application") apps.push(projectName);
       });
       const project = apps[0];
-      if (apps.length > 1 || !project) throw new Error(
-        "Unable to determine the application to deploy");
+      if (apps.length > 1 || !project)
+        throw new Error("Unable to determine the application to deploy");
       angularBuilder = angularJSON.projects[project].architect.build.builder;
     } catch (error) {
       logger.warn("failed to determine angular builder from parsing angular.json: ", error);
