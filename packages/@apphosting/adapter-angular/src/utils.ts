@@ -91,7 +91,7 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
     const { builder } = workspaceProject.targets.get(target)!;
     angularBuilder = builder;
   } catch (error) {
-    logger.warn("failed to determine angular builder from the workspace api: ", error);
+    logger.debug("failed to determine angular builder from the workspace api: ", error);
     try {
       const root = process.cwd();
       const angularJSON = JSON.parse(readFileSync(join(root, "angular.json")).toString());
@@ -105,7 +105,7 @@ export async function checkBuildConditions(opts: BuildOptions): Promise<void> {
         throw new Error("Unable to determine the application to deploy");
       angularBuilder = angularJSON.projects[project].architect.build.builder;
     } catch (error) {
-      logger.warn("failed to determine angular builder from parsing angular.json: ", error);
+      logger.debug("failed to determine angular builder from parsing angular.json: ", error);
     }
   }
 
