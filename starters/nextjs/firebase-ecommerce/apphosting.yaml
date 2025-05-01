@@ -1,0 +1,31 @@
+# Settings for Backend (on Cloud Run).
+# See https://firebase.google.com/docs/app-hosting/configure#cloud-run
+runConfig:
+  minInstances: 0
+
+# Environment variables and secrets.
+env:
+  # Grant access to secrets in Cloud Secret Manager.
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    secret: FIREBASE_API_KEY
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    secret: FIREBASE_AUTH_DOMAIN
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    secret: FIREBASE_PROJECT_ID
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    secret: FIREBASE_STORAGE_BUCKET
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    secret: FIREBASE_MESSAGING_SENDER_ID
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    secret: FIREBASE_APP_ID
+  - variable: GOOGLE_API_KEY
+    secret: GOOGLE_API_KEY
+  - variable: STRIPE_ACCOUNT_ID
+    secret: STRIPE_ACCOUNT_ID
+  - variable: STRIPE_SECRET_KEY
+    secret: STRIPE_SECRET_KEY
+  - variable: NEXT_PUBLIC_STRIPE_PUB_KEY
+    secret: STRIPE_PUB_KEY
+  - variable: STRIPE_WEBHOOK_SECRET
+    secret: STRIPE_WEBHOOK_SECRET
