@@ -30,7 +30,7 @@ const compiledFilesPath = posix.join(
 const requiredServerFilePath = posix.join(compiledFilesPath, "required-server-files.json");
 
 describe("next.config override", () => {
-  it("should have images optimization disabled", async function () {
+  it("should have image optimization disabled", async function () {
     if (
       scenario.includes("with-empty-config") ||
       scenario.includes("with-images-unoptimized-false") ||
@@ -53,7 +53,7 @@ describe("next.config override", () => {
   });
 
   it("should preserve other user set next configs", async function () {
-    if (scenario.includes("with-empty-config")) {
+    if (scenario.includes("with-empty-config") || scenario.includes("without-a-next-config")) {
       // eslint-disable-next-line @typescript-eslint/no-invalid-this
       this.skip();
     }
