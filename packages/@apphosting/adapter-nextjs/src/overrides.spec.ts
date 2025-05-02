@@ -85,7 +85,7 @@ describe("route overrides", () => {
     assert.deepStrictEqual(updatedManifest, expectedManifest);
   });
 
-  it("should add middleware header when middleware exists", async () => {
+  it("should add middleware header only to routes for which middleware is enabled", async () => {
     const { addRouteOverrides } = await importOverrides;
     const initialManifest: RoutesManifest = {
       version: 3,
@@ -109,8 +109,8 @@ describe("route overrides", () => {
           page: "/",
           matchers: [
             {
-              regexp: "^/.*$",
-              originalSource: "/:path*",
+              regexp: "/hello",
+              originalSource: "/hello",
             },
           ],
         },
@@ -130,7 +130,7 @@ describe("route overrides", () => {
       fs.readFileSync(routesManifestPath, "utf-8"),
     ) as RoutesManifest;
 
-    assert.strictEqual(updatedManifest.headers.length, 1);
+    assert.strictEqual(updatedManifest.headers.length, 2);
 
     const expectedManifest: RoutesManifest = {
       version: 3,
@@ -150,8 +150,12 @@ describe("route overrides", () => {
               key: "x-fah-adapter",
               value: "nextjs-1.0.0",
             },
-            { key: "x-fah-middleware", value: "true" },
           ],
+        },
+        {
+          source: "/hello",
+          regex: "/hello",
+          headers: [{ key: "x-fah-middleware", value: "true" }],
         },
       ],
     };

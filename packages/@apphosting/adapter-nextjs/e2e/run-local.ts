@@ -35,15 +35,15 @@ const scenarios: Scenario[] = [
     setup: async (cwd: string) => {
       // Create a middleware.ts file
       const middlewareContent = `
-        import type { NextRequest } from 'next/server'
+        import type { NextRequest } from "next/server";
 
         export function middleware(request: NextRequest) {
           // This is a simple middleware that doesn't modify the request
-          console.log('Middleware executed', request.nextUrl.pathname);
+          console.log("Middleware executed", request.nextUrl.pathname);
         }
 
         export const config = {
-          matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+          matcher: ["/ssg", "/ssr"],
         };
       `;
 
