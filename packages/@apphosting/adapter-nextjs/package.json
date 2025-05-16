@@ -48,7 +48,7 @@
     "yaml": "^2.3.4"
   },
   "peerDependencies": {
-    "next": "~14.0.0"
+    "next": "*"
   },
   "peerDependenciesMeta": {
     "next": {
