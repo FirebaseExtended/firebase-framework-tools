@@ -85,7 +85,7 @@ describe("route overrides", () => {
     assert.deepStrictEqual(updatedManifest, expectedManifest);
   });
 
-  it("should add middleware header when middleware exists", async () => {
+  it("should add middleware header only to routes for which middleware is enabled", async () => {
     const { addRouteOverrides } = await importOverrides;
     const initialManifest: RoutesManifest = {
       version: 3,
@@ -109,8 +109,8 @@ describe("route overrides", () => {
           page: "/",
           matchers: [
             {
-              regexp: "^/.*$",
-              originalSource: "/:path*",
+              regexp: "/hello",
+              originalSource: "/hello",
             },
           ],
         },
@@ -130,7 +130,7 @@ describe("route overrides", () => {
       fs.readFileSync(routesManifestPath, "utf-8"),
     ) as RoutesManifest;
 
-    assert.strictEqual(updatedManifest.headers.length, 1);
+    assert.strictEqual(updatedManifest.headers.length, 2);
 
     const expectedManifest: RoutesManifest = {
       version: 3,
@@ -150,8 +150,12 @@ describe("route overrides", () => {
               key: "x-fah-adapter",
               value: "nextjs-1.0.0",
             },
-            { key: "x-fah-middleware", value: "true" },
           ],
+        },
+        {
+          source: "/hello",
+          regex: "/hello",
+          headers: [{ key: "x-fah-middleware", value: "true" }],
         },
       ],
     };
@@ -172,13 +176,13 @@ describe("next config overrides", () => {
     ...config,
     images: {
       ...(config.images || {}),
-      ...(config.images?.unoptimized === undefined && config.images?.loader === undefined 
-          ? { unoptimized: true } 
+      ...(config.images?.unoptimized === undefined && config.images?.loader === undefined
+          ? { unoptimized: true }
           : {}),
     },
   });
 
-  const config = typeof originalConfig === 'function' 
+  const config = typeof originalConfig === 'function'
     ? async (...args) => {
         const resolvedConfig = await originalConfig(...args);
         return fahOptimizedConfig(resolvedConfig);
@@ -194,12 +198,12 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     // @ts-check
- 
+
     /** @type {import('next').NextConfig} */
     const nextConfig = {
       /* config options here */
     }
-    
+
     module.exports = nextConfig
     `;
 
@@ -213,7 +217,7 @@ describe("next config overrides", () => {
       normalizeWhitespace(`
       // @ts-nocheck
       const originalConfig = require('./next.config.original.js');
-      
+
       ${nextConfigOverrideBody}
 
       module.exports = config;
@@ -225,14 +229,14 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     // @ts-check
-    
+
     /**
      * @type {import('next').NextConfig}
      */
     const nextConfig = {
       /* config options here */
     }
-    
+
     export default nextConfig
     `;
 
@@ -257,7 +261,7 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     // @ts-check
-    
+
     export default (phase, { defaultConfig }) => {
       /**
        * @type {import('next').NextConfig}
@@ -280,7 +284,7 @@ describe("next config overrides", () => {
       import originalConfig from './next.config.original.mjs';
 
       ${nextConfigOverrideBody}
-      
+
       export default config;
       `),
     );
@@ -290,11 +294,11 @@ describe("next config overrides", () => {
     const { overrideNextConfig } = await importOverrides;
     const originalConfig = `
     import type { NextConfig } from 'next'
-    
+
     const nextConfig: NextConfig = {
       /* config options here */
     }
-    
+
     export default nextConfig
     `;
 
@@ -307,9 +311,9 @@ describe("next config overrides", () => {
       normalizeWhitespace(`
       // @ts-nocheck
       import originalConfig from './next.config.original';
-      
+
       ${nextConfigOverrideBody}
-      
+
       module.exports = config;
       `),
     );
