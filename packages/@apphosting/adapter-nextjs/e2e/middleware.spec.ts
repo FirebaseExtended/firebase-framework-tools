@@ -15,7 +15,7 @@ before(() => {
 });
 
 describe("middleware", () => {
-  it("should have x-fah-adapter header and x-fah-middleware header on all routes", async () => {
+  it("should have x-fah-adapter header on all routes", async () => {
     const routes = [
       "/",
       "/ssg",
@@ -33,6 +33,15 @@ describe("middleware", () => {
         `nextjs-${adapterVersion}`,
         `Route ${route} missing x-fah-adapter header`,
       );
+    }
+  });
+
+  it("should have x-fah-middleware header on middleware routes", async () => {
+    // Middleware is configured to run on these routes via run-local.ts with-middleware setup function
+    const routes = ["/ssg", "/ssr"];
+
+    for (const route of routes) {
+      const response = await fetch(posix.join(host, route));
       assert.equal(
         response.headers.get("x-fah-middleware"),
         "true",
