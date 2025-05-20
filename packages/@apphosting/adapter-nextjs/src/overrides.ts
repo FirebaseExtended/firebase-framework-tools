@@ -151,7 +151,6 @@ export async function validateNextConfigOverride(
  *
  * It also adds the following headers to all routes for which middleware is enabled:
  * - x-fah-middleware: When middleware is enabled.
- *
  * @param appPath The path to the app directory.
  * @param distDir The path to the dist directory.
  * @param adapterMetadata The adapter metadata.
