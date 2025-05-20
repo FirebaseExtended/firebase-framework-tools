@@ -10,10 +10,9 @@ import chalk from "chalk";
 
 const contextIsNpmCreate = process.env.npm_command === "init";
 
-const STARTERS: Record<
-  string,
-  Array<{ name: string; value: string; description: string; products: string[]; init?: string }>
-> = {
+type Starter = { name: string; value: string; description: string; products: string[] };
+
+const STARTERS: Record<string, Array<Starter>> = {
   angular: [
     {
       name: "Basic",
@@ -74,7 +73,6 @@ const STARTERS: Record<
       description:
         "A headless Shopify ecommerce template built with Next.js, the Shopify Storefront API, and Firebase Data Connect.",
       products: ["Data Connect", "Auth", "Gemini", "Shopify"],
-      init: "apphosting,dataconnect,auth",
     },
     {
       name: "Firebase ecommerce",
@@ -82,7 +80,6 @@ const STARTERS: Record<
       description:
         "A Firebase-based e-commerce application designed for developers to bootstrap their e-commerce projects.",
       products: ["Data Connect", "Auth", "Gemini", "Stripe"],
-      init: "apphosting,dataconnect,auth",
     },
   ],
 };
@@ -166,7 +163,6 @@ program
         });
       }
       const cloneSpinner = ora("Cloning template...").start();
-      // TODO allow different templates
       await downloadTemplate(
         `gh:FirebaseExtended/firebase-framework-tools/starters/${framework}/${example}`,
         { dir: directory, force: true },
@@ -192,15 +188,6 @@ program
         });
         await rm(join(directory, "package-lock.json"));
       }
-      /*
-        const init = STARTERS[framework].find(it => it.value === example)!.init ?? "apphosting";;
-        console.log(`> firebase init ${init}`);
-        await await spawn("npx", ["-y", "firebase-tools@latest", "init", init], {
-          shell: true,
-          stdio: "inherit",
-          cwd: directory,
-        });
-      */
     },
   );
 
