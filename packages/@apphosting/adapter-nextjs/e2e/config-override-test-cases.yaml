@@ -200,3 +200,4 @@ tests:
 
       module.exports = nextConfig;
     file: next.config.js
+  - name: without-a-next-config
