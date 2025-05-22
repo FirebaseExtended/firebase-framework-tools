@@ -35,7 +35,7 @@ export interface ValidManifest {
   errors: string[];
   warnings: string[];
   outputPaths: OutputPaths;
-  prerenderedRoutes?: string[] | undefined;
+  prerenderedRoutes?: string[] | object | undefined;
 }
 
 // valid output paths schema
