@@ -7,8 +7,9 @@ import {
   SimpleChanges,
   inject,
   input,
+  DOCUMENT,
 } from '@angular/core';
-import { DOCUMENT, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { DataItem } from '../../../data/types';
 import { List } from 'immutable';
 

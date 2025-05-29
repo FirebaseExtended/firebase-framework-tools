@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import {
   COLOR_NAMES_MAP,
   LABEL_COLORS,
@@ -14,7 +14,7 @@ import {
 
 @Component({
   selector: 'kb-color-picker',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './color-picker.component.html',
   styleUrl: './color-picker.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
