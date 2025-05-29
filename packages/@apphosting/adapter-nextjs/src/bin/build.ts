@@ -54,7 +54,7 @@ await addRouteOverrides(
   adapterMetadata,
 );
 
-const nextjsVersion = process.env.FRAMEWORK_VERSION || "unspecified"
+const nextjsVersion = process.env.FRAMEWORK_VERSION || "unspecified";
 await generateBuildOutput(
   root,
   opts.projectDirectory,
