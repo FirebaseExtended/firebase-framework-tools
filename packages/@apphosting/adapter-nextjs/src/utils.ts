@@ -194,9 +194,9 @@ async function generateBundleYaml(
     },
     outputFiles: {
       serverApp: {
-        include: [".next/standalone"]
-      }
-    }
+        include: [".next/standalone"],
+      },
+    },
   };
   await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
   return;
