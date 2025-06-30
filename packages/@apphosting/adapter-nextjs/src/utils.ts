@@ -194,7 +194,7 @@ async function generateBundleYaml(
     },
     outputFiles: {
       serverApp: {
-        include: [".next/standalone"],
+        include: [".next/standalone"], // we're only including the standalone directory to exclude the node_modules folder specifically
       },
     },
   };
