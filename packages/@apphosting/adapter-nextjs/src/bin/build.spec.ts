@@ -62,10 +62,6 @@ metadata:
   adapterVersion: ${adapterMetadata.adapterVersion}
   framework: nextjs
   frameworkVersion: ${defaultNextVersion}
-outputFiles:
-  serverApp:
-    include:
-      - .next/standalone
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
