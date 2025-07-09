@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,6 +7,7 @@ import {
   effect,
   inject,
   signal,
+  DOCUMENT,
 } from '@angular/core';
 import { DRAG_AND_DROP_DIRECTIVES } from '@ngx-templates/shared/drag-and-drop';
 import { ButtonComponent } from '@ngx-templates/shared/button';

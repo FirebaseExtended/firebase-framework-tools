@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, DOCUMENT } from '@angular/core';
 import { WINDOW } from '@ngx-templates/shared/services';
 import { EditorSelection } from './editor-selection';
 

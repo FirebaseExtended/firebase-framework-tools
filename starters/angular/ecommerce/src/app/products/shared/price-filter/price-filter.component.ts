@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,6 +7,7 @@ import {
   input,
   model,
   viewChild,
+  DOCUMENT,
 } from '@angular/core';
 
 export type PriceRange = {

@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, DOCUMENT } from '@angular/core';
 import { SelectionManager } from './selection-manager.service';
-import { DOCUMENT } from '@angular/common';
+
 import { ModalService } from '@ngx-templates/shared/modal';
 import { HyperlinkModalComponent } from './hyperlink-modal/hyperlink-modal.component';
 
