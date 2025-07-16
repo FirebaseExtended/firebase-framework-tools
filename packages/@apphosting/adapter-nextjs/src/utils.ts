@@ -193,6 +193,7 @@ async function generateBundleYaml(
       frameworkVersion: nextVersion,
     },
   };
+  // TODO (b/432285470) See if there is a way to also delete files for apps using Nx monorepos
   if (!process.env.MONOREPO_COMMAND) {
     outputBundle.outputFiles = {
       serverApp: {
