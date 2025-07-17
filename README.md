@@ -1,3 +1,4 @@
+<img width="225" height="225" alt="images (3)" src="https://github.com/user-attachments/assets/13104c62-048e-456a-ae27-d958f3226744" />
 # App Hosting adapters
 
 ## Overview
