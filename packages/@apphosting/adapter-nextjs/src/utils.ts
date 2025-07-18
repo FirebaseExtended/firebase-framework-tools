@@ -197,7 +197,7 @@ async function generateBundleYaml(
   if (!process.env.MONOREPO_COMMAND) {
     outputBundle.outputFiles = {
       serverApp: {
-        include: [opts.outputDirectoryAppPath],
+        include: [normalize(relative(cwd, opts.outputDirectoryAppPath))],
       },
     };
   }

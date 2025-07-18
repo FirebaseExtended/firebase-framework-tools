@@ -65,7 +65,7 @@ metadata:
 outputFiles:
   serverApp:
     include:
-      - ${outputBundleOptions.outputDirectoryAppPath}
+      - .next/standalone
 `,
     };
     validateTestFiles(tmpDir, expectedFiles);
