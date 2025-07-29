@@ -147,8 +147,8 @@ async function copyResources(
 ): Promise<void> {
   const appDirExists = await exists(appDir);
   if (!appDirExists) return;
-  const pathsToMove = await readdir(appDir);
-  for (const path of pathsToMove) {
+  const pathsToCopy = await readdir(appDir);
+  for (const path of pathsToCopy) {
     const isbundleYamlDir = join(appDir, path) === dirname(bundleYamlPath);
     const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
     // Keep apphosting.yaml files in the root directory still, as later steps expect them to be there
