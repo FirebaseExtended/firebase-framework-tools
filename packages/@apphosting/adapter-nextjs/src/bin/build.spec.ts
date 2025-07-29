@@ -135,6 +135,10 @@ outputFiles:
   it("test failed validateOutputDirectory", async () => {
     const { generateBuildOutput, validateOutputDirectory } = await importUtils;
     const files = {
+      // .next/standalone/.next/ must be created beforehand otherwise
+      // generateBuildOutput will attempt to copy
+      // .next/ into .next/standalone/.next
+      ".next/standalone/.next/package.json": "",
       ".next/standalone/notserver.js": "",
       ".next/static/staticfile": "",
       ".next/routes-manifest.json": `{
@@ -162,6 +166,10 @@ outputFiles:
   it("expects directories and other files to be copied over", async () => {
     const { generateBuildOutput, validateOutputDirectory } = await importUtils;
     const files = {
+      // .next/standalone/.next/ must be created beforehand otherwise
+      // generateBuildOutput will attempt to copy
+      // .next/ into .next/standalone/.next
+      ".next/standalone/.next/package.json": "",
       ".next/standalone/server.js": "",
       ".next/static/staticfile": "",
       "public/publicfile": "",
@@ -188,9 +196,15 @@ outputFiles:
 
     const expectedFiles = {
       ".next/standalone/.next/static/staticfile": "",
+      ".next/static/staticfile": "",
       ".next/standalone/server.js": "",
       ".next/standalone/public/publicfile": "",
       ".next/standalone/extrafile": "",
+      ".next/routes-manifest.json": `{
+        "headers":[],
+        "rewrites":[],
+        "redirects":[]
+      }`,
     };
     validateTestFiles(tmpDir, expectedFiles);
   });
