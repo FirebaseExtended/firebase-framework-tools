@@ -15,7 +15,7 @@ import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
+export const { copy, move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
   fsExtra;
 
 // Loads the user's next.config.js file.
@@ -154,7 +154,8 @@ async function moveResources(
     // Keep apphosting.yaml files in the root directory still, as later steps expect them to be there
     const isApphostingYaml = path === "apphosting_preprocessed" || path === "apphosting.yaml";
     if (!isbundleYamlDir && !existsInOutputBundle && !isApphostingYaml) {
-      await move(join(appDir, path), join(outputBundleAppDir, path));
+      //await move(join(appDir, path), join(outputBundleAppDir, path));
+      await copy(join(appDir, path), join(outputBundleAppDir, path));
     }
   }
   return;
