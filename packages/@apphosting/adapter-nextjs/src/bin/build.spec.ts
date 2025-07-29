@@ -81,7 +81,7 @@ outputFiles:
     validateTestFiles(tmpDir, expectedFiles);
   });
 
-  it("moves files into correct location in a monorepo setup", async () => {
+  it("copies files into correct location in a monorepo setup", async () => {
     const { generateBuildOutput } = await importUtils;
     const files = {
       ".next/standalone/apps/next-app/standalonefile": "",
@@ -123,6 +123,7 @@ outputFiles:
     const expectedFiles = {
       ".next/standalone/apps/next-app/.next/static/staticfile": "",
       ".next/standalone/apps/next-app/standalonefile": "",
+      ".next/static/staticfile": "",
     };
     const expectedPartialYaml = {
       version: "v1",
