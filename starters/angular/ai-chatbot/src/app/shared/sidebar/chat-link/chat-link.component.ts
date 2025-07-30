@@ -6,7 +6,6 @@ import {
   input,
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 
 import { IconComponent } from '@ngx-templates/shared/icon';
 import { ModalService } from '@ngx-templates/shared/modal';
@@ -22,7 +21,7 @@ import { RoutePrefix } from '../../../route-prefixes';
 
 @Component({
   selector: 'acb-chat-link',
-  imports: [RouterModule, CommonModule, IconComponent],
+  imports: [RouterModule, IconComponent],
   templateUrl: './chat-link.component.html',
   styleUrl: './chat-link.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
