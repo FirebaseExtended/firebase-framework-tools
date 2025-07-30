@@ -1,6 +1,6 @@
 import {
   ApplicationConfig,
-  provideExperimentalZonelessChangeDetection,
+  provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideWindow } from '@ngx-templates/shared/services';
 import { provideDataSources } from './data/utils';
@@ -9,7 +9,7 @@ import { provideDataSources } from './data/utils';
 // dynamically-loaded widgets.
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideExperimentalZonelessChangeDetection(),
+    provideZonelessChangeDetection(),
     provideDataSources(),
     provideWindow(),
   ],
