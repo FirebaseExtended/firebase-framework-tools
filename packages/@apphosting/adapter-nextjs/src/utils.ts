@@ -15,7 +15,7 @@ import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { move, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
+export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
   fsExtra;
 
 // Loads the user's next.config.js file.
@@ -116,7 +116,7 @@ export function populateOutputBundleOptions(
 }
 
 /**
- * Moves static assets and other resources into the standlone directory, also generates the bundle.yaml
+ * Copy static assets and other resources into the standlone directory, also generates the bundle.yaml
  * @param rootDir The root directory of the uploaded source code.
  * @param outputBundleOptions The target location of built artifacts in the output bundle.
  * @param nextBuildDirectory The location of the .next directory.
@@ -131,30 +131,30 @@ export async function generateBuildOutput(
 ): Promise<void> {
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
-    move(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
-    moveResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
+    copy(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
+    copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
     generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
   ]);
   return;
 }
 
-// Move all files and directories to apphosting output directory.
+// Copy all files and directories to apphosting output directory.
 // Files are skipped if there is already a file with the same name in the output directory
-async function moveResources(
+async function copyResources(
   appDir: string,
   outputBundleAppDir: string,
   bundleYamlPath: string,
 ): Promise<void> {
   const appDirExists = await exists(appDir);
   if (!appDirExists) return;
-  const pathsToMove = await readdir(appDir);
-  for (const path of pathsToMove) {
+  const pathsToCopy = await readdir(appDir);
+  for (const path of pathsToCopy) {
     const isbundleYamlDir = join(appDir, path) === dirname(bundleYamlPath);
     const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
     // Keep apphosting.yaml files in the root directory still, as later steps expect them to be there
     const isApphostingYaml = path === "apphosting_preprocessed" || path === "apphosting.yaml";
     if (!isbundleYamlDir && !existsInOutputBundle && !isApphostingYaml) {
-      await move(join(appDir, path), join(outputBundleAppDir, path));
+      await copy(join(appDir, path), join(outputBundleAppDir, path));
     }
   }
   return;
