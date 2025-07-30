@@ -18,9 +18,6 @@ const opts = getBuildOptions();
 process.env.NEXT_PRIVATE_STANDALONE = "true";
 // Opt-out sending telemetry to Vercel
 process.env.NEXT_TELEMETRY_DISABLED = "1";
-if (!process.env.FRAMEWORK_VERSION) {
-  throw new Error("Could not find the nextjs version of the application");
-}
 
 const originalConfig = await loadConfig(root, opts.projectDirectory);
 
@@ -57,12 +54,13 @@ await addRouteOverrides(
   adapterMetadata,
 );
 
+const nextjsVersion = process.env.FRAMEWORK_VERSION || "unspecified";
 await generateBuildOutput(
   root,
   opts.projectDirectory,
   outputBundleOptions,
   nextBuildDirectory,
-  process.env.FRAMEWORK_VERSION,
+  nextjsVersion,
   adapterMetadata,
 );
 await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);

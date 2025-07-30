@@ -151,7 +151,9 @@ async function moveResources(
   for (const path of pathsToMove) {
     const isbundleYamlDir = join(appDir, path) === dirname(bundleYamlPath);
     const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
-    if (!isbundleYamlDir && !existsInOutputBundle) {
+    // Keep apphosting.yaml files in the root directory still, as later steps expect them to be there
+    const isApphostingYaml = path === "apphosting_preprocessed" || path === "apphosting.yaml";
+    if (!isbundleYamlDir && !existsInOutputBundle && !isApphostingYaml) {
       await move(join(appDir, path), join(outputBundleAppDir, path));
     }
   }
@@ -191,6 +193,15 @@ async function generateBundleYaml(
       frameworkVersion: nextVersion,
     },
   };
+  // TODO (b/432285470) See if there is a way to also delete files for apps using Nx monorepos
+  if (!process.env.MONOREPO_COMMAND) {
+    outputBundle.outputFiles = {
+      serverApp: {
+        include: [normalize(relative(cwd, opts.outputDirectoryAppPath))],
+      },
+    };
+  }
+
   await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
   return;
 }
