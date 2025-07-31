@@ -41,32 +41,34 @@ if (await exists(nextConfigPath)) {
   await validateNextConfigOverride(root, opts.projectDirectory, nextConfig.configFileName);
 }
 
-await runBuild();
+try {
+  await runBuild();
 
 
-const adapterMetadata = getAdapterMetadata();
-const nextBuildDirectory = join(opts.projectDirectory, nextConfig.distDir);
-const outputBundleOptions = populateOutputBundleOptions(
-  root,
-  opts.projectDirectory,
-  nextBuildDirectory,
-);
+  const adapterMetadata = getAdapterMetadata();
+  const nextBuildDirectory = join(opts.projectDirectory, nextConfig.distDir);
+  const outputBundleOptions = populateOutputBundleOptions(
+    root,
+    opts.projectDirectory,
+    nextBuildDirectory,
+  );
 
-await addRouteOverrides(
-  outputBundleOptions.outputDirectoryAppPath,
-  nextConfig.distDir,
-  adapterMetadata,
-);
+  await addRouteOverrides(
+    outputBundleOptions.outputDirectoryAppPath,
+    nextConfig.distDir,
+    adapterMetadata,
+  );
 
-const nextjsVersion = process.env.FRAMEWORK_VERSION || "unspecified";
-await generateBuildOutput(
-  root,
-  opts.projectDirectory,
-  outputBundleOptions,
-  nextBuildDirectory,
-  nextjsVersion,
-  adapterMetadata,
-);
-await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);
-
-await restoreNextConfig(root, nextConfig.configFileName);
+  const nextjsVersion = process.env.FRAMEWORK_VERSION || "unspecified";
+  await generateBuildOutput(
+    root,
+    opts.projectDirectory,
+    outputBundleOptions,
+    nextBuildDirectory,
+    nextjsVersion,
+    adapterMetadata,
+  );
+  await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);
+} finally {
+  await restoreNextConfig(root, nextConfig.configFileName);
+}
