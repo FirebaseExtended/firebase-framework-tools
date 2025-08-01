@@ -1,6 +1,5 @@
 import { spawn } from "child_process";
-import * as path from "node:path";
-import * as fs from "fs-extra";
+import * as fs from "node:fs";
 
 // Output bundle metadata specifications to be written to bundle.yaml
 export interface OutputBundleConfig {
