@@ -12,10 +12,10 @@ import {
   MiddlewareManifest,
 } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
-import { OutputBundleConfig } from "@apphosting/common";
+import { OutputBundleConfig, UpdateOrCreateGitignore } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
+export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
   fsExtra;
 
 // Loads the user's next.config.js file.
@@ -181,7 +181,7 @@ async function generateBundleYaml(
   nextVersion: string,
   adapterMetadata: AdapterMetadata,
 ): Promise<void> {
-  await mkdir(opts.outputDirectoryBasePath);
+  await ensureDir(opts.outputDirectoryBasePath);
   const outputBundle: OutputBundleConfig = {
     version: "v1",
     runConfig: {
@@ -203,6 +203,8 @@ async function generateBundleYaml(
   }
 
   await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
+  const normalizedBundleDir = normalize(relative(cwd, opts.outputDirectoryBasePath));
+  UpdateOrCreateGitignore(cwd, [`/${normalizedBundleDir}/`]);
   return;
 }
 
