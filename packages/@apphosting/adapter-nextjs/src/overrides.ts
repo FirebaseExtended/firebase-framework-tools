@@ -143,7 +143,8 @@ export async function validateNextConfigOverride(
 }
 
 /**
- *
+ * Restores the user's original Next Config file (next.config.original.[ts|js|mjs])
+ * to leave user code the way we found it.
  */
 export async function restoreNextConfig(projectRoot: string, nextConfigFileName: string) {
   // Check if the file exists in the current working directory
