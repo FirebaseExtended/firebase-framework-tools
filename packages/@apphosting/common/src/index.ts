@@ -158,7 +158,7 @@ export function updateOrCreateGitignore(dirPath: string, entries: string[]) {
   for (const entry of entries) {
     if (!content.includes(entry)) {
       console.log(`adding ${entry} to ${gitignorePath}`);
-      content += `\n${entry}\n`;
+content += `\n${entry}`;
     }
   }
 
