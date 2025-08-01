@@ -1,7 +1,6 @@
 import * as assert from "assert";
-import { posix, join } from "path";
+import { posix } from "path";
 import fsExtra from "fs-extra";
-
 
 const host = process.env.HOST;
 if (!host) {
