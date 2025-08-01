@@ -203,7 +203,8 @@ async function generateBundleYaml(
   }
 
   await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
-  UpdateOrCreateGitignore(cwd, ["/.apphosting/"]);
+  const normalizedBundleDir = normalize(relative(cwd, opts.outputDirectoryBasePath));
+  UpdateOrCreateGitignore(cwd, [`/${normalizedBundleDir}/`]);
   return;
 }
 
