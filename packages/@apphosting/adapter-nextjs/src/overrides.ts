@@ -143,6 +143,29 @@ export async function validateNextConfigOverride(
 }
 
 /**
+ * Restores the user's original Next Config file (next.config.original.[ts|js|mjs])
+ * to leave user code the way we found it.
+ */
+export async function restoreNextConfig(projectRoot: string, nextConfigFileName: string) {
+  // Determine the file extension
+  const fileExtension = extname(nextConfigFileName);
+  const originalConfigPath = join(projectRoot, `next.config.original${fileExtension}`);
+
+  if (!(await exists(originalConfigPath))) {
+    // No backup file found, nothing to restore.
+    return;
+  }
+  console.log(`Restoring original next config in project root`);
+
+  const configPath = join(projectRoot, nextConfigFileName);
+  try {
+    await renamePromise(originalConfigPath, configPath);
+  } catch (error) {
+    console.error(`Error restoring Next config: ${error}`);
+  }
+}
+
+/**
  * Modifies the app's route manifest (routes-manifest.json) to add Firebase App Hosting
  * specific overrides (i.e headers).
  *
