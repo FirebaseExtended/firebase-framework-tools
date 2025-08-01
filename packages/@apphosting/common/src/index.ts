@@ -1,4 +1,7 @@
 import { spawn } from "child_process";
+import * as path from "node:path";
+import * as fs from "fs-extra";
+
 
 // Output bundle metadata specifications to be written to bundle.yaml
 export interface OutputBundleConfig {
@@ -138,4 +141,28 @@ export function getBuildOptions(): BuildOptions {
     buildArgs: ["run", "build"],
     projectDirectory: process.cwd(),
   };
+}
+
+
+/**
+ * Updates or creates a .gitignore file with the given entries in the given path
+ */
+export function UpdateOrCreateGitignore(dirPath: string, entries: string[]) {
+  const gitignorePath = path.join(dirPath, ".gitignore");
+
+  if (!fs.existsSync(gitignorePath)) {
+    console.log(`creating ${gitignorePath} with entries: ${entries.join("\n")}`);
+    fs.writeFileSync(gitignorePath, entries.join("\n"));
+    return;
+  }
+
+  let content = fs.readFileSync(gitignorePath, "utf-8");
+  for (const entry of entries) {
+    if (!content.includes(entry)) {
+      console.log(`adding ${entry} to ${gitignorePath}`);
+      content += `\n${entry}\n`;
+    }
+  }
+
+  fs.writeFileSync(gitignorePath, content);
 }
