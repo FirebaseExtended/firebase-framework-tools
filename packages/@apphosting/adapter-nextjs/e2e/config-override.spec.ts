@@ -40,6 +40,7 @@ describe("next.config override", () => {
       scenario.includes("with-images-unoptimized-false") ||
       scenario.includes("with-custom-image-loader")
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       this.skip();
     }
     const files = await fsExtra.readdir(appPath);
@@ -47,7 +48,10 @@ describe("next.config override", () => {
     const configOriginalRegex = /^next\.config\.(?!original).*$/g;
     const configFiles = files.filter((file) => file.match(configRegex));
     assert.strictEqual(configFiles.length, 1);
-    assert.ok(configFiles[0].match(configOriginalRegex), "found original config file in root");
+    assert.ok(
+      configFiles[0].match(configOriginalRegex),
+      "temporary original config not properly removed",
+    );
 
     const standaloneFiles = await fsExtra.readdir(standalonePath);
     const standaloneConfigFiles = standaloneFiles.filter((file) => file.match(configRegex));
