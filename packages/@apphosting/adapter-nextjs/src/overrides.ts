@@ -147,27 +147,22 @@ export async function validateNextConfigOverride(
  * to leave user code the way we found it.
  */
 export async function restoreNextConfig(projectRoot: string, nextConfigFileName: string) {
-  // Check if the file exists in the current working directory
-  const configPath = join(projectRoot, nextConfigFileName);
-  if (!(await exists(configPath))) {
-    return;
-  }
-
   // Determine the file extension
   const fileExtension = extname(nextConfigFileName);
   const originalConfigPath = join(projectRoot, `next.config.original${fileExtension}`);
+
   if (!(await exists(originalConfigPath))) {
-    console.warn(`next config may have been overwritten but original contents not found`);
+    // No backup file found, nothing to restore.
     return;
   }
   console.log(`Restoring original next config in project root`);
 
+  const configPath = join(projectRoot, nextConfigFileName);
   try {
     await renamePromise(originalConfigPath, configPath);
   } catch (error) {
     console.error(`Error restoring Next config: ${error}`);
   }
-  return;
 }
 
 /**

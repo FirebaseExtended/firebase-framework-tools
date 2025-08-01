@@ -57,7 +57,7 @@ describe("next.config override", () => {
     const standaloneConfigFiles = standaloneFiles.filter((file) => file.match(configRegex));
     assert.strictEqual(standaloneConfigFiles.length, 2);
     assert.ok(
-      configFiles.some((file) => file.match(configOriginalRegex)),
+      standaloneConfigFiles.some((file) => file.match(configOriginalRegex)),
       "no original config found in standalone",
     );
   });
