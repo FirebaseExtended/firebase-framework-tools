@@ -168,7 +168,6 @@ export async function restoreNextConfig(projectRoot: string, nextConfigFileName:
     console.error(`Error restoring Next config: ${error}`);
   }
   return;
-
 }
 
 /**

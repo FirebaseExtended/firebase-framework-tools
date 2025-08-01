@@ -9,7 +9,12 @@ import {
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
-import { addRouteOverrides, overrideNextConfig, restoreNextConfig, validateNextConfigOverride } from "../overrides.js";
+import {
+  addRouteOverrides,
+  overrideNextConfig,
+  restoreNextConfig,
+  validateNextConfigOverride,
+} from "../overrides.js";
 
 const root = process.cwd();
 const opts = getBuildOptions();
@@ -43,7 +48,6 @@ if (await exists(nextConfigPath)) {
 
 try {
   await runBuild();
-
 
   const adapterMetadata = getAdapterMetadata();
   const nextBuildDirectory = join(opts.projectDirectory, nextConfig.distDir);
