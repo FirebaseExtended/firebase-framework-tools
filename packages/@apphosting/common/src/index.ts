@@ -2,7 +2,6 @@ import { spawn } from "child_process";
 import * as path from "node:path";
 import * as fs from "fs-extra";
 
-
 // Output bundle metadata specifications to be written to bundle.yaml
 export interface OutputBundleConfig {
   version: "v1";
@@ -142,7 +141,6 @@ export function getBuildOptions(): BuildOptions {
     projectDirectory: process.cwd(),
   };
 }
-
 
 /**
  * Updates or creates a .gitignore file with the given entries in the given path
