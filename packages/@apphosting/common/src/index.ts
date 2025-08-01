@@ -156,7 +156,7 @@ export function updateOrCreateGitignore(dirPath: string, entries: string[]) {
 
   let content = fs.readFileSync(gitignorePath, "utf-8");
   for (const entry of entries) {
-    if (!content.includes(entry)) {
+if (!content.split('\n').includes(entry)) {
       console.log(`adding ${entry} to ${gitignorePath}`);
 content += `\n${entry}`;
     }
