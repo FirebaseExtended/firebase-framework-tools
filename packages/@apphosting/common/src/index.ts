@@ -145,7 +145,7 @@ export function getBuildOptions(): BuildOptions {
 /**
  * Updates or creates a .gitignore file with the given entries in the given path
  */
-export function UpdateOrCreateGitignore(dirPath: string, entries: string[]) {
+export function updateOrCreateGitignore(dirPath: string, entries: string[]) {
   const gitignorePath = path.join(dirPath, ".gitignore");
 
   if (!fs.existsSync(gitignorePath)) {
