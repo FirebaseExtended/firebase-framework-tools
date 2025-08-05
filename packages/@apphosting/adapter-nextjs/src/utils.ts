@@ -135,6 +135,10 @@ export async function generateBuildOutput(
     copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
     generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
   ]);
+  // generateBundleYaml creates the output directory (if it does not already exist).
+  // We need to make sure it is gitignored.
+  const normalizedBundleDir = normalize(relative(rootDir, opts.outputDirectoryBasePath));
+  updateOrCreateGitignore(rootDir, [`/${normalizedBundleDir}/`]);
   return;
 }
 
@@ -203,8 +207,6 @@ async function generateBundleYaml(
   }
 
   await writeFile(opts.bundleYamlPath, yamlStringify(outputBundle));
-  const normalizedBundleDir = normalize(relative(cwd, opts.outputDirectoryBasePath));
-  updateOrCreateGitignore(cwd, [`/${normalizedBundleDir}/`]);
   return;
 }
 
