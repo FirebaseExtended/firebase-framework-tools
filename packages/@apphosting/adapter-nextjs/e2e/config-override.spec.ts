@@ -27,9 +27,40 @@ const compiledFilesPath = posix.join(
   ".next",
 );
 
+const standalonePath = posix.join(process.cwd(), "e2e", "runs", runId, ".next", "standalone");
+
+const appPath = posix.join(process.cwd(), "e2e", "runs", runId);
+
 const requiredServerFilePath = posix.join(compiledFilesPath, "required-server-files.json");
 
 describe("next.config override", () => {
+  it("Should not overwrite original next config", async function () {
+    if (
+      scenario.includes("with-empty-config") ||
+      scenario.includes("with-images-unoptimized-false") ||
+      scenario.includes("with-custom-image-loader")
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
+      this.skip();
+    }
+    const files = await fsExtra.readdir(appPath);
+    const configRegex = /^next\.config\..*$/g;
+    const configOriginalRegex = /^next\.config\.(?!original).*$/g;
+    const configFiles = files.filter((file) => file.match(configRegex));
+    assert.strictEqual(configFiles.length, 1);
+    assert.ok(
+      configFiles[0].match(configOriginalRegex),
+      "temporary original config not properly removed",
+    );
+
+    const standaloneFiles = await fsExtra.readdir(standalonePath);
+    const standaloneConfigFiles = standaloneFiles.filter((file) => file.match(configRegex));
+    assert.strictEqual(standaloneConfigFiles.length, 2);
+    assert.ok(
+      standaloneConfigFiles.some((file) => file.match(configOriginalRegex)),
+      "no original config found in standalone",
+    );
+  });
   it("should have images optimization disabled", async function () {
     if (
       scenario.includes("with-empty-config") ||
