@@ -171,31 +171,17 @@ outputFiles:
       ".next/static/staticfile": "",
     };
     generateTestFiles(tmpDir, files);
+    const standaloneAppPath = path.join(tmpDir, ".next", "standalone", "apps", "next-app");
     await generateBuildOutput(
       tmpDir,
       "apps/next-app",
       {
         bundleYamlPath: path.join(tmpDir, ".apphosting", "bundle.yaml"),
         outputDirectoryBasePath: path.join(tmpDir, ".apphosting"),
-        outputDirectoryAppPath: path.join(tmpDir, ".next", "standalone", "apps", "next-app"),
-        outputPublicDirectoryPath: path.join(
-          tmpDir,
-          ".next",
-          "standalone",
-          "apps",
-          "next-app",
-          "public",
-        ),
-        outputStaticDirectoryPath: path.join(
-          tmpDir,
-          ".next",
-          "standalone",
-          "apps",
-          "next-app",
-          ".next",
-          "static",
-        ),
-        serverFilePath: path.join(tmpDir, ".next", "standalone", "apps", "next-app", "server.js"),
+        outputDirectoryAppPath: standaloneAppPath,
+        outputPublicDirectoryPath: path.join(standaloneAppPath, "public"),
+        outputStaticDirectoryPath: path.join(standaloneAppPath, ".next", "static"),
+        serverFilePath: path.join(standaloneAppPath, "server.js"),
       },
       path.join(tmpDir, ".next"),
       defaultNextVersion,
@@ -229,10 +215,7 @@ outputFiles:
       outputBundleOptions,
       path.join(tmpDir, ".next"),
       defaultNextVersion,
-      {
-        adapterPackageName: "@apphosting/adapter-nextjs",
-        adapterVersion: "14.0.1",
-      },
+      adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
@@ -294,10 +277,7 @@ outputFiles:
       outputBundleOptions,
       path.join(tmpDir, ".next"),
       defaultNextVersion,
-      {
-        adapterPackageName: "@apphosting/adapter-nextjs",
-        adapterVersion: "14.0.1",
-      },
+      adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
