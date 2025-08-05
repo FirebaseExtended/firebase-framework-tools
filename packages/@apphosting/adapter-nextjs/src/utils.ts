@@ -12,10 +12,10 @@ import {
   MiddlewareManifest,
 } from "./interfaces.js";
 import { NextConfigComplete } from "next/dist/server/config-shared.js";
-import { OutputBundleConfig } from "@apphosting/common";
+import { OutputBundleConfig, updateOrCreateGitignore } from "@apphosting/common";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, mkdir } =
+export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
   fsExtra;
 
 // Loads the user's next.config.js file.
@@ -135,6 +135,10 @@ export async function generateBuildOutput(
     copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
     generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
   ]);
+  // generateBundleYaml creates the output directory (if it does not already exist).
+  // We need to make sure it is gitignored.
+  const normalizedBundleDir = normalize(relative(rootDir, opts.outputDirectoryBasePath));
+  updateOrCreateGitignore(rootDir, [`/${normalizedBundleDir}/`]);
   return;
 }
 
@@ -181,7 +185,7 @@ async function generateBundleYaml(
   nextVersion: string,
   adapterMetadata: AdapterMetadata,
 ): Promise<void> {
-  await mkdir(opts.outputDirectoryBasePath);
+  await ensureDir(opts.outputDirectoryBasePath);
   const outputBundle: OutputBundleConfig = {
     version: "v1",
     runConfig: {
