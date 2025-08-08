@@ -6,7 +6,7 @@ import { getBuildOptions, updateOrCreateGitignore } from "./index";
 
 const originalCwd = process.cwd.bind(process);
 
-describe("get a set of default build options", () => {
+describe("get a set of build options", () => {
   const mockCwd = "/fake/project/";
   beforeEach(() => {
     process.cwd = () => mockCwd;
