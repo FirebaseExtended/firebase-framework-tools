@@ -130,7 +130,7 @@ export function getBuildOptions(): BuildOptions {
   if (process.env.MONOREPO_COMMAND) {
     return {
       buildCommand: process.env.MONOREPO_COMMAND,
-      buildArgs: ["run", "build"].concat(process.env.MONOREPO_BUILD_ARGS?.split(".") || []),
+      buildArgs: ["run", "build"].concat(process.env.MONOREPO_BUILD_ARGS?.split(",") || []),
       projectDirectory: process.env.GOOGLE_BUILDABLE || "",
       projectName: process.env.MONOREPO_PROJECT,
     };
