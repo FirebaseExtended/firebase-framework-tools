@@ -26,7 +26,6 @@ describe("get a set of build options", () => {
     process.env.GOOGLE_BUILDABLE = "/workspace/apps/web";
     process.env.MONOREPO_PROJECT = "web";
 
-    // Assert that the returned options are correct
     const expectedOptions = {
       buildCommand: "turbo",
       buildArgs: ["run", "build", "--filter=web", "--env-mode=strict"],
