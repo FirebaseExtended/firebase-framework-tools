@@ -177,7 +177,7 @@ function extractManifestOutput(output: string): string {
   }
   // Clean the raw json string by removing the "web:build:" prefixes for a Turbo build
   const prefixRegex = /\n?web:build:/g;
-  const cleanedOutput = output.substring(start, end + 1).replace(prefixRegex, '');
+  const cleanedOutput = output.substring(start, end + 1).replace(prefixRegex, "");
   return stripAnsi(cleanedOutput);
 }
 
