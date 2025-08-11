@@ -175,7 +175,10 @@ function extractManifestOutput(output: string): string {
   if (start === -1 || end === -1 || start > end) {
     throw new Error(`Failed to find valid JSON object from build output: ${output}`);
   }
-  return stripAnsi(output.substring(start, end + 1));
+  // Clean the raw json string by removing the "web:build:" prefixes for a Turbo build
+  const prefixRegex = /\n?web:build:/g;
+  const cleanedOutput = output.substring(start, end + 1).replace(prefixRegex, "");
+  return stripAnsi(cleanedOutput);
 }
 
 /**
