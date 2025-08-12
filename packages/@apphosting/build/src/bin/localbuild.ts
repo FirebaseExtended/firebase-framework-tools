@@ -1,17 +1,12 @@
 #! /usr/bin/env node
 import { spawn } from "child_process";
 import { program } from "commander";
-import { parse as semverParse } from "semver";
 import { yellow, bgRed, bold } from "colorette";
-// @ts-expect-error TODO add interface
-import pickManifest from "npm-pick-manifest";
-import { discover } from "@apphosting/discover";
 
 program
   // TODO: add framework option later. For now we support nextjs only.
   .argument("<directory>", "path to the project's root directory")
   .action(async () => {
-
     const projectRoot = program.args[0];
     const framework = "nextjs";
     // TODO: We are using the latest framework adapter versions, but in the future
