@@ -32,8 +32,14 @@ program
         shell: true,
         stdio: "inherit",
       });
-    });
 
+      child.on("exit", (code) => {
+        if (code !== 0) {
+          reject(new Error(`framework adapter build failed with error code ${code}.`));
+        }
+        resolve();
+      });
+    });
     //  TODO(#382): parse bundle.yaml and apphosting.yaml and output a buildschema somewhere.
   });
 
