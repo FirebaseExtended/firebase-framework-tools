@@ -21,7 +21,7 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-      "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
+      "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*"
     },
     "exports": {
         ".": {
