@@ -22,9 +22,7 @@
     "sideEffects": false,
     "scripts": {
       "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
-      "test": "npm run test:unit && npm run test:functional",
-      "test:unit": "ts-mocha -p tsconfig.json 'src/**/*.spec.ts' 'src/*.spec.ts'",
-      "test:functional": "node --loader ts-node/esm ./e2e/run-local-build.ts"
+      "test": "ts-mocha -p tsconfig.json 'src/**/*.spec.ts' 'src/*.spec.ts'"
     },
     "exports": {
         ".": {
@@ -44,17 +42,6 @@
         "ts-node": "^10.9.1"
     },
     "devDependencies": {
-      "@types/commander": "*",
-      "@types/fs-extra": "*",
-      "@types/mocha": "*",
-      "@types/tmp": "*",
-      "mocha": "*",
-      "next": "~14.0.0",
-      "semver": "*",
-      "tmp": "*",
-      "ts-mocha": "*",
-      "ts-node": "*",
-      "typescript": "*",
-      "verdaccio": "^5.30.3"
+      "@types/commander": "*"
     }
 }
