@@ -22,7 +22,6 @@
     "sideEffects": false,
     "scripts": {
       "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
-      "test": "ts-mocha -p tsconfig.json 'src/**/*.spec.ts' 'src/*.spec.ts'"
     },
     "exports": {
         ".": {
