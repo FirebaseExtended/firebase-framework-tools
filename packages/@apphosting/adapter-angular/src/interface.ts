@@ -9,27 +9,6 @@ export interface OutputBundleOptions {
   needsServerGenerated: boolean;
 }
 
-// Environment variable schema for bundle.yaml outputted by angular adapter
-export interface EnvironmentVariable {
-  variable: string;
-  value: string;
-  availability: Availability.Runtime; // currently support RUNTIME only
-}
-
-// defines whether the environment variable is buildtime, runtime or both
-export enum Availability {
-  Buildtime = "BUILD",
-  Runtime = "RUNTIME",
-}
-
-// Metadata schema for bundle.yaml outputted by angular adapter
-export interface Metadata {
-  adapterPackageName: string;
-  adapterVersion: string;
-  framework: string;
-  frameworkVersion: string;
-}
-
 // valid manifest schema
 export interface ValidManifest {
   errors: string[];
