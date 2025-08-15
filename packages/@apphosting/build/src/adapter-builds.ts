@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import { program } from "commander";
 import { yellow, bgRed, bold } from "colorette";
 
-export async function adapterBuild(framework: string, projectRoot: string) {
+export async function adapterBuild(projectRoot: string, framework: string) {
   // TODO(#382): We are using the latest framework adapter versions, but in the future
   // we should parse the framework version and use the matching adapter version.
   const adapterName = `@apphosting/adapter-${framework}`;
