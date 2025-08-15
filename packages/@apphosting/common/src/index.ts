@@ -67,7 +67,7 @@ export interface Script {
 
 // Optional outputFiles to configure outputFiles and optimize server files + static assets.
 // If this is not set then all of the source code will be uploaded
-interface OutputFiles {
+export interface OutputFiles {
   serverApp: ServerApp;
 }
 
@@ -84,7 +84,7 @@ export interface EnvVarConfig {
   // Value associated with the variable
   value: string;
   // Where the variable will be available
-  availability: Availability.Runtime[];
+  availability: Availability[];
 }
 
 // Represents where environment variables are made available
