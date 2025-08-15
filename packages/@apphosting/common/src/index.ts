@@ -2,6 +2,8 @@ import { spawn } from "child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
+// **** OutputBundleConfig interfaces ****
+
 // Output bundle metadata specifications to be written to bundle.yaml
 export interface OutputBundleConfig {
   version: "v1";
@@ -41,9 +43,31 @@ export interface Metadata {
   frameworkVersion?: string;
 }
 
+// **** Apphosting Config interfaces ****
+
+export interface ApphostingConfig {
+  runconfig?: ApphostingRunConfig;
+  env?: EnvVarConfig[];
+  scripts?: Script;
+  outputFiles?: OutputFiles;
+}
+
+export interface ApphostingRunConfig {
+  minInstances?: number;
+  maxInstances?: number;
+  concurrency?: number;
+}
+
+export interface Script {
+  buildCommand?: string;
+  runCommand?: string;
+}
+
+// **** Shared interfaces ****
+
 // Optional outputFiles to configure outputFiles and optimize server files + static assets.
 // If this is not set then all of the source code will be uploaded
-interface OutputFiles {
+export interface OutputFiles {
   serverApp: ServerApp;
 }
 
@@ -59,14 +83,15 @@ export interface EnvVarConfig {
   variable: string;
   // Value associated with the variable
   value: string;
-  // Where the variable will be available, for now only RUNTIME is supported
-  availability: Availability.Runtime[];
+  // Where the variable will be available
+  availability: Availability[];
 }
 
 // Represents where environment variables are made available
 export enum Availability {
   // Runtime environment variables are available on the server when the app is run
   Runtime = "RUNTIME",
+  Build = "BUILD",
 }
 
 // Options to configure the build of a framework application
