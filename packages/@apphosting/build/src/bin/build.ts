@@ -17,12 +17,12 @@ program
     const nonBundledFrameworks = discoveryResults.filter((it) => !it.bundledWith);
     if (nonBundledFrameworks.length === 0) throw new Error("Did not discover any frameworks.");
     if (nonBundledFrameworks.length > 1) throw new Error("Found conflicting frameworks.");
-    if (expectedFramework && nonBundledFrameworks[0].framework !== expectedFramework) {
+    if (expectedFramework && nonBundledFrameworks[0].id !== expectedFramework) {
       throw new Error("Discovery did not match expected framework.");
     }
-    const { framework, version } = nonBundledFrameworks[0];
+    const framework = nonBundledFrameworks[0];
 
-    const parsedVersion = semverParse(version);
+    const parsedVersion = semverParse(framework.version);
     if (!parsedVersion) throw new Error("Could not parse framework version");
 
     const adapterName = `@apphosting/adapter-${framework}`;
