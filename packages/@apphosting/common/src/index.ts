@@ -52,7 +52,7 @@ export interface ApphostingConfig {
   outputFiles?: OutputFiles;
 }
 
-export interface ApphostingRunConfig{
+export interface ApphostingRunConfig {
   minInstances?: number;
   maxInstances?: number;
   concurrency?: number;
@@ -93,7 +93,6 @@ export enum Availability {
   Runtime = "RUNTIME",
   Build = "BUILD",
 }
-
 
 // Options to configure the build of a framework application
 export interface BuildOptions {
