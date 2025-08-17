@@ -1,5 +1,4 @@
 import { spawn } from "child_process";
-import { program } from "commander";
 import { yellow, bgRed, bold } from "colorette";
 
 export async function adapterBuild(projectRoot: string, framework: string) {
@@ -7,7 +6,10 @@ export async function adapterBuild(projectRoot: string, framework: string) {
   // we should parse the framework version and use the matching adapter version.
   const adapterName = `@apphosting/adapter-${framework}`;
   const packumentResponse = await fetch(`https://registry.npmjs.org/${adapterName}`);
-  if (!packumentResponse.ok) throw new Error(`Something went wrong fetching ${adapterName}`);
+  if (!packumentResponse.ok)
+    throw new Error(
+      `Failed to fetch ${adapterName}: ${packumentResponse.status} ${packumentResponse.statusText}`,
+    );
   const packument = await packumentResponse.json();
   const adapterVersion = packument?.["dist-tags"]?.["latest"];
   if (!adapterVersion) {
@@ -24,6 +26,8 @@ export async function adapterBuild(projectRoot: string, framework: string) {
       shell: true,
       stdio: "inherit",
     });
+
+    child.on("error", reject);
 
     child.on("exit", (code) => {
       if (code !== 0) {

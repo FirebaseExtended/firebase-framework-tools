@@ -21,7 +21,9 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-      "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*"
+      "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
+      "test": "npm run test:functional",
+      "test:functional": "node --loader ts-node/esm ./e2e/run-local-build.ts"
     },
     "exports": {
         ".": {
