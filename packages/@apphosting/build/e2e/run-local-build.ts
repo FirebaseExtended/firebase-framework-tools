@@ -2,7 +2,6 @@ import { cp } from "fs/promises";
 import promiseSpawn from "@npmcli/promise-spawn";
 import { dirname, join, relative } from "path";
 import { fileURLToPath } from "url";
-import { parse as parseYaml } from "yaml";
 import fsExtra from "fs-extra";
 import { scenarios } from "./scenarios.ts";
 

@@ -5,7 +5,7 @@ import { scenarios } from "./scenarios.ts";
 import fsExtra from "fs-extra";
 import { parse as parseYaml } from "yaml";
 
-const { readFileSync, mkdirp, rmdir, readJSONSync } = fsExtra;
+const { readFileSync } = fsExtra;
 const { OutputBundleConfig } = pkg;
 
 const scenario = process.env.SCENARIO;
@@ -20,7 +20,7 @@ if (!runId) {
 
 const bundleYaml = posix.join(process.cwd(), "e2e", "runs", runId, ".apphosting", "bundle.yaml");
 describe("supported framework apps", () => {
-  it("apps have bundle.yaml correctly generated", async () => {
+  it("apps have bundle.yaml correctly generated", () => {
     const bundle = parseYaml(readFileSync(bundleYaml, "utf8")) as OutputBundleConfig;
 
     assert.deepStrictEqual(scenarios.get(scenario).expectedBundleYaml.runConfig, bundle.runConfig);
