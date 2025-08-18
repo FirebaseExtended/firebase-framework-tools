@@ -2,7 +2,6 @@ import pkg from "@apphosting/common";
 const { OutputBundleConfig } = pkg;
 
 interface Scenario {
-  name: string; // Name of the scenario
   inputs: string[];
   expectedBundleYaml: OutputBundleConfig;
   tests?: string[]; // List of test files to run

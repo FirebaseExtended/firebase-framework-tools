@@ -3,7 +3,6 @@ import promiseSpawn from "@npmcli/promise-spawn";
 import { dirname, join, relative } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseYaml } from "yaml";
-import { spawn } from "child_process";
 import fsExtra from "fs-extra";
 import { scenarios } from "./scenarios.ts";
 
@@ -11,7 +10,7 @@ const { readFileSync, mkdirp, rmdir } = fsExtra;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const errors: any[] = [];
+const errors: Error[] = [];
 
 await rmdir(join(__dirname, "runs"), { recursive: true }).catch(() => undefined);
 
@@ -58,7 +57,7 @@ for (const [scenarioName, scenario] of scenarios) {
       ).version;
 
   try {
-    await promiseSpawn("node", [buildScript, ...scenario.inputs], {
+    const result = await promiseSpawn("node", [buildScript, ...scenario.inputs], {
       cwd,
       stdioString: true,
       stdio: "pipe",
@@ -67,10 +66,9 @@ for (const [scenarioName, scenario] of scenarios) {
         ...process.env,
         FRAMEWORK_VERSION: frameworkVersion,
       },
-    }).then((result) => {
-      // Write stdout and stderr to the log file
-      fsExtra.writeFileSync(buildLogPath, result.stdout + result.stderr);
     });
+    // Write stdout and stderr to the log file
+    fsExtra.writeFileSync(buildLogPath, result.stdout + result.stderr);
 
     try {
       // Determine which test files to run
@@ -96,9 +94,8 @@ for (const [scenarioName, scenario] of scenarios) {
     console.error(`Error in scenario ${scenarioName}:`, e);
     errors.push(e);
   }
-
-  if (errors.length) {
-    console.error(errors);
-    process.exit(1);
-  }
+}
+if (errors.length) {
+  console.error(errors);
+  process.exit(1);
 }

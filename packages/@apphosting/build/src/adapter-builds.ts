@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import promiseSpawn from "@npmcli/promise-spawn";
 import { yellow, bgRed, bold } from "colorette";
 
 export async function adapterBuild(projectRoot: string, framework: string) {
@@ -10,7 +10,12 @@ export async function adapterBuild(projectRoot: string, framework: string) {
     throw new Error(
       `Failed to fetch ${adapterName}: ${packumentResponse.status} ${packumentResponse.statusText}`,
     );
-  const packument = await packumentResponse.json();
+  let packument;
+  try {
+    packument = await packumentResponse.json();
+  } catch (e) {
+    throw new Error(`Failed to parse response from NPM registry for ${adapterName}.`);
+  };
   const adapterVersion = packument?.["dist-tags"]?.["latest"];
   if (!adapterVersion) {
     throw new Error(`Could not find 'latest' dist-tag for ${adapterName}`);
@@ -20,20 +25,9 @@ export async function adapterBuild(projectRoot: string, framework: string) {
   console.log(" 🔥", bgRed(` ${adapterName}@${yellow(bold(adapterVersion))} `), "\n");
 
   const buildCommand = `apphosting-adapter-${framework}-build`;
-  await new Promise<void>((resolve, reject) => {
-    const child = spawn("npx", ["-y", "-p", `${adapterName}@${adapterVersion}`, buildCommand], {
-      cwd: projectRoot,
-      shell: true,
-      stdio: "inherit",
-    });
-
-    child.on("error", reject);
-
-    child.on("exit", (code) => {
-      if (code !== 0) {
-        reject(new Error(`framework adapter build failed with error code ${code}.`));
-      }
-      resolve();
-    });
+  await promiseSpawn("npx", ["-y", "-p", `${adapterName}@${adapterVersion}`, buildCommand], {
+    cwd: projectRoot,
+    shell: true,
+    stdio: "inherit",
   });
 }
