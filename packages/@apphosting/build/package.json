@@ -29,7 +29,11 @@
         ".": {
             "node": "./dist/index.js",
             "default": null
-        }
+        },
+      "./dist/*": {
+	"node": "./dist/*",
+	"default": null
+      }
     },
     "files": [
         "dist"
@@ -45,6 +49,7 @@
     "devDependencies": {
         "@types/commander": "*",
         "ts-mocha": "*",
-        "ts-node": "*"
+        "ts-node": "*",
+        "typescript": "*"
     }
 }
