@@ -1,0 +1,45 @@
+import pkg from "@apphosting/common";
+const { OutputBundleConfig } = pkg;
+
+interface Scenario {
+  name: string; // Name of the scenario
+  inputs: string[];
+  expectedBundleYaml: OutputBundleConfig;
+  tests?: string[]; // List of test files to run
+}
+
+export const scenarios = new Map([
+  [
+    "nextjs-app",
+    {
+      inputs: ["./", "--framework", "nextjs"],
+      expectedBundleYaml: {
+        version: "v1",
+        runConfig: {
+          runCommand: "node .next/standalone/server.js",
+        },
+        metadata: {
+          adapterPackageName: "@apphosting/adapter-nextjs",
+        },
+      },
+      tests: ["adapter-builds.spec.ts"],
+    },
+  ],
+  [
+    "angular-app",
+    {
+      inputs: ["./", "--framework", "angular"],
+      expectedBundleYaml: {
+        version: "v1",
+        runConfig: {
+          runCommand: "node dist/firebase-app-hosting-angular/server/server.mjs",
+          environmentVariables: [],
+        },
+        metadata: {
+          adapterPackageName: "@apphosting/adapter-angular",
+        },
+      },
+      tests: ["adapter-builds.spec.ts"],
+    },
+  ],
+]);

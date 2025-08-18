@@ -2,6 +2,9 @@ import { spawn } from "child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
+// List of apphosting supported frameworks.
+export const SupportedFrameworks = ["nextjs", "angular"];
+
 // **** OutputBundleConfig interfaces ****
 
 // Output bundle metadata specifications to be written to bundle.yaml
