@@ -4,7 +4,7 @@ interface Scenario {
   tests?: string[]; // List of test files to run
 }
 
-export const scenarios = new Map([
+export const scenarios: Map<string, Scenario> = new Map([
   [
     "nextjs-app",
     {
