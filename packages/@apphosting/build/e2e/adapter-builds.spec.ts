@@ -21,7 +21,7 @@ if (!runId) {
 const bundleYaml = posix.join(process.cwd(), "e2e", "runs", runId, ".apphosting", "bundle.yaml");
 describe("supported framework apps", () => {
   it("apps have bundle.yaml correctly generated", () => {
-    const bundle = parseYaml(readFileSync(bundleYaml, "utf8")) as OutputBundleConfig;
+    const bundle: OutputBundleConfig = parseYaml(readFileSync(bundleYaml, "utf8"));
 
     assert.deepStrictEqual(scenarios.get(scenario).expectedBundleYaml.runConfig, bundle.runConfig);
     assert.deepStrictEqual(
