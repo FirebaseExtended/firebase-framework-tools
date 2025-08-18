@@ -3,7 +3,7 @@ import promiseSpawn from "@npmcli/promise-spawn";
 import { dirname, join, relative } from "path";
 import { fileURLToPath } from "url";
 import fsExtra from "fs-extra";
-import { scenarios } from "./scenarios.ts";
+import { scenarios } from "./scenarios.js";
 
 const { readFileSync, mkdirp, rmdir } = fsExtra;
 

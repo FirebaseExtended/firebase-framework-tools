@@ -1,9 +1,9 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
+    "noEmit": false,
     "outDir": "dist",
-    "rootDir": "src",
-    "allowImportingTsExtensions": true
+    "rootDir": "src"
   },
   "ts-node": {
     "esm": true,
@@ -15,6 +15,7 @@
     "src/bin/*.ts",
   ],
   "exclude": [
-    "src/*.spec.ts"
+    "src/*.spec.ts",
+    "src/bin/build.ts"
     ]
 }
