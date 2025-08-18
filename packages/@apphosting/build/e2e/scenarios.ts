@@ -1,9 +1,6 @@
-import pkg from "@apphosting/common";
-const { OutputBundleConfig } = pkg;
-
 interface Scenario {
   inputs: string[];
-  expectedBundleYaml: OutputBundleConfig;
+  expectedBundleYaml: {};
   tests?: string[]; // List of test files to run
 }
 

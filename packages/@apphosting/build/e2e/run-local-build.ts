@@ -10,7 +10,7 @@ const { readFileSync, mkdirp, rmdir } = fsExtra;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const errors: Error[] = [];
+const errors: any[] = [];
 
 await rmdir(join(__dirname, "runs"), { recursive: true }).catch(() => undefined);
 
@@ -31,12 +31,6 @@ for (const [scenarioName, scenario] of scenarios) {
     : "../../../starters/angular/basic";
   console.log(`[${runId}] Copying ${starterTemplateDir} to working directory`);
   await cp(starterTemplateDir, cwd, { recursive: true });
-
-  // Run scenario-specific setup if provided
-  if (scenario.setup) {
-    console.log(`[${runId}] Running setup for ${scenarioName}`);
-    await scenario.setup(cwd);
-  }
 
   console.log(`[${runId}] > npm ci --silent --no-progress`);
   await promiseSpawn("npm", ["ci", "--silent", "--no-progress"], {

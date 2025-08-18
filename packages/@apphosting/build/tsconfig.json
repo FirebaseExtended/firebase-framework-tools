@@ -3,8 +3,13 @@
   "compilerOptions": {
     "noEmit": false,
     "outDir": "dist",
-    "rootDir": "src"
-
+    "rootDir": "src",
+    "allowImportingTsExtensions": true
+  },
+  "ts-node": {
+    "esm": true,
+    "logError": true,
+    "pretty": true
   },
   "include": [
     "src/index.ts",

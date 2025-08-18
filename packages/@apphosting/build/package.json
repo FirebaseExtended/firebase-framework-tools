@@ -44,7 +44,9 @@
         "tsc": "^2.0.4"
     },
     "devDependencies": {
-        "@types/commander": "*",
-        "typescript": "^5.9.2"
+      "@types/commander": "*",
+      "ts-mocha": "*",
+      "ts-node": "*",
+      "typescript": "*"
     }
 }

@@ -15,7 +15,7 @@ export async function adapterBuild(projectRoot: string, framework: string) {
     packument = await packumentResponse.json();
   } catch (e) {
     throw new Error(`Failed to parse response from NPM registry for ${adapterName}.`);
-  };
+  }
   const adapterVersion = packument?.["dist-tags"]?.["latest"];
   if (!adapterVersion) {
     throw new Error(`Could not find 'latest' dist-tag for ${adapterName}`);
