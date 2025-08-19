@@ -1,13 +1,11 @@
 import * as assert from "assert";
 import { posix } from "path";
-import pkg from "@apphosting/common";
+import type { OutputBundleConfig } from "../../common/src/index.ts";
 import { scenarios } from "./scenarios.ts";
 import fsExtra from "fs-extra";
 import { parse as parseYaml } from "yaml";
 
 const { readFileSync } = fsExtra;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { OutputBundleConfig } = pkg;
 
 const scenario = process.env.SCENARIO;
 if (!scenario) {
