@@ -39,7 +39,7 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "@apphosting/discover": "*",
+        "@apphosting/common": "*",
         "colorette": "^2.0.20",
         "commander": "^11.1.0",
         "npm-pick-manifest": "^9.0.0",
