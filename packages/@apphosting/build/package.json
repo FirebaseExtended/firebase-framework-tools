@@ -8,8 +8,8 @@
         "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
     },
     "bin": {
-      "build": "dist/bin/build.js",
-      "apphosting-local-build": "dist/bin/localbuild.js"
+        "build": "dist/bin/build.js",
+        "apphosting-local-build": "dist/bin/localbuild.js"
     },
     "author": {
         "name": "Firebase",
@@ -21,11 +21,17 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-      "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*"
+        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
+        "test": "npm run test:functional",
+        "test:functional": "node --loader ts-node/esm ./e2e/run-local-build.ts"
     },
     "exports": {
         ".": {
             "node": "./dist/index.js",
+            "default": null
+        },
+        "./dist/*": {
+            "node": "./dist/*",
             "default": null
         }
     },
@@ -41,6 +47,9 @@
         "ts-node": "^10.9.1"
     },
     "devDependencies": {
-      "@types/commander": "*"
+        "@types/commander": "*",
+        "ts-mocha": "*",
+        "ts-node": "*",
+        "typescript": "*"
     }
 }

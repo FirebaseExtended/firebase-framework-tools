@@ -4,13 +4,18 @@
     "noEmit": false,
     "outDir": "dist",
     "rootDir": "src"
-
+  },
+  "ts-node": {
+    "esm": true,
+    "logError": true,
+    "pretty": true
   },
   "include": [
     "src/index.ts",
     "src/bin/*.ts",
   ],
   "exclude": [
-    "src/*.spec.ts"
+    "src/*.spec.ts",
+    "src/bin/build.ts"
     ]
 }
