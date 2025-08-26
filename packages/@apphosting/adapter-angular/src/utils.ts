@@ -283,8 +283,8 @@ export const metaFrameworkOutputBundleExists = () => {
   const bundleYamlPath = join(outputBundleDir, "bundle.yaml");
   if (existsSync(bundleYamlPath)) {
     try {
-      const bundle: OutputBundleConfig = parseYaml(readFileSync(bundleYamlPath, "utf8"));
-      if (bundle.metadata?.framework && bundle.metadata.framework !== "angular") {
+      const bundle = parseYaml(readFileSync(bundleYamlPath, "utf8"));
+      if (bundle?.metadata?.framework && bundle.metadata.framework !== "angular") {
         return true;
       }
     } catch (e) {

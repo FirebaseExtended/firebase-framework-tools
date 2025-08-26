@@ -83,6 +83,7 @@ metadata:
     const expectedOutputBundleOptions = {
       browserDirectory: "/browser",
       bundleYamlPath: resolve(".apphosting", "bundle.yaml"),
+      outputDirectoryBasePath: resolve(".apphosting"),
       needsServerGenerated: false,
       serverFilePath: path.join("/server", "server.mjs"),
     };
