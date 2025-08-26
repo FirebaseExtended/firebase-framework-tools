@@ -7,6 +7,7 @@ import { resolve, normalize, relative, dirname, join } from "path";
 import { stringify as yamlStringify } from "yaml";
 import { OutputBundleOptions, OutputPaths, buildManifestSchema } from "./interface.js";
 import { createRequire } from "node:module";
+import { parse as parseYaml } from "yaml";
 import stripAnsi from "strip-ansi";
 import {
   BuildOptions,
@@ -14,10 +15,12 @@ import {
   EnvVarConfig,
   Metadata,
   Availability,
+  updateOrCreateGitignore,
 } from "@apphosting/common";
 
+
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { writeFile, move, readJson, mkdir, copyFile, readFileSync, existsSync } = fsExtra;
+export const { writeFile, move, readJson, mkdir, copyFile, readFileSync, existsSync, ensureDir } = fsExtra;
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -135,6 +138,7 @@ export function populateOutputBundleOptions(outputPaths: OutputPaths): OutputBun
   }
   return {
     bundleYamlPath: resolve(outputBundleDir, "bundle.yaml"),
+    outputDirectoryBasePath: outputBundleDir,
     serverFilePath: resolve(baseDirectory, serverRelativePath, "server.mjs"),
     browserDirectory: resolve(baseDirectory, browserRelativePath),
     needsServerGenerated,
@@ -210,6 +214,10 @@ export async function generateBuildOutput(
     await generateServer(outputBundleOptions);
   }
   await generateBundleYaml(outputBundleOptions, cwd, angularVersion);
+  // generateBundleYaml creates the output directory (if it does not already exist).
+  // We need to make sure it is gitignored.
+  const normalizedBundleDir = normalize(relative(cwd, outputBundleOptions.outputDirectoryBasePath));
+  updateOrCreateGitignore(cwd, [`/${normalizedBundleDir}/`]);
 }
 
 // add environment variable to bundle.yaml if needed for specific versions
@@ -233,7 +241,7 @@ async function generateBundleYaml(
   cwd: string,
   angularVersion: string,
 ): Promise<void> {
-  await mkdir(dirname(opts.bundleYamlPath));
+  await ensureDir(dirname(opts.bundleYamlPath));
   const outputBundle: OutputBundleConfig = {
     version: "v1",
     runConfig: {
@@ -270,10 +278,13 @@ export const isMain = (meta: ImportMeta) => {
   return process.argv[1] === fileURLToPath(meta.url);
 };
 
-export const outputBundleExists = () => {
+export const metaFrameworkOutputBundleExists = () => {
   const outputBundleDir = resolve(".apphosting");
   if (existsSync(outputBundleDir)) {
-    return true;
+    const bundle: OutputBundleConfig = parseYaml(readFileSync(join(outputBundleDir, "bundle.yaml"), "utf8"));
+    if (bundle.metadata.framework !== "angular") {
+      return true;
+    }
   }
   return false;
 };

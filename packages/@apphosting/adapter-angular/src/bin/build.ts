@@ -4,7 +4,7 @@ import {
   checkBuildConditions,
   validateOutputDirectory,
   parseOutputBundleOptions,
-  outputBundleExists,
+  metaFrameworkOutputBundleExists,
 } from "../utils.js";
 import { getBuildOptions, runBuild } from "@apphosting/common";
 
@@ -21,7 +21,11 @@ if (!output) {
 }
 
 const angularVersion = process.env.FRAMEWORK_VERSION || "unspecified";
-if (!outputBundleExists()) {
+// Frameworks like nitro, analog, nuxt generate the output bundle during their own build process
+// when `npm run build` is called which we don't want to overwrite immediately after.
+// We only want to overwrite if the existing output is from a previous framework adapter
+// build on a plain angular app.
+if (!metaFrameworkOutputBundleExists()) {
   const outputBundleOptions = parseOutputBundleOptions(output);
   const root = process.cwd();
   await generateBuildOutput(root, outputBundleOptions, angularVersion);

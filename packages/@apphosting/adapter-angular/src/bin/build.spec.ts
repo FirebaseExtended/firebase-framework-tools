@@ -15,6 +15,7 @@ describe("build commands", () => {
     outputBundleOptions = {
       browserDirectory: resolve(tmpDir, "dist", "test", "browser"),
       bundleYamlPath: resolve(tmpDir, ".apphosting", "bundle.yaml"),
+      outputDirectoryBasePath: resolve(tmpDir, ".apphosting"),
       serverFilePath: resolve(tmpDir, "dist", "test", "server", "server.mjs"),
       needsServerGenerated: false,
     };
