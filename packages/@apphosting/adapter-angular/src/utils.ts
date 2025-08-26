@@ -18,9 +18,9 @@ import {
   updateOrCreateGitignore,
 } from "@apphosting/common";
 
-
 // fs-extra is CJS, readJson can't be imported using shorthand
-export const { writeFile, move, readJson, mkdir, copyFile, readFileSync, existsSync, ensureDir } = fsExtra;
+export const { writeFile, move, readJson, mkdir, copyFile, readFileSync, existsSync, ensureDir } =
+  fsExtra;
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -280,10 +280,15 @@ export const isMain = (meta: ImportMeta) => {
 
 export const metaFrameworkOutputBundleExists = () => {
   const outputBundleDir = resolve(".apphosting");
-  if (existsSync(outputBundleDir)) {
-    const bundle: OutputBundleConfig = parseYaml(readFileSync(join(outputBundleDir, "bundle.yaml"), "utf8"));
-    if (bundle.metadata.framework !== "angular") {
-      return true;
+  const bundleYamlPath = join(outputBundleDir, "bundle.yaml");
+  if (existsSync(bundleYamlPath)) {
+    try {
+      const bundle: OutputBundleConfig = parseYaml(readFileSync(bundleYamlPath, "utf8"));
+      if (bundle.metadata?.framework && bundle.metadata.framework !== "angular") {
+        return true;
+      }
+    } catch (e) {
+      logger.debug("Failed to parse bundle.yaml, assuming it can be overwritten", e);
     }
   }
   return false;
