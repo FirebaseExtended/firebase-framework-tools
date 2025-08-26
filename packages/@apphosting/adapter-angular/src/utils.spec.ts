@@ -5,8 +5,7 @@ import { resolve } from "path";
 import path from "path";
 import { stringify as yamlStringify } from "yaml";
 import os from "os";
-
-const { metaFrameworkOutputBundleExists } = await importUtils;
+import type { OutputBundleConfig } from "@apphosting/common";
 
 function generateTmpDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "test-files"));
@@ -27,17 +26,20 @@ describe("metaFrameworkOutputBundleExists", () => {
     process.cwd = originalCwd;
   });
 
-  it("unrecogznied bundle", async () => {
+  it("unrecognized bundle", async () => {
+    const { metaFrameworkOutputBundleExists } = await importUtils;
     const content = "chicken: bok bok";
     fs.writeFileSync(bundlePath, yamlStringify(content));
     assert(!metaFrameworkOutputBundleExists());
   });
 
   it("no bundle exists", async () => {
+    const { metaFrameworkOutputBundleExists } = await importUtils;
     assert(!metaFrameworkOutputBundleExists());
   });
 
   it("meta-framework bundle exists", async () => {
+    const { metaFrameworkOutputBundleExists } = await importUtils;
     const outputBundle: OutputBundleConfig = {
       version: "v1",
       runConfig: {
@@ -52,6 +54,7 @@ describe("metaFrameworkOutputBundleExists", () => {
   });
 
   it("angular bundle exists", async () => {
+    const { metaFrameworkOutputBundleExists } = await importUtils;
     const outputBundle: OutputBundleConfig = {
       version: "v1",
 
