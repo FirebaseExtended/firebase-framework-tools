@@ -1,8 +1,7 @@
 const importUtils = import("@apphosting/adapter-angular/dist/utils.js");
 import assert from "assert";
 import fs from "fs";
-import { resolve } from "path";
-import path from "path";
+import * as path from "path";
 import { stringify as yamlStringify } from "yaml";
 import os from "os";
 import type { OutputBundleConfig } from "@apphosting/common";
@@ -18,8 +17,8 @@ describe("metaFrameworkOutputBundleExists", () => {
   beforeEach(() => {
     const tmpDir = generateTmpDir();
     process.cwd = () => tmpDir;
-    fs.mkdirSync(resolve(tmpDir, ".apphosting"));
-    bundlePath = resolve(tmpDir, ".apphosting", "bundle.yaml");
+    fs.mkdirSync(path.resolve(tmpDir, ".apphosting"));
+    bundlePath = path.resolve(tmpDir, ".apphosting", "bundle.yaml");
   });
 
   afterEach(() => {
@@ -57,7 +56,6 @@ describe("metaFrameworkOutputBundleExists", () => {
     const { metaFrameworkOutputBundleExists } = await importUtils;
     const outputBundle: OutputBundleConfig = {
       version: "v1",
-
       runConfig: {
         runCommand: `does not matter`,
       },
