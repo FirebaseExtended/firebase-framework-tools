@@ -1,6 +1,6 @@
 {
     "name": "@apphosting/discover",
-    "version": "0.2.0",
+    "version": "0.2.3",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": {
@@ -8,7 +8,7 @@
         "url": "git+https://github.com/FirebaseExtended/firebase-framework-tools.git"
     },
     "bin": {
-        "discover": "dist/bin/discover.js"
+        "discover": "dist/bin/discover.cjs"
     },
     "author": {
         "name": "Firebase",
@@ -20,32 +20,38 @@
     "type": "module",
     "sideEffects": false,
     "scripts": {
-        "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*"
+        "build": "rm -rf dist && run-p build:* && chmod +x ./dist/bin/*",
+        "build:esm": "npx -y esbuild --bundle src/index.ts --outfile=dist/index.mjs --platform=node --format=esm",
+        "build:cjs": "npx -y esbuild --bundle src/index.ts --outfile=dist/index.cjs --platform=node --format=cjs",
+        "build:bin": "npx -y esbuild --bundle src/bin/discover.ts --outfile=dist/bin/discover.cjs --platform=node --format=cjs --external:@apphosting/discover",
+        "build:types": "tsc"
     },
     "exports": {
         ".": {
-            "node": "./dist/index.js",
-            "default": null
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.mjs",
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.mjs"
         }
     },
     "files": [
         "dist"
     ],
     "license": "Apache-2.0",
-    "dependencies": {
+    "devDependencies": {
         "@npmcli/arborist": "^7.2.1",
+        "@types/commander": "*",
+        "@types/npmcli__arborist": "*",
+        "@types/yarnpkg__lockfile": "*",
         "@yarnpkg/lockfile": "^1.1.0",
+        "@yarnpkg/parsers": "^3.0.3",
         "colorette": "^2.0.20",
         "commander": "^11.1.0",
         "fs-extra": "^11.1.1",
         "npm-pick-manifest": "^9.0.0",
+        "npm-run-all": "*",
         "toml": "^3.0.0",
         "ts-node": "^10.9.1",
         "yaml": "^2.3.4"
-    },
-    "devDependencies": {
-        "@types/commander": "*",
-        "@types/npmcli__arborist": "*",
-        "@types/yarnpkg__lockfile": "*"
     }
 }
