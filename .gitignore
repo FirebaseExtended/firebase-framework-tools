@@ -13,6 +13,7 @@ node_modules
 .DS_Store
 /apphosting-*.tgz
 /firebase-frameworks-*.tgz
+.repl_history
 
 # firebase
 .firebase

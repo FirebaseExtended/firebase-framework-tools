@@ -1,9 +1,13 @@
-import fsExtra from "fs-extra";
-import { MockFileSystem } from "./interfaces.js";
+import { readFile, readJson, pathExists } from "fs-extra";
 import { discoverNodeJSFrameworks } from "./nodejs/index.js";
 import { discoverPythonFrameworks } from "./python/index.js";
 import { discoverDartFrameworks } from "./dart/index.js";
+import { MockFileSystem } from "./interfaces.js";
 
+/**
+ * Deterministically discover frameworks!
+ * @public
+ */
 export async function discover(directory: string, options: { githubRepo?: string, githubToken?: string } = {}) {
   if (options.githubRepo && !options.githubToken) throw new Error("needs token");
 
@@ -53,7 +57,9 @@ export async function discover(directory: string, options: { githubRepo?: string
           return await response.json();
         },
       }
-    : fsExtra;
+    : {
+      readFile, pathExists, readJson
+    };
 
   return (await Promise.all([
     discoverNodeJSFrameworks(root, fs, path),
@@ -62,3 +68,56 @@ export async function discover(directory: string, options: { githubRepo?: string
   ])).flat();
 
 }
+
+/**
+ * @public
+ */
+export type Command = [string, string[]];
+
+/**
+ * @public
+ */
+export interface DiscoveredFramework {
+  root_directory: string;
+  id: string;
+  version?: string;
+  single_page_app: boolean;
+  dist_directory: string;
+  packageManager: {
+    id: string;
+    version?: string;
+    metadata: Record<string, any>;
+  }
+  monorepo_tooling?: Record<string, any>;
+  platform: {
+    id: RUNTIME;
+    version: string;
+  }
+  commands: {
+    install: Command[];
+    build: Command[];
+    dev: Command;
+    serve?: Command;
+  }
+  known_adapters?: Partial<Record<TARGET_PLATFORM, Adapter>>;
+  discoveryComplete: boolean;
+  stepsNeededForDiscovery?: Array<"install" | "build">;
+};
+
+/**
+ * @public
+ */
+export interface Adapter {
+    id: string;
+    channel: "community" | "experimental" | "official";
+};
+
+/**
+ * @public
+ */
+export type RUNTIME = "nodejs" | "python" | "dart";
+
+/**
+ * @public
+ */
+export type TARGET_PLATFORM = "firebase";

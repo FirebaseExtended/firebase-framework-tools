@@ -1,13 +1,89 @@
 import { dirname, extname, join } from "node:path";
-import { KNOWN_ADAPTERS, PLATFORMS } from "../constants.js";
-import { Command, DiscoveredFramework, DiscoveryContext, MockFileSystem } from "../interfaces.js";
+import { Adapter, Command, DiscoveredFramework, TARGET_PLATFORM } from "../index.js";
+import { DiscoveryContext, MockFileSystem } from "../interfaces.js";
 import { parse as parseYaml } from "yaml";
 import { parseSyml } from '@yarnpkg/parsers';
+
+// @ts-ignore
+import { merge as _merge } from "lodash/fp/object";
+const merge = _merge as typeof import("lodash")["merge"];
 
 import { pathToFileURL } from "node:url";
 import { readJSON } from "fs-extra";
 
-const knownFrameworks = PLATFORMS.find(([id]) => id === "nodejs")?.[4] || [];
+const knownAdapters: Partial<Record<FRAMEWORK_ID, Record<TARGET_PLATFORM, Adapter>>> = {
+    "nextjs": { "firebase": { id: "@apphosting/adapter-nextjs", channel: "official" }},
+    "angular": { "firebase": { id: "@apphosting/adapter-angular", channel: "official" }},
+    "astro": { "firebase": { id: "@apphosting/adapter-astro", channel: "experimental" }},
+};
+
+type FRAMEWORK_ID = (typeof knownFrameworks)[number][0];
+
+type DeepPartial<T> = T extends object ? {
+    [P in keyof T]?: DeepPartial<T[P]>;
+} : T;
+
+const knownFrameworks = [
+      // [id, deps[], files[], bundles[], isStatic?]
+      ["nextjs", ["next"], [], ["react"], async (ctx: DiscoveryContext): Promise<DeepPartial<DiscoveredFramework>> => {
+        // TODO clean up the error handling here
+        const [{ default: loadConfig }, { PHASE_PRODUCTION_BUILD }] = await Promise.all([
+          relativeRequire(ctx.root, "next/dist/server/config").catch(() => ({ default: null })),
+          relativeRequire(ctx.root, "next/constants").catch(() => ({ PHASE_PRODUCTION_BUILD: null })),
+        ]);
+        if (!loadConfig || !PHASE_PRODUCTION_BUILD) return {
+          discoveryComplete: false,
+          stepsNeededForDiscovery: ["install"],
+        };
+        const nextConfig = await loadConfig(PHASE_PRODUCTION_BUILD, ctx.root);
+        return {
+          single_page_app: nextConfig.output === "export",
+          dist_directory: nextConfig.output === "export" ? "out" : nextConfig.distDir,
+          ...(nextConfig.output === "standalone" ? {
+            dist_directory: ctx.path.join(nextConfig.distDir, "standalone"),
+            commands: {
+                serve: ["node", ["./server.mjs"]]
+            }
+          } : {})
+        };
+      }],
+      ["angular", ["@angular/core"], ["angular.json"], ["vite", "scully"], () => ({ single_page_app: false })],
+      ["scully", ["@scullyio/scully"], ["scully.config.js"], [], () => ({ single_page_app: true })], // TODO bundle angular correctly
+      [
+        "astro",
+        ["astro"],
+        ["astro.config.js", "astro.config.mjs", "astro.config.cjs", "astro.config.ts"],
+        ["lit", "react", "preact", "svelte", "vue", "vite"],
+        () => ({ single_page_app: false }) // TODO handle static detection
+      ],
+      ["nuxt", ["nuxt"], ["nuxt.config.js"], ["vue"], () => ({ single_page_app: false })],
+      ["lit", ["lit", "lit-element"], [], [], () => ({ single_page_app:  true })],
+      ["vue", ["vue"], [], [], () => ({ single_page_app:  true })],
+      ["nuxtjs", ["nuxt"], ["nuxt.config.js"], ["vue"], () => ({ single_page_app: false })],
+      ["vuepress", ["vuepress"], [], ["vue"], () => ({ single_page_app: true, dist_directory: "docs/.vuepress/dist" })],
+      ["vite", ["vite"], [], ["vue", "react", "preact", "lit", "svelte", "solid"], () => ({ single_page_app: true })],
+      ["vitepress", ["vitepress"], [], ["vue"], () => ({ single_page_app: true, dist_directory: "docs/.vitepress/dist" })],
+      ["preact", ["preact"], [], [], () => ({ single_page_app: true, dist_directory: "build" })],
+      ["react", ["react", "react-dom"], [], [], () => ({ single_page_app: true, dist: () => "build" })],
+      ["gatsby", ["gatsby"], ["gatsby-config.js"], ["react"], () => ({ single_page_app: true, dist_directory: "public" })],
+      ["docusaurus", ["@docusaurus/core"], ["docusaurus.config.js"], ["react"], () => ({ single_page_app: true, dist_directory: "build" })],
+      ["svelte", ["svelte"], [], [], () => ({ single_page_app: true })],
+      ["sapper", ["sapper"], [], ["svelte"], () => ({ single_page_app: true, dist_directory: "__sapper__/export" })],
+      ["sveltekit", ["@sveltejs/kit"], [], ["svelte", "vite"], () => ({ single_page_app: false })],
+      ["stencil", ["@stencil/core"], ["stencil.config.ts"], [], () => ({ single_page_app: true, dist_directory: "www" })],
+      ["aurelia", ["aurelia"], [], [], () => ({ single_page_app: true })],
+      ["ember", ["ember-cli", "ember-load-initializers", "ember-resolver"], [], [], () => ({ single_page_app: true })], // TODO handle fastboot
+      ["riot", ["riot"], [], [], () => ({ single_page_app: true })],
+      ["polymer", ["@polymer/polymer"], ["polymer.json"], [], () => ({ single_page_app: true, dist_directory: "build/es6-bundled" })],
+      ["eleventy", ["@11ty/eleventy"], [], [], () => ({ single_page_app: true, dist_directory: "_site" })],
+      ["solidjs", ["solid-js", "solid-app-router"], [], [], () => ({ single_page_app: true })],
+      ["solid-start", ["solid-start"], [], ["solid-js"], () => ({ single_page_app: false  })],
+      ["remix", ["remix"], [], ["react"], () => ({ single_page_app: false, dist_directory: "public" })],
+      ["redwood", ["@redwoodjs/core"], [], ["react"], () => ({ single_page_app: false, dist_directory: "web/dist" })],
+      ["quasar", ["quasar"], [], ["vue"], () => ({ single_page_app: true, dist_directory: "dist/spa" })],
+      ["ionic", ["@ionic/react", "@ionic/angular"], [], ["react", "angular"], () => ({ single_page_app: true, dist_directory: "www"  })],
+      ["react-static", ["react-static"], [], ["react"], () => ({ single_page_app: true })],
+] as const;
 
 // TODO refactor to use DiscoveryContext
 export async function discoverNodeJSFrameworks(root: string, fs: MockFileSystem, path: typeof import("node:path")) : Promise<Array<DiscoveredFramework>> {
@@ -42,6 +118,7 @@ export async function discoverNodeJSFrameworks(root: string, fs: MockFileSystem,
         packageManager = "pnpm";
         lockfile = "pnpm-lock.yaml";
     }
+    packageManagerVersion ||= packageJSON.engines?.[packageManager];
     let installCommand: Command[] = [["npm", ["ci", "--include=dev"]]];
     if (packageManager === "yarn") installCommand = [["yarn", ["install", "--immutable"]]];
     if (packageManager === "pnpm") installCommand = [["pnpm", ["install", "--frozen-lockfile"]]];
@@ -158,7 +235,7 @@ export async function discoverNodeJSFrameworks(root: string, fs: MockFileSystem,
                     },
                     platform: {
                         id: "nodejs",
-                        version: "0.0.0", // TODO: get version of platform
+                        version: packageJSON.engines?.node,
                     },
                     commands: {
                         install: installCommand, // TODO use package manager commands
@@ -166,7 +243,7 @@ export async function discoverNodeJSFrameworks(root: string, fs: MockFileSystem,
                         dev: [packageManager, ["start"]],
                         serve: isStatic ? ["npx", ["-y", "superstatic", "serve", "-p", "$PORT", "--compression", "--host", "0.0.0.0", "."]] : ["node", ["./server/server.mjs"]],
                     },
-                    known_adapters: KNOWN_ADAPTERS.nodejs?.angular,
+                    known_adapters: knownAdapters.angular,
                     discoveryComplete: true,
                 });
             }
@@ -205,7 +282,7 @@ export async function discoverNodeJSFrameworks(root: string, fs: MockFileSystem,
                 },
                 platform: {
                     id: "nodejs",
-                    version: "0.0.0", // TODO: get version of platform
+                    version: packageJSON.engines?.node,
                 },
                 commands: {
                     install: installCommand, // TODO use package manager commands
@@ -213,13 +290,14 @@ export async function discoverNodeJSFrameworks(root: string, fs: MockFileSystem,
                     dev: [packageManager, ["run", "dev"]],
                     serve: [packageManager, ["start"]]
                 },
-                known_adapters: KNOWN_ADAPTERS.nodejs?.[id],
+                known_adapters: knownAdapters[id],
                 discoveryComplete: true, // TODO figure out if we need to install/build, nextjs etc.
             };
-            discoveredFrameworks.push({
-                ...assumptions,
-                ...(await getDiscoveryProps?.(ctx) || {}),
-            });
+            if (getDiscoveryProps) {
+                discoveredFrameworks.push(merge(assumptions, await getDiscoveryProps(ctx)));
+            } else {
+                discoveredFrameworks.push(assumptions);
+            }
         }))
     ));
 

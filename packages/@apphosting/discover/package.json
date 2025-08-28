@@ -18,20 +18,21 @@
         "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
     },
     "type": "module",
+    "module": "./dist/index.mjs",
+    "types": "./dist/discover.d.ts",
     "sideEffects": false,
     "scripts": {
         "build": "rm -rf dist && run-p build:* && chmod +x ./dist/bin/*",
-        "build:esm": "npx -y esbuild --bundle src/index.ts --outfile=dist/index.mjs --platform=node --format=esm",
-        "build:cjs": "npx -y esbuild --bundle src/index.ts --outfile=dist/index.cjs --platform=node --format=cjs",
-        "build:bin": "npx -y esbuild --bundle src/bin/discover.ts --outfile=dist/bin/discover.cjs --platform=node --format=cjs --external:@apphosting/discover",
-        "build:types": "tsc"
+        "build:esm": "esbuild --sourcemap --minify --bundle src/index.ts --outfile=dist/index.mjs --platform=node --format=esm",
+        "build:cjs": "esbuild --sourcemap --minify --bundle src/index.ts --outfile=dist/index.cjs --platform=node --format=cjs",
+        "build:bin": "esbuild --sourcemap --minify --bundle src/bin/discover.ts --outfile=dist/bin/discover.cjs --platform=node --format=cjs --external:@apphosting/discover",
+        "build:types": "tsc && api-extractor run --local && rm -rf dist/_types"
     },
     "exports": {
         ".": {
+            "types": "./dist/discover.d.ts",
             "require": "./dist/index.cjs",
-            "import": "./dist/index.mjs",
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.mjs"
+            "import": "./dist/index.mjs"
         }
     },
     "files": [
@@ -39,15 +40,19 @@
     ],
     "license": "Apache-2.0",
     "devDependencies": {
+        "@microsoft/api-extractor": "^7.52.11",
         "@npmcli/arborist": "^7.2.1",
         "@types/commander": "*",
+        "@types/lodash": "^4.17.20",
         "@types/npmcli__arborist": "*",
         "@types/yarnpkg__lockfile": "*",
         "@yarnpkg/lockfile": "^1.1.0",
         "@yarnpkg/parsers": "^3.0.3",
         "colorette": "^2.0.20",
         "commander": "^11.1.0",
+        "esbuild": "^0.25.9",
         "fs-extra": "^11.1.1",
+        "lodash": "^4.17.21",
         "npm-pick-manifest": "^9.0.0",
         "npm-run-all": "*",
         "toml": "^3.0.0",
