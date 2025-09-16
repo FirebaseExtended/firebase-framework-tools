@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 import { SupportedFrameworks } from "@apphosting/common";
-import { adapterBuild } from "../adapter-builds.js";
+import { adapterBuild } from "../index.js";
 import { program } from "commander";
 
 program
