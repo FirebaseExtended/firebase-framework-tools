@@ -15,6 +15,7 @@ describe("build commands", () => {
     outputBundleOptions = {
       browserDirectory: resolve(tmpDir, "dist", "test", "browser"),
       bundleYamlPath: resolve(tmpDir, ".apphosting", "bundle.yaml"),
+      outputDirectoryBasePath: resolve(tmpDir, ".apphosting"),
       serverFilePath: resolve(tmpDir, "dist", "test", "server", "server.mjs"),
       needsServerGenerated: false,
     };
@@ -82,6 +83,7 @@ metadata:
     const expectedOutputBundleOptions = {
       browserDirectory: "/browser",
       bundleYamlPath: resolve(".apphosting", "bundle.yaml"),
+      outputDirectoryBasePath: resolve(".apphosting"),
       needsServerGenerated: false,
       serverFilePath: path.join("/server", "server.mjs"),
     };
