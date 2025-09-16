@@ -1,7 +1,7 @@
-import promiseSpawn from "@npmcli/promise-spawn";
+import { spawnSync } from "child_process";
 import { yellow, bgRed, bold } from "colorette";
 
-export async function adapterBuild(projectRoot: string, framework: string) {
+export async function adapterBuild(projectRoot: string, framework: string): Promise<string> {
   // TODO(#382): We are using the latest framework adapter versions, but in the future
   // we should parse the framework version and use the matching adapter version.
   const adapterName = `@apphosting/adapter-${framework}`;
@@ -25,9 +25,11 @@ export async function adapterBuild(projectRoot: string, framework: string) {
   console.log(" 🔥", bgRed(` ${adapterName}@${yellow(bold(adapterVersion))} `), "\n");
 
   const buildCommand = `apphosting-adapter-${framework}-build`;
-  await promiseSpawn("npx", ["-y", "-p", `${adapterName}@${adapterVersion}`, buildCommand], {
-    cwd: projectRoot,
-    shell: true,
-    stdio: "inherit",
-  });
+  const build = spawnSync(
+    "npx", ["-y", "-p", `${adapterName}@${adapterVersion}`, buildCommand], {
+      cwd: projectRoot, stdio: "inherit" });
+  if (build.status !== 0) {
+    throw new Error("Unable to build your app");
+  }
+  return ".next/standalone"
 }
