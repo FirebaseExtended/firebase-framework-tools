@@ -31,5 +31,6 @@ export async function adapterBuild(projectRoot: string, framework: string): Prom
   if (build.status !== 0) {
     throw new Error("Unable to build your app");
   }
+  // TODO: angular's dist/ may be ~= .next/standalone
   return ".next/standalone"
 }
