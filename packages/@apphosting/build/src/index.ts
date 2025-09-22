@@ -1,12 +1,15 @@
 import promiseSpawn from "@npmcli/promise-spawn";
-import { readFileSync, existsSync } from "fs"
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { yellow, bgRed, bold } from "colorette";
 import { OutputBundleConfig } from "@apphosting/common";
 import { SupportedFrameworks, Framework } from "@apphosting/common";
 import { parse as parseYaml } from "yaml";
 
-export async function localBuild(projectRoot: string, framework?: string): Promise<OutputBundleConfig> {
+export async function localBuild(
+  projectRoot: string,
+  framework?: string,
+): Promise<OutputBundleConfig> {
   if (framework && SupportedFrameworks.includes(framework as Framework)) {
     // TODO(#382): Skip this if there's a custom build command in apphosting.yaml.
     return await adapterBuild(projectRoot, framework);
@@ -14,7 +17,10 @@ export async function localBuild(projectRoot: string, framework?: string): Promi
   throw new Error("framework not supported");
 }
 
-export async function adapterBuild(projectRoot: string, framework: string): Promise<OutputBundleConfig> {
+export async function adapterBuild(
+  projectRoot: string,
+  framework: string,
+): Promise<OutputBundleConfig> {
   // TODO(#382): support other apphosting.*.yaml files.
   // TODO(#382): parse apphosting.yaml for environment variables / secrets needed during build time.
 

@@ -4,8 +4,7 @@ import * as path from "node:path";
 
 // List of apphosting supported frameworks.
 export const SupportedFrameworks = ["nextjs", "angular"] as const;
-export type Framework = typeof SupportedFrameworks[number];
-
+export type Framework = (typeof SupportedFrameworks)[number];
 
 // **** OutputBundleConfig interfaces ****
 
