@@ -1,5 +1,4 @@
 #! /usr/bin/env node
-import { SupportedFrameworks } from "@apphosting/common";
 import { localBuild } from "../index.js";
 import { program } from "commander";
 
