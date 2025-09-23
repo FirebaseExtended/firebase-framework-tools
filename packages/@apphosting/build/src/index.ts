@@ -12,7 +12,12 @@ export async function localBuild(
 ): Promise<OutputBundleConfig> {
   if (framework && SupportedFrameworks.includes(framework as Framework)) {
     // TODO(#382): Skip this if there's a custom build command in apphosting.yaml.
-    return await adapterBuild(projectRoot, framework);
+    await adapterBuild(projectRoot, framework);
+    const bundleYamlPath = join(projectRoot, ".apphosting", "bundle.yaml");
+    if (!existsSync(bundleYamlPath)) {
+      throw new Error(`Cannot load ${bundleYamlPath} from given path, it doesn't exist`);
+    }
+    return parseYaml(readFileSync(bundleYamlPath, "utf8")) as OutputBundleConfig;
   }
   throw new Error("framework not supported");
 }
