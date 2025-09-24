@@ -1,6 +1,6 @@
 {
     "name": "@apphosting/build",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": {
@@ -40,6 +40,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "@apphosting/common": "*",
+      "@npmcli/promise-spawn": "*",
         "colorette": "^2.0.20",
         "commander": "^11.1.0",
         "npm-pick-manifest": "^9.0.0",
