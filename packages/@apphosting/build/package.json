@@ -1,6 +1,6 @@
 {
     "name": "@apphosting/build",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "main": "dist/index.js",
     "description": "Experimental addon to the Firebase CLI to add web framework support",
     "repository": {
@@ -17,7 +17,6 @@
     "bugs": {
         "url": "https://github.com/FirebaseExtended/firebase-framework-tools/issues"
     },
-    "type": "module",
     "sideEffects": false,
     "scripts": {
         "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
@@ -40,7 +39,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "@apphosting/common": "*",
-      "@npmcli/promise-spawn": "*",
+      "@npmcli/promise-spawn": "^3.0.0",
         "colorette": "^2.0.20",
         "commander": "^11.1.0",
         "npm-pick-manifest": "^9.0.0",
