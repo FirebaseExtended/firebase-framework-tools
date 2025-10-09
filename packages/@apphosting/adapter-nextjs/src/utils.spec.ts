@@ -4,7 +4,7 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { RoutesManifest, MiddlewareManifest } from "../src/interfaces.js";
+import { RoutesManifest, MiddlewareManifest } from "./interfaces.js";
 
 describe("manifest utils", () => {
   let tmpDir: string;

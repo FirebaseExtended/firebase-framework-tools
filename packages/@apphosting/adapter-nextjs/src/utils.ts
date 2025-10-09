@@ -165,8 +165,7 @@ async function copyResources(
 }
 
 export function getAdapterMetadata(): AdapterMetadata {
-  const directoryName = dirname(fileURLToPath(import.meta.url));
-  const packageJsonPath = `${directoryName}/../package.json`;
+  const packageJsonPath = `${__dirname}/../package.json`;
   if (!existsSync(packageJsonPath)) {
     throw new Error(`Next.js adapter package.json file does not exist at ${packageJsonPath}`);
   }

@@ -1,6 +1,6 @@
 {
   "name": "@apphosting/adapter-nextjs",
-  "version": "14.0.18",
+  "version": "15.0.0",
   "main": "dist/index.js",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "repository": {
@@ -21,7 +21,7 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "build": "rm -rf dist && tsc && chmod +x ./dist/bin/*",
+    "build": "rm -rf dist && tsc && chmod +x ./dist/bin/* && npx -y esbuild ./dist/index.js --bundle --format=cjs --platform=node --outfile=./dist/index.cjs",
     "test": "npm run test:unit && npm run test:functional",
     "test:unit": "ts-mocha -p tsconfig.json 'src/**/*.spec.ts' 'src/*.spec.ts'",
     "test:functional": "node --loader ts-node/esm ./e2e/run-local.ts",
@@ -30,7 +30,7 @@
   },
   "exports": {
     ".": {
-      "node": "./dist/index.js",
+      "node": "./dist/index.cjs",
       "default": null
     },
     "./dist/*": {
