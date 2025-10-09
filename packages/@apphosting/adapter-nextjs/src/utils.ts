@@ -1,22 +1,28 @@
 import fsExtra from "fs-extra";
-import { createRequire } from "node:module";
 import { join, dirname, relative, normalize } from "path";
-import { fileURLToPath } from "url";
 import { stringify as yamlStringify } from "yaml";
+import { createRequire } from "node:module";
 
-import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST, MIDDLEWARE_MANIFEST } from "./constants.js";
 import {
   OutputBundleOptions,
-  RoutesManifest,
   AdapterMetadata,
-  MiddlewareManifest,
+  RoutesManifest,
 } from "./interfaces.js";
-import { NextConfigComplete } from "next/dist/server/config-shared.js";
 import { OutputBundleConfig, updateOrCreateGitignore } from "@apphosting/common";
+import { fileURLToPath } from "url";
+
+import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
+import type { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
   fsExtra;
+
+export const isMain = (meta: ImportMeta): boolean => {
+  if (!meta) return false;
+  if (!process.argv[1]) return false;
+  return process.argv[1] === fileURLToPath(meta.url);
+};
 
 // Loads the user's next.config.js file.
 export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
@@ -38,53 +44,6 @@ export async function loadConfig(root: string, projectRoot: string): Promise<Nex
   return await loadConfig(PHASE_PRODUCTION_BUILD, root);
 }
 
-/**
- * Loads the route manifest from the standalone directory.
- * @param standalonePath The path to the standalone directory.
- * @param distDir The path to the dist directory.
- * @return The route manifest.
- */
-export function loadRouteManifest(standalonePath: string, distDir: string): RoutesManifest {
-  const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
-  const json = readFileSync(manifestPath, "utf-8");
-  return JSON.parse(json) as RoutesManifest;
-}
-
-/**
- * Loads the middleware manifest from the standalone directory.
- * @param standalonePath The path to the standalone directory.
- * @param distDir The path to the dist directory.
- * @return The middleware manifest.
- */
-export function loadMiddlewareManifest(
-  standalonePath: string,
-  distDir: string,
-): MiddlewareManifest {
-  const manifestPath = join(standalonePath, distDir, `server/${MIDDLEWARE_MANIFEST}`);
-  const json = readFileSync(manifestPath, "utf-8");
-  return JSON.parse(json) as MiddlewareManifest;
-}
-
-/**
- * Writes the route manifest to the standalone directory.
- * @param standalonePath The path to the standalone directory.
- * @param distDir The path to the dist directory.
- * @param customManifest The route manifest to write.
- */
-export async function writeRouteManifest(
-  standalonePath: string,
-  distDir: string,
-  customManifest: RoutesManifest,
-): Promise<void> {
-  const manifestPath = join(standalonePath, distDir, ROUTES_MANIFEST);
-  await writeFile(manifestPath, JSON.stringify(customManifest));
-}
-
-export const isMain = (meta: ImportMeta): boolean => {
-  if (!meta) return false;
-  if (!process.argv[1]) return false;
-  return process.argv[1] === fileURLToPath(meta.url);
-};
 
 /**
  * Provides the paths in the output bundle for the built artifacts.
@@ -116,6 +75,33 @@ export function populateOutputBundleOptions(
 }
 
 /**
+ * Loads the route manifest from the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @return The route manifest.
+ */
+export function loadRouteManifest(distDir: string): RoutesManifest {
+  const manifestPath = join(distDir, ROUTES_MANIFEST);
+  const json = readFileSync(manifestPath, "utf-8");
+  return JSON.parse(json) as RoutesManifest;
+}
+
+
+/**
+ * Writes the route manifest to the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @param customManifest The route manifest to write.
+ */
+export async function writeRouteManifest(
+  distDir: string,
+  customManifest: RoutesManifest,
+): Promise<void> {
+  const manifestPath = join(distDir, ROUTES_MANIFEST);
+  await writeFile(manifestPath, JSON.stringify(customManifest));
+}
+
+/**
  * Copy static assets and other resources into the standlone directory, also generates the bundle.yaml
  * @param rootDir The root directory of the uploaded source code.
  * @param outputBundleOptions The target location of built artifacts in the output bundle.
@@ -126,14 +112,11 @@ export async function generateBuildOutput(
   appDir: string,
   opts: OutputBundleOptions,
   nextBuildDirectory: string,
-  nextVersion: string,
-  adapterMetadata: AdapterMetadata,
 ): Promise<void> {
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
     copy(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
     copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
-    generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
   ]);
   // generateBundleYaml creates the output directory (if it does not already exist).
   // We need to make sure it is gitignored.
@@ -165,8 +148,7 @@ async function copyResources(
 }
 
 export function getAdapterMetadata(): AdapterMetadata {
-  const directoryName = dirname(fileURLToPath(import.meta.url));
-  const packageJsonPath = `${directoryName}/../package.json`;
+  const packageJsonPath = `${__dirname}/../package.json`;
   if (!existsSync(packageJsonPath)) {
     throw new Error(`Next.js adapter package.json file does not exist at ${packageJsonPath}`);
   }
@@ -179,7 +161,7 @@ export function getAdapterMetadata(): AdapterMetadata {
 }
 
 // generate bundle.yaml
-async function generateBundleYaml(
+export async function generateBundleYaml(
   opts: OutputBundleOptions,
   cwd: string,
   nextVersion: string,

@@ -50,8 +50,6 @@ describe("build commands", () => {
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
@@ -116,8 +114,6 @@ outputFiles:
         serverFilePath: path.join(tmpDir, ".next", "standalone", "apps", "next-app", "server.js"),
       },
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      adapterMetadata,
     );
 
     const expectedFiles = {
@@ -154,11 +150,6 @@ outputFiles:
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      {
-        adapterPackageName: "@apphosting/adapter-nextjs",
-        adapterVersion: "14.0.1",
-      },
     );
     assert.rejects(
       async () => await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next")),
@@ -184,8 +175,6 @@ outputFiles:
         serverFilePath: path.join(standaloneAppPath, "server.js"),
       },
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      adapterMetadata,
     );
 
     const expectedFiles = {
@@ -214,8 +203,6 @@ outputFiles:
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
@@ -240,11 +227,6 @@ outputFiles:
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      {
-        adapterPackageName: "@apphosting/adapter-nextjs",
-        adapterVersion: "14.0.1",
-      },
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
@@ -276,8 +258,6 @@ outputFiles:
       tmpDir,
       outputBundleOptions,
       path.join(tmpDir, ".next"),
-      defaultNextVersion,
-      adapterMetadata,
     );
     await validateOutputDirectory(outputBundleOptions, path.join(tmpDir, ".next"));
 
