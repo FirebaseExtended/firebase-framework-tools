@@ -42,6 +42,8 @@ const adapter: NextAdapter = {
         // TODO override config for production build
         return config;
     },
+    // This fires before standalone is bundled, so we need to pick things back up after build in bin/build.ts
+    // FEEDBACK: can we get a hook after bundle?
     async onBuildComplete(context) {
 
         const nextBuildDirectory = context.distDir;
@@ -50,7 +52,6 @@ const adapter: NextAdapter = {
             await addRouteOverrides(nextBuildDirectory, context.outputs.middleware.config.matchers);
         }
 
-        // TODO standalone is not bundled yet...
         const outputBundleOptions = populateOutputBundleOptions(
             context.repoRoot,
             context.projectDir,
