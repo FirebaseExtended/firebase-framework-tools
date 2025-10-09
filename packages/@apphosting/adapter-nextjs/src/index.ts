@@ -1,13 +1,14 @@
-import { generateBuildOutput, getAdapterMetadata, populateOutputBundleOptions, validateOutputDirectory } from "./utils.js";
-import { getBuildOptions } from "@apphosting/common/dist/index.js";
+import { generateBundleYaml, getAdapterMetadata, populateOutputBundleOptions } from "./utils.js";
 import type { NextAdapter } from "next";
+import { addRouteOverrides } from "./overrides.js";
+import { PHASE_PRODUCTION_BUILD } from "./constants.js";
 
 const adapter: NextAdapter = {
     name: '@apphosting/adapter-nextjs',
     // FEEDBACK: we need to be able to override user-defined config, before defaults injected
     //           it would be nice if this where a separate phase or callback
     async modifyConfig(config, { phase }) {
-        if (phase === 'phase-production-build') {
+        if (phase === PHASE_PRODUCTION_BUILD) {
             return {
                 ...config,
                 images: {
@@ -42,34 +43,28 @@ const adapter: NextAdapter = {
         return config;
     },
     async onBuildComplete(context) {
+
         const nextBuildDirectory = context.distDir;
+        
+        if (context.outputs.middleware?.config?.matchers) {
+            await addRouteOverrides(nextBuildDirectory, context.outputs.middleware.config.matchers);
+        }
+
+        // TODO standalone is not bundled yet...
         const outputBundleOptions = populateOutputBundleOptions(
             context.repoRoot,
             context.projectDir,
             nextBuildDirectory,
         );
 
-        if (context.outputs.middleware) {
-            throw new Error("Next.js middleware is not supported with the experimental App Hosting adapter.");
-        }
-
         const adapterMetadata = getAdapterMetadata();
 
         const root = process.cwd();
-        const opts = getBuildOptions();
         
         const nextjsVersion = process.env.FRAMEWORK_VERSION || context.nextVersion || "unspecified";
 
-        await generateBuildOutput(
-            root,
-            opts.projectDirectory,
-            outputBundleOptions,
-            nextBuildDirectory,
-            nextjsVersion,
-            adapterMetadata,
-        );
+        await generateBundleYaml(outputBundleOptions, root, nextjsVersion, adapterMetadata);
 
-        await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);
     },
 };
 

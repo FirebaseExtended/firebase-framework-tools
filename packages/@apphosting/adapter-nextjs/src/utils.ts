@@ -1,13 +1,18 @@
 import fsExtra from "fs-extra";
 import { join, dirname, relative, normalize } from "path";
 import { stringify as yamlStringify } from "yaml";
+import { createRequire } from "node:module";
 
 import {
   OutputBundleOptions,
   AdapterMetadata,
+  RoutesManifest,
 } from "./interfaces.js";
 import { OutputBundleConfig, updateOrCreateGitignore } from "@apphosting/common";
 import { fileURLToPath } from "url";
+
+import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
+import type { NextConfigComplete } from "next/dist/server/config-shared.js";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
@@ -18,6 +23,27 @@ export const isMain = (meta: ImportMeta): boolean => {
   if (!process.argv[1]) return false;
   return process.argv[1] === fileURLToPath(meta.url);
 };
+
+// Loads the user's next.config.js file.
+export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
+  // createRequire() gives us access to Node's CommonJS implementation of require.resolve()
+  // (https://nodejs.org/api/module.html#modulecreaterequirefilename).
+  // We use the require.resolve() resolution algorithm to get the path to the next config module,
+  // which may reside in the node_modules folder at a higher level in the directory structure
+  // (e.g. for monorepo projects).
+  // Note that ESM has an equivalent (https://nodejs.org/api/esm.html#importmetaresolvespecifier),
+  // but the feature is still experimental.
+  const require = createRequire(import.meta.url);
+  const configPath = require.resolve("next/dist/server/config.js", { paths: [projectRoot] });
+  // dynamically load NextJS so this can be used in an NPX context
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { default: nextServerConfig }: { default: typeof import("next/dist/server/config.js") } =
+    await import(configPath);
+
+  const loadConfig = nextServerConfig.default;
+  return await loadConfig(PHASE_PRODUCTION_BUILD, root);
+}
+
 
 /**
  * Provides the paths in the output bundle for the built artifacts.
@@ -49,6 +75,33 @@ export function populateOutputBundleOptions(
 }
 
 /**
+ * Loads the route manifest from the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @return The route manifest.
+ */
+export function loadRouteManifest(distDir: string): RoutesManifest {
+  const manifestPath = join(distDir, ROUTES_MANIFEST);
+  const json = readFileSync(manifestPath, "utf-8");
+  return JSON.parse(json) as RoutesManifest;
+}
+
+
+/**
+ * Writes the route manifest to the standalone directory.
+ * @param standalonePath The path to the standalone directory.
+ * @param distDir The path to the dist directory.
+ * @param customManifest The route manifest to write.
+ */
+export async function writeRouteManifest(
+  distDir: string,
+  customManifest: RoutesManifest,
+): Promise<void> {
+  const manifestPath = join(distDir, ROUTES_MANIFEST);
+  await writeFile(manifestPath, JSON.stringify(customManifest));
+}
+
+/**
  * Copy static assets and other resources into the standlone directory, also generates the bundle.yaml
  * @param rootDir The root directory of the uploaded source code.
  * @param outputBundleOptions The target location of built artifacts in the output bundle.
@@ -59,14 +112,11 @@ export async function generateBuildOutput(
   appDir: string,
   opts: OutputBundleOptions,
   nextBuildDirectory: string,
-  nextVersion: string,
-  adapterMetadata: AdapterMetadata,
 ): Promise<void> {
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
     copy(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
     copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
-    generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
   ]);
   // generateBundleYaml creates the output directory (if it does not already exist).
   // We need to make sure it is gitignored.
@@ -111,7 +161,7 @@ export function getAdapterMetadata(): AdapterMetadata {
 }
 
 // generate bundle.yaml
-async function generateBundleYaml(
+export async function generateBundleYaml(
   opts: OutputBundleOptions,
   cwd: string,
   nextVersion: string,
