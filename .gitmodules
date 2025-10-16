@@ -1,0 +1,18 @@
+[submodule "packages/googleapis"]
+	path = packages/googleapis
+	url = git@github.com:googleapis/googleapis.git
+[submodule "packages/envoy"]
+	path = packages/envoy
+	url = git@github.com:envoyproxy/envoy.git
+[submodule "packages/udpa"]
+	path = packages/udpa
+	url = git@github.com:cncf/udpa.git
+[submodule "packages/protobuf"]
+	path = packages/protobuf
+	url = git@github.com:protocolbuffers/protobuf.git
+[submodule "packages/protoc-gen-validate"]
+	path = packages/protoc-gen-validate
+	url = git@github.com:bufbuild/protoc-gen-validate.git
+[submodule "packages/xds"]
+	path = packages/xds
+	url = git@github.com:cncf/xds.git
