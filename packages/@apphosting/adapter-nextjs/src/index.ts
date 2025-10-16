@@ -58,6 +58,9 @@ const adapter: NextAdapter = {
             nextBuildDirectory,
         );
 
+        console.log(context.outputs.prerenders.filter(it => !!it.pprChain && it.config.renderingMode === "PARTIALLY_STATIC").map(it => it.pathname));
+        console.log(context.outputs);
+
         const adapterMetadata = getAdapterMetadata();
 
         const root = process.cwd();

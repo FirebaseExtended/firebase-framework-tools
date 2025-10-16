@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 import { getBuildOptions, runBuild } from "@apphosting/common";
-import { generateBuildOutput, getAdapterMetadata, loadConfig, populateOutputBundleOptions, validateOutputDirectory } from "../utils.js";
+import { generateBuildOutput, loadConfig, populateOutputBundleOptions, validateOutputDirectory } from "../utils.js";
 import { join } from "node:path";
 
 // Opt-out sending telemetry to Vercel

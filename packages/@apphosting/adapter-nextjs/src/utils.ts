@@ -13,6 +13,7 @@ import { fileURLToPath } from "url";
 
 import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
 import type { NextConfigComplete } from "next/dist/server/config-shared.js";
+import { execSync, spawnSync } from "node:child_process";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
@@ -102,7 +103,7 @@ export async function writeRouteManifest(
 }
 
 /**
- * Copy static assets and other resources into the standlone directory, also generates the bundle.yaml
+ * Copy static assets and other resources into the standalone directory, also generates the bundle.yaml
  * @param rootDir The root directory of the uploaded source code.
  * @param outputBundleOptions The target location of built artifacts in the output bundle.
  * @param nextBuildDirectory The location of the .next directory.
@@ -116,12 +117,13 @@ export async function generateBuildOutput(
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
     copy(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
-    copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
+    //copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
   ]);
   // generateBundleYaml creates the output directory (if it does not already exist).
   // We need to make sure it is gitignored.
   const normalizedBundleDir = normalize(relative(rootDir, opts.outputDirectoryBasePath));
   updateOrCreateGitignore(rootDir, [`/${normalizedBundleDir}/`]);
+  await copy(join(appDir, "node_modules/@apphosting/adapter-nextjs"), join(opts.outputDirectoryAppPath, "adapter"), { overwrite: true });
   return;
 }
 
@@ -135,7 +137,8 @@ async function copyResources(
   const appDirExists = await exists(appDir);
   if (!appDirExists) return;
   const pathsToCopy = await readdir(appDir);
-  for (const path of pathsToCopy) {
+  console.log(pathsToCopy);
+  await Promise.all(pathsToCopy.map(async (path) => {
     const isbundleYamlDir = join(appDir, path) === dirname(bundleYamlPath);
     const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
     // Keep apphosting.yaml files in the root directory still, as later steps expect them to be there
@@ -143,7 +146,7 @@ async function copyResources(
     if (!isbundleYamlDir && !existsInOutputBundle && !isApphostingYaml) {
       await copy(join(appDir, path), join(outputBundleAppDir, path));
     }
-  }
+  }));
   return;
 }
 
@@ -171,7 +174,7 @@ export async function generateBundleYaml(
   const outputBundle: OutputBundleConfig = {
     version: "v1",
     runConfig: {
-      runCommand: `node ${normalize(relative(cwd, opts.serverFilePath))}`,
+      runCommand: `cd ${normalize(relative(cwd, opts.outputDirectoryAppPath))} && node ./adapter/dist/bin/serve.cjs`,
     },
     metadata: {
       ...adapterMetadata,

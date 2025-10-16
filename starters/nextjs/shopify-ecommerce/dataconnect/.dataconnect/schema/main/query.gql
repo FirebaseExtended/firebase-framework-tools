@@ -38,7 +38,7 @@ extend type Query {
     first: Review_FirstRow
   ): Review @fdc_generated(from: "Review", purpose: QUERY_SINGLE)
   """
-  ✨ List `Product` objects in the table, optionally filtered by `where` conditions.
+  ✨ List `Product` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   products(
     """
@@ -60,9 +60,19 @@ extend type Query {
     Maximum number of rows to return (defaults to 100 rows).
     """
     limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Product_Having
   ): [Product!]! @fdc_generated(from: "Product", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `Review` objects in the table, optionally filtered by `where` conditions.
+  ✨ List `Review` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
   reviews(
     """
@@ -84,9 +94,19 @@ extend type Query {
     Maximum number of rows to return (defaults to 100 rows).
     """
     limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Review_Having
   ): [Review!]! @fdc_generated(from: "Review", purpose: QUERY_MULTIPLE)
   """
-  ✨ List `Product` objects ordered by vector similarity between the `descriptionEmbedding` field and `compare_embed`.
+  ✨ List `Product` objects and return selected fields, ordered by vector similarity between the `descriptionEmbedding` field and `compare_embed`.
   (Alternatively, `compare` can be used if the input is a raw Vector.)
   """
   products_descriptionEmbedding_similarity(
@@ -121,7 +141,7 @@ extend type Query {
     limit: Int = 100
   ): [Product!]! @fdc_generated(from: "Product.descriptionEmbedding", purpose: QUERY_MULTIPLE_BY_SIMILARITY)
   """
-  ✨ List `Product` objects ordered by vector similarity between the `nameEmbedding` field and `compare_embed`.
+  ✨ List `Product` objects and return selected fields, ordered by vector similarity between the `nameEmbedding` field and `compare_embed`.
   (Alternatively, `compare` can be used if the input is a raw Vector.)
   """
   products_nameEmbedding_similarity(
@@ -156,7 +176,7 @@ extend type Query {
     limit: Int = 100
   ): [Product!]! @fdc_generated(from: "Product.nameEmbedding", purpose: QUERY_MULTIPLE_BY_SIMILARITY)
   """
-  ✨ List `Review` objects ordered by vector similarity between the `contentEmbedding` field and `compare_embed`.
+  ✨ List `Review` objects and return selected fields, ordered by vector similarity between the `contentEmbedding` field and `compare_embed`.
   (Alternatively, `compare` can be used if the input is a raw Vector.)
   """
   reviews_contentEmbedding_similarity(

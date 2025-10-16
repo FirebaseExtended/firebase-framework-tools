@@ -9,6 +9,7 @@
   },
   "bin": {
     "apphosting-adapter-nextjs-build": "dist/bin/build.js",
+    "apphosting-adapter-nextjs-serve": "dist/bin/serve.js",
     "apphosting-adapter-nextjs-create": "dist/bin/create.js"
   },
   "author": {
@@ -21,7 +22,8 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "build": "rm -rf dist && tsc && chmod +x ./dist/bin/* && npx -y esbuild ./dist/index.js --bundle --format=cjs --platform=node --outfile=./dist/index.cjs",
+    "build:protos": "npx protoc  -I=../../../submodules/envoy/api -I=../../../submodules/googleapis -I=../../../submodules/udpa -I=../../../submodules/protobuf/src  -I=../../../submodules/protoc-gen-validate -I=../../../submodules/xds --plugin=\"$(pwd)/../../../node_modules/.bin/protoc-gen-ts_proto\" --ts_proto_out=./src/protos --ts_proto_opt=forceLong=string,esModuleInterop=true,outputServices=grpc-js ../../../submodules/envoy/api/envoy/service/ext_proc/v3/external_processor.proto && node ./clean_protos.cjs",
+    "build": "npm run build:protos && rm -rf dist && tsc && chmod +x ./dist/bin/* && npx -y esbuild ./dist/index.js --bundle --format=cjs --platform=node --outfile=./dist/index.cjs",
     "test": "npm run test:unit && npm run test:functional",
     "test:unit": "ts-mocha -p tsconfig.json 'src/**/*.spec.ts' 'src/*.spec.ts'",
     "test:functional": "node --loader ts-node/esm ./e2e/run-local.ts",
@@ -44,6 +46,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@apphosting/common": "*",
+    "@grpc/grpc-js": "^1.14.0",
     "fs-extra": "^11.1.1",
     "yaml": "^2.3.4"
   },
@@ -61,10 +64,12 @@
     "@types/tmp": "*",
     "mocha": "*",
     "next": "15.6.0-canary.54",
+    "protoc": "^32.1.0",
     "semver": "*",
     "tmp": "*",
     "ts-mocha": "*",
     "ts-node": "*",
+    "ts-proto": "^2.7.7",
     "typescript": "*",
     "verdaccio": "^5.30.3"
   }
