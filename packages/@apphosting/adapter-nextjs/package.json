@@ -22,8 +22,8 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "build:protos": "npx protoc  -I=../../../submodules/envoy/api -I=../../../submodules/googleapis -I=../../../submodules/udpa -I=../../../submodules/protobuf/src  -I=../../../submodules/protoc-gen-validate -I=../../../submodules/xds --plugin=\"$(pwd)/../../../node_modules/.bin/protoc-gen-ts_proto\" --ts_proto_out=./src/protos --ts_proto_opt=forceLong=string,esModuleInterop=true,outputServices=grpc-js ../../../submodules/envoy/api/envoy/service/ext_proc/v3/external_processor.proto && node ./clean_protos.cjs",
-    "build": "npm run build:protos && rm -rf dist && tsc && chmod +x ./dist/bin/* && npx -y esbuild ./dist/index.js --bundle --format=cjs --platform=node --outfile=./dist/index.cjs",
+    "build:protos": "npx buf generate && node ./clean_protos.cjs",
+    "build": "npm run build:protos && rm -rf dist && tsc && chmod +x ./dist/bin/* && npx -y esbuild ./dist/index.js --bundle --format=cjs --platform=node --outfile=./dist/index.cjs && npx -y esbuild ./src/bin/serve.ts --bundle --format=esm --platform=node --outfile=./dist/bin/serve.js --external:fastify --external:next",
     "test": "npm run test:unit && npm run test:functional",
     "test:unit": "ts-mocha -p tsconfig.json 'src/**/*.spec.ts' 'src/*.spec.ts'",
     "test:functional": "node --loader ts-node/esm ./e2e/run-local.ts",
@@ -46,7 +46,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@apphosting/common": "*",
+    "@connectrpc/connect": "^2.1.0",
     "@grpc/grpc-js": "^1.14.0",
+    "fastify": "^5.6.1",
     "fs-extra": "^11.1.1",
     "yaml": "^2.3.4"
   },
@@ -59,6 +61,10 @@
     }
   },
   "devDependencies": {
+    "@bufbuild/buf": "^1.58.0",
+    "@bufbuild/protobuf": "^2.9.0",
+    "@bufbuild/protoc-gen-es": "^2.9.0",
+    "@connectrpc/connect-fastify": "^2.1.0",
     "@types/fs-extra": "*",
     "@types/mocha": "*",
     "@types/tmp": "*",

@@ -124,6 +124,7 @@ export async function generateBuildOutput(
   const normalizedBundleDir = normalize(relative(rootDir, opts.outputDirectoryBasePath));
   updateOrCreateGitignore(rootDir, [`/${normalizedBundleDir}/`]);
   await copy(join(appDir, "node_modules/@apphosting/adapter-nextjs"), join(opts.outputDirectoryAppPath, "adapter"), { overwrite: true });
+  spawnSync("npm", ["i", "--omit=dev"], { shell: true, cwd: join(opts.outputDirectoryAppPath, "adapter")});
   return;
 }
 
@@ -174,7 +175,7 @@ export async function generateBundleYaml(
   const outputBundle: OutputBundleConfig = {
     version: "v1",
     runConfig: {
-      runCommand: `cd ${normalize(relative(cwd, opts.outputDirectoryAppPath))} && node ./adapter/dist/bin/serve.cjs`,
+      runCommand: `cd ${normalize(relative(cwd, opts.outputDirectoryAppPath))} && node ./adapter/dist/bin/serve.js`,
     },
     metadata: {
       ...adapterMetadata,
