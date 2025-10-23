@@ -68,7 +68,7 @@ export const ProtocolConfigurationSchema: GenMessage<ProtocolConfiguration> = /*
   messageDesc(file_envoy_service_ext_proc_v3_external_processor, 0);
 
 /**
- * This represents the different types of messages that Envoy can send
+ * This represents the different types of messages that the data plane can send
  * to an external processing server.
  * [#next-free-field: 12]
  *
@@ -157,7 +157,7 @@ export type ProcessingRequest = Message<"envoy.service.ext_proc.v3.ProcessingReq
    * The values of properties selected by the ``request_attributes``
    * or ``response_attributes`` list in the configuration. Each entry
    * in the list is populated from the standard
-   * :ref:`attributes <arch_overview_attributes>` supported across Envoy.
+   * :ref:`attributes <arch_overview_attributes>` supported in the data plane.
    *
    * @generated from field: map<string, google.protobuf.Struct> attributes = 9;
    */
@@ -197,7 +197,7 @@ export const ProcessingRequestSchema: GenMessage<ProcessingRequest> = /*@__PURE_
   messageDesc(file_envoy_service_ext_proc_v3_external_processor, 1);
 
 /**
- * This represents the different types of messages the server may send back to Envoy
+ * This represents the different types of messages the server may send back to the data plane
  * when the ``observability_mode`` field in the received ProcessingRequest is set to false.
  *
  * * If the corresponding ``BodySendMode`` in the
@@ -301,8 +301,8 @@ export type ProcessingResponse = Message<"envoy.service.ext_proc.v3.ProcessingRe
    * may use this to intelligently control how requests are processed
    * based on the headers and other metadata that they see.
    * This field is only applicable when servers responding to the header requests.
-   * If it is set in the response to the body or trailer requests, it will be ignored by Envoy.
-   * It is also ignored by Envoy when the ext_proc filter config
+   * If it is set in the response to the body or trailer requests, it will be ignored by the data plane.
+   * It is also ignored by the data plane when the ext_proc filter config
    * :ref:`allow_mode_override
    * <envoy_v3_api_field_extensions.filters.http.ext_proc.v3.ExternalProcessor.allow_mode_override>`
    * is set to false, or
@@ -317,16 +317,16 @@ export type ProcessingResponse = Message<"envoy.service.ext_proc.v3.ProcessingRe
   /**
    * When ext_proc server receives a request message, in case it needs more
    * time to process the message, it sends back a ProcessingResponse message
-   * with a new timeout value. When Envoy receives this response message,
-   * it ignores other fields in the response, just stop the original timer,
-   * which has the timeout value specified in
+   * with a new timeout value. When the data plane receives this response
+   * message, it ignores other fields in the response, just stop the original
+   * timer, which has the timeout value specified in
    * :ref:`message_timeout
    * <envoy_v3_api_field_extensions.filters.http.ext_proc.v3.ExternalProcessor.message_timeout>`
    * and start a new timer with this ``override_message_timeout`` value and keep the
-   * Envoy ext_proc filter state machine intact.
+   * data plane ext_proc filter state machine intact.
    * Has to be >= 1ms and <=
    * :ref:`max_message_timeout <envoy_v3_api_field_extensions.filters.http.ext_proc.v3.ExternalProcessor.max_message_timeout>`
-   * Such message can be sent at most once in a particular Envoy ext_proc filter processing state.
+   * Such message can be sent at most once in a particular data plane ext_proc filter processing state.
    * To enable this API, one has to set ``max_message_timeout`` to a number >= 1ms.
    *
    * @generated from field: google.protobuf.Duration override_message_timeout = 10;
@@ -440,14 +440,14 @@ export const HttpTrailersSchema: GenMessage<HttpTrailers> = /*@__PURE__*/
   messageDesc(file_envoy_service_ext_proc_v3_external_processor, 5);
 
 /**
- * This message is sent by the external server to Envoy after ``HttpHeaders`` was
+ * This message is sent by the external server to the data plane after ``HttpHeaders`` was
  * sent to it.
  *
  * @generated from message envoy.service.ext_proc.v3.HeadersResponse
  */
 export type HeadersResponse = Message<"envoy.service.ext_proc.v3.HeadersResponse"> & {
   /**
-   * Details the modifications (if any) to be made by Envoy to the current
+   * Details the modifications (if any) to be made by the data plane to the current
    * request/response.
    *
    * @generated from field: envoy.service.ext_proc.v3.CommonResponse response = 1;
@@ -463,14 +463,14 @@ export const HeadersResponseSchema: GenMessage<HeadersResponse> = /*@__PURE__*/
   messageDesc(file_envoy_service_ext_proc_v3_external_processor, 6);
 
 /**
- * This message is sent by the external server to Envoy after ``HttpBody`` was
+ * This message is sent by the external server to the data plane after ``HttpBody`` was
  * sent to it.
  *
  * @generated from message envoy.service.ext_proc.v3.BodyResponse
  */
 export type BodyResponse = Message<"envoy.service.ext_proc.v3.BodyResponse"> & {
   /**
-   * Details the modifications (if any) to be made by Envoy to the current
+   * Details the modifications (if any) to be made by the data plane to the current
    * request/response.
    *
    * @generated from field: envoy.service.ext_proc.v3.CommonResponse response = 1;
@@ -486,14 +486,14 @@ export const BodyResponseSchema: GenMessage<BodyResponse> = /*@__PURE__*/
   messageDesc(file_envoy_service_ext_proc_v3_external_processor, 7);
 
 /**
- * This message is sent by the external server to Envoy after ``HttpTrailers`` was
+ * This message is sent by the external server to the data plane after ``HttpTrailers`` was
  * sent to it.
  *
  * @generated from message envoy.service.ext_proc.v3.TrailersResponse
  */
 export type TrailersResponse = Message<"envoy.service.ext_proc.v3.TrailersResponse"> & {
   /**
-   * Details the modifications (if any) to be made by Envoy to the current
+   * Details the modifications (if any) to be made by the data plane to the current
    * request/response trailers.
    *
    * @generated from field: envoy.service.ext_proc.v3.HeaderMutation header_mutation = 1;
@@ -516,7 +516,7 @@ export const TrailersResponseSchema: GenMessage<TrailersResponse> = /*@__PURE__*
  */
 export type CommonResponse = Message<"envoy.service.ext_proc.v3.CommonResponse"> & {
   /**
-   * If set, provide additional direction on how the Envoy proxy should
+   * If set, provide additional direction on how the data plane should
    * handle the rest of the HTTP filter chain.
    *
    * @generated from field: envoy.service.ext_proc.v3.CommonResponse.ResponseStatus status = 1;
@@ -561,7 +561,7 @@ export type CommonResponse = Message<"envoy.service.ext_proc.v3.CommonResponse">
    * Clear the route cache for the current client request. This is necessary
    * if the remote server modified headers that are used to calculate the route.
    * This field is ignored in the response direction. This field is also ignored
-   * if the Envoy ext_proc filter is in the upstream filter chain.
+   * if the data plane ext_proc filter is in the upstream filter chain.
    *
    * @generated from field: bool clear_route_cache = 5;
    */
@@ -735,7 +735,7 @@ export const HeaderMutationSchema: GenMessage<HeaderMutation> = /*@__PURE__*/
  */
 export type StreamedBodyResponse = Message<"envoy.service.ext_proc.v3.StreamedBodyResponse"> & {
   /**
-   * The body response chunk that will be passed to the upstream/downstream by Envoy.
+   * The body response chunk that will be passed to the upstream/downstream by the data plane.
    *
    * @generated from field: bytes body = 1;
    */
@@ -759,7 +759,7 @@ export const StreamedBodyResponseSchema: GenMessage<StreamedBodyResponse> = /*@_
   messageDesc(file_envoy_service_ext_proc_v3_external_processor, 13);
 
 /**
- * This message specifies the body mutation the server sends to Envoy.
+ * This message specifies the body mutation the server sends to the data plane.
  *
  * @generated from message envoy.service.ext_proc.v3.BodyMutation
  */
@@ -817,22 +817,24 @@ export const BodyMutationSchema: GenMessage<BodyMutation> = /*@__PURE__*/
  * as part of a filter chain.
  * The overall external processing protocol works like this:
  *
- * 1. Envoy sends to the service information about the HTTP request.
- * 2. The service sends back a ProcessingResponse message that directs Envoy
- *    to either stop processing, continue without it, or send it the
- *    next chunk of the message body.
- * 3. If so requested, Envoy sends the server the message body in chunks,
- *    or the entire body at once. In either case, the server may send back
- *    a ProcessingResponse for each message it receives, or wait for certain amount
- *    of body chunks received before streams back the ProcessingResponse messages.
- * 4. If so requested, Envoy sends the server the HTTP trailers,
+ * 1. The data plane sends to the service information about the HTTP request.
+ * 2. The service sends back a ProcessingResponse message that directs
+ *    the data plane to either stop processing, continue without it, or send
+ *    it the next chunk of the message body.
+ * 3. If so requested, the data plane sends the server the message body in
+ *    chunks, or the entire body at once. In either case, the server may send
+ *    back a ProcessingResponse for each message it receives, or wait for
+ *    a certain amount of body chunks received before streaming back the
+ *    ProcessingResponse messages.
+ * 4. If so requested, the data plane sends the server the HTTP trailers,
  *    and the server sends back a ProcessingResponse.
  * 5. At this point, request processing is done, and we pick up again
- *    at step 1 when Envoy receives a response from the upstream server.
+ *    at step 1 when the data plane receives a response from the upstream
+ *    server.
  * 6. At any point above, if the server closes the gRPC stream cleanly,
- *    then Envoy proceeds without consulting the server.
+ *    then the data plane proceeds without consulting the server.
  * 7. At any point above, if the server closes the gRPC stream with an error,
- *    then Envoy returns a 500 error to the client, unless the filter
+ *    then the data plane returns a 500 error to the client, unless the filter
  *    was configured to ignore errors.
  *
  * In other words, the process is a request/response conversation, but
@@ -843,7 +845,7 @@ export const BodyMutationSchema: GenMessage<BodyMutation> = /*@__PURE__*/
  */
 export const ExternalProcessor: GenService<{
   /**
-   * This begins the bidirectional stream that Envoy will use to
+   * This begins the bidirectional stream that the data plane will use to
    * give the server control over what the filter does. The actual
    * protocol is described by the ProcessingRequest and ProcessingResponse
    * messages below.

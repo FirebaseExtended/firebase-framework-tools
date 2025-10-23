@@ -149,8 +149,7 @@ export enum ProcessingMode_BodySendMode {
   NONE = 0,
 
   /**
-   * Stream the body to the server in pieces as they arrive at the
-   * proxy.
+   * Stream the body to the server in pieces as they are seen.
    *
    * @generated from enum value: STREAMED = 1;
    */

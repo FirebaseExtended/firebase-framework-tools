@@ -7,8 +7,9 @@ const adapter: NextAdapter = {
     name: '@apphosting/adapter-nextjs',
     // FEEDBACK: we need to be able to override user-defined config, before defaults injected
     //           it would be nice if this where a separate phase or callback
-    async modifyConfig(config, { phase }) {
-        if (phase === PHASE_PRODUCTION_BUILD) {
+    async modifyConfig(config, context) {
+        console.log(JSON.stringify(context));
+        if (context.phase === PHASE_PRODUCTION_BUILD) {
             return {
                 ...config,
                 images: {
@@ -58,8 +59,7 @@ const adapter: NextAdapter = {
             nextBuildDirectory,
         );
 
-        console.log(context.outputs.prerenders.filter(it => !!it.pprChain && it.config.renderingMode === "PARTIALLY_STATIC").map(it => it.pathname));
-        console.log(context.outputs);
+        console.log(JSON.stringify(context));
 
         const adapterMetadata = getAdapterMetadata();
 

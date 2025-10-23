@@ -3,18 +3,25 @@ import { readFileSync } from "node:fs";
 import { ServerResponse, IncomingMessage } from "node:http";
 import { join } from "node:path";
 import fastify from "fastify";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { parse } from "node:url";
 
 import { CommonResponse_ResponseStatus, ExternalProcessor } from "../protos/envoy/service/ext_proc/v3/external_processor_pb.js"
 import { fastifyConnectPlugin } from "@connectrpc/connect-fastify";
 
 import type { Http2ServerRequest, Http2ServerResponse } from "node:http2";
-import { HeaderMap, HeaderValue } from "../protos/envoy/config/core/v3/base_pb.js";
+import { HeaderValue } from "../protos/envoy/config/core/v3/base_pb.js";
 import { Socket } from "node:net";
+import { PassThrough } from "node:stream";
 
 const dir = join(process.cwd(), process.argv[2] || ".next/standalone");
 
 const port = parseInt(process.env.PORT!, 10) || 3000
 const hostname = process.env.HOSTNAME || '0.0.0.0'
+
+// @ts-ignore
+globalThis.self = globalThis;
+globalThis.AsyncLocalStorage = AsyncLocalStorage;
 
 // @ts-ignore
 process.env.NODE_ENV = "production";
@@ -44,8 +51,6 @@ if (
   keepAliveTimeout = undefined
 }
 
-const minimalMode = !!process.env.FAH_MINIMAL_MODE;
-
 const resolveNextServer = import(join(dir, "node_modules/next/dist/server/next-server.js")).then(async ({ default: NextServer }) => {
   const server = new NextServer.default({
     conf,
@@ -53,15 +58,11 @@ const resolveNextServer = import(join(dir, "node_modules/next/dist/server/next-s
     dir,
     hostname, 
     port,
-    minimalMode,
+    minimalMode: true,
   });
   await server.prepare();
   return server;
 });
-
-// TODO spin up NodeJS middleware as a GRPC service
-
-// TODO spin up PPR resumption as a GRPC service
 
 async function injectAppHostingHeaders(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== 'GET' && req.method !== 'HEAD') return;
@@ -70,13 +71,14 @@ async function injectAppHostingHeaders(req: IncomingMessage, res: ServerResponse
   // TODO import the type from NextJS
   const { NEXT_REQUEST_META } = await import(join(dir, "node_modules/next/dist/server/request-meta.js"));
   const metadata = (req as any)[NEXT_REQUEST_META];
-  // TODO investigate if there's a better / more stable way to get the postpone token
+  // TODO use a stable API to get the reumption token
   const cacheEntry = await metadata.incrementalCache.get(metadata.match.definition.pathname, { kind: metadata.match.definition.kind, isRoutePPREnabled: true });
   res.appendHeader('x-fah-postponed', Buffer.from(cacheEntry.value.postponed).toString('base64url'));
 }
 
 async function requestHandle(req: IncomingMessage, res: ServerResponse) {
-    if (minimalMode) {
+    const isPPR = req.url === "/";
+    if (isPPR) {
       const originalWrite = res.write.bind(res);
       let resolveHeaders: Promise<void> | undefined;
       // We need to append our headers before the body starts getting written
@@ -98,47 +100,57 @@ async function requestHandle(req: IncomingMessage, res: ServerResponse) {
         return res;
       };
     }
-    return (await resolveNextServer).getRequestHandler()(req, res);
+    const parsedUrl = parse(req.url!, true);
+    const nextServer = await resolveNextServer;
+    return nextServer.getRequestHandler()(req, res, parsedUrl);
 };
 
 const USING_CALLOUTS = !!process.env.FAH_USING_CALLOUTS;
+const SERVE_H2C = !!process.env.FAH_SERVE_H2C;
 const commonFastifyOptions = { }; 
-let httpServer;
+const httpServer = fastify({ http2: SERVE_H2C, ...commonFastifyOptions } as {});
 
 if (USING_CALLOUTS) {
 
-  httpServer = fastify({ http2: true, ...commonFastifyOptions });
-
-  await httpServer.register(fastifyConnectPlugin, {
+  const grpcServer = fastify({ http2: true, ...commonFastifyOptions } as {});
+  
+  await grpcServer.register(fastifyConnectPlugin, {
     routes: (router) => router.service(ExternalProcessor, {
       process: async function *processCallouts(callouts) {
         let requestHeaders: HeaderValue[] = [];
-        let resolveResumeResponse: Promise<ServerResponse>|undefined;
-        let resumeSocket: Socket;
+        let resolveResumeBuffer: Promise<PassThrough>|undefined;
+        let path: string|undefined = undefined;
+        const getRequestHeader = (key: string) => {
+          const header = requestHeaders.find((it) => it.key === key);
+          if (header) return header.value || new TextDecoder().decode(header.rawValue);
+          return undefined;
+        }
         for await (const callout of callouts) {
           switch (callout.request.case) {
             case "requestHeaders": {
               requestHeaders = callout.request.value.headers?.headers || [];
-              break;
+              path = getRequestHeader(":path");
+              if (!callout.request.value.endOfStream) break;
             }
             case "requestBody": {
               // TODO make a converter to a fetch request, make a helper to extract these headers
-              const path = requestHeaders.find((it) => it.key === ":path")?.value || "/";
-              const method = requestHeaders.find((it) => it.key === ":method")?.value || "GET";
-              const referrer = requestHeaders.find((it) => it.key === "referer")?.value;
-              const authority = requestHeaders.find((it) => it.key === ":authority")?.value || hostname;
-              if (!matchers.some(it => path.match(it))) break;
+              const method = getRequestHeader(":method")!;
+              const scheme = getRequestHeader(":scheme")!;
+              const referrer = getRequestHeader("referer");
+              const authority = getRequestHeader(":authority")!;
+              if (!matchers.some(it => path?.match(it))) break;
               // middleware is intended for v8 isolates, with the fetch api
               const middlewareRequest = {
-                  url: `http://${authority}${path}`, // TODO look into using authority
+                  url: `${scheme}://${authority}${path}`,
                   method,
                   // filter out http2 pseudo-headers, next chokes on these
-                  headers: Object.fromEntries(requestHeaders.filter((it) => !it.key.startsWith(":")).map((it) => [it.key, it.value]) || []),
+                  headers: Object.fromEntries(requestHeaders.filter((it) => !it.key.startsWith(":")).map((it) => [it.key, it.value || new TextDecoder().decode(it.rawValue)]) || []),
                   // keepalive: req.keepalive,
                   destination: 'document',
                   credentials: 'same-origin',
                   bodyUsed: false,
-                  body: callout.request.value.body, // TODO handle endOfStream
+                  // @ts-ignore
+                  body: callout.request.case === "requestBody" ? callout.request.value.body : undefined,
                   mode: "navigate",
                   redirect: "follow",
                   referrer,
@@ -146,24 +158,17 @@ if (USING_CALLOUTS) {
               const middleware = await resolveMiddleware;
               let middlewareResponse: Response;
               try {
-                middlewareResponse = await middleware.default({ request: middlewareRequest });
+                const result = await middleware.default.default({ request: middlewareRequest });
+                await result.waitUntil;
+                middlewareResponse = result.response;
               } catch (err) {
                 console.error("Middleware execution failed:", err);
                 yield {
                   response: {
-                    case: "requestBody",
+                    case: "immediateResponse",
                     value: {
-                      response: {
-                        status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
-                        bodyMutation: { body: Buffer.from("Internal Server Error") },
-                        end_stream: true,
-                        headerMutation: {
-                          setHeaders: [
-                            { header: { key: ":status", value: "500" } },
-                          ]
-                        },
-                      },
-                      
+                      status: { code: 500 },
+                      body: Uint8Array.from(Buffer.from("Internal Server Error")),
                     },
                   },
                 };
@@ -174,39 +179,26 @@ if (USING_CALLOUTS) {
               delete middlewareResponseHeaders["x-middleware-next"]; // Clean up middleware-specific header, TODO clean up other headers
 
               // Convert the Fetch Headers object to the { key, value } array Envoy expects
-              const responseHeaders = Object.entries(middlewareResponseHeaders).map(([key, value]) => ({
-                header: { key, value },
+              const setHeaders = Object.entries(middlewareResponseHeaders).map(([key, value]) => ({
+                header: { key, rawValue: Uint8Array.from(Buffer.from(value)) },
               }));
 
-              // This tells Envoy to STOP processing and send this response immediately.
               yield {
                 response: {
-                  case: "requestBody", // We are responding to the requestHeaders callout
+                  case: "immediateResponse",
                   value: {
-                    response: {
-                      status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
-                      headerMutation: {
-                        setHeaders: [
-                          ...responseHeaders, // Set the headers from the middleware
-                          { header: { key: ":status", value: middlewareResponse.status.toString() } },
-                        ]
-                      },
-                      bodyMutation: {
-                        mutation: {
-                          case: 'body',
-                          // TODO stream over the body and yield
-                          value: Uint8Array.from(Buffer.from(await middlewareResponse.text()))
-                        },
-                      },
-                      end_stream: true
+                    status: { code: middlewareResponse.status },
+                    headers: {
+                      setHeaders
                     },
+                    body: Uint8Array.from(Buffer.from(await middlewareResponse.text())),
                   },
-                },
+                }
               }
-              break;
+              continue;
             }
             case "responseHeaders": {
-              const postponedToken = callout.request.value.headers?.headers.find((it) => it.key === "x-fah-postponed")?.value;
+              const postponedToken = callout.request.value.headers?.headers.find((it) => it.key === "x-fah-postponed")?.rawValue;
               if (!postponedToken) break;
               yield {
                 response: {
@@ -216,7 +208,7 @@ if (USING_CALLOUTS) {
                       status: CommonResponse_ResponseStatus.CONTINUE,
                       headerMutation: {
                         setHeaders: [
-                          { header: { key: "transfer-encoding", value: "chunked" } },
+                          { header: { key: "transfer-encoding", rawValue: Uint8Array.from(Buffer.from("chunked")) } },
                         ],
                         removeHeaders: ["x-fah-postponed", "content-length"],
                       },
@@ -224,71 +216,138 @@ if (USING_CALLOUTS) {
                   },
                 },
               }
-              const nextServer = await resolveNextServer;
-              resumeSocket = new Socket();
-              const resumeRequest = new IncomingMessage(resumeSocket);
-              resumeRequest.url = `/_next/postponed/resume${requestHeaders.find((it) => it.key === ":path")?.value || "/"}`;
-              resumeRequest.method = "POST";
-              for (const header in requestHeaders) {
-                if (header.startsWith(":")) continue; // drop HTTP2 pseudo headers
-                resumeRequest.headers[header] = requestHeaders[header].value;
-              }
-              const resumeResponse = new ServerResponse(resumeRequest);
-              resolveResumeResponse = nextServer.getRequestHandler()(resumeRequest, resumeResponse).then(() => resumeResponse);
-              resumeSocket.write(Uint8Array.from(Buffer.from(postponedToken, "base64url")));
-              resumeSocket.end();
+              
+              resolveResumeBuffer = new Promise<PassThrough>(async (resolve) => {
+                const socket = new Socket();
+                const resumeRequest = new IncomingMessage(socket);
+                const postponed = Buffer.from(new TextDecoder().decode(postponedToken), "base64url").toString();
+
+                const resumePath = `/_next/postponed/resume${path === "/" ? "/index" : path}`;
+                resumeRequest.url = resumePath;
+                resumeRequest.method = "POST";
+                resumeRequest.httpVersion = "1.1";
+                resumeRequest.httpVersionMajor = 1;
+                resumeRequest.httpVersionMinor = 1;
+                resumeRequest.push(postponed.trim());
+                resumeRequest.push(null);
+
+                for (const header of requestHeaders) {
+                  // drop HTTP2 pseudo headers
+                  if (header.key.startsWith(":")) continue;
+                  resumeRequest.headers[header.key] = getRequestHeader(header.key);
+                }
+                resumeRequest.headers['x-matched-path'] = resumePath;
+                resumeRequest.headers['next-resume'] = "1";
+                
+                const resumeResponse = new ServerResponse(resumeRequest);
+                const intermediaryStream = new PassThrough();
+                
+                resumeResponse.write = (data) => {
+                  const result = intermediaryStream.push(data);
+                  if (!result) intermediaryStream.on("drain", () => resumeResponse.emit("drain"));
+                  return result;
+                };
+
+                resumeResponse.end = (data) => {
+                  if (data) intermediaryStream.push(data);
+                  intermediaryStream.end();
+                  return resumeResponse;
+                }
+              
+                const nextServer = await resolveNextServer;
+                const parsedUrl = parse(resumePath, true);
+                nextServer.getRequestHandler()(resumeRequest, resumeResponse, parsedUrl);
+                resolve(intermediaryStream);
+              }).catch((e) => {
+                console.error(e);
+                // TODO figure out how to tell react we crashed and need to client render
+                const intermediaryStream = new PassThrough();
+                return intermediaryStream;
+              });
+              
               continue;
             }
             case "responseBody": {
-              if (!resolveResumeResponse) break;
+              //if (!resolveResumeBuffer) break;
+              const end_stream = !resolveResumeBuffer && callout.request.value.endOfStream;
+
+              // OK now that we're duplex streaming, we need to replace everythign with a stream
+              // TODO look into switching mode for PPR
+              const body = callout.request.value.body;
               yield {
                 response: {
                   case: "responseBody",
                   value: {
                     response: {
                       status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
-                      bodyMutation: { body: callout.request.value.body },
-                      end_stream: false,
+                      bodyMutation: { mutation: { case: 'streamedResponse', value: { body, endOfStream: end_stream } } },
+                      end_stream,
                     },
                   },
                 },
               };
+
               if (!callout.request.value.endOfStream) continue;
-              for await (const body of resumeSocket!) {
+
+              const resumeBuffer = await resolveResumeBuffer!;
+              resolveResumeBuffer = undefined;
+
+              for await (const body of resumeBuffer) {
                 yield {
                   response: {
                     case: "responseBody",
                     value: {
                       response: {
                         status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
-                        bodyMutation: { body },
+                        bodyMutation: { mutation: { case: 'streamedResponse', value: { body, endOfStream: false } } },
                         end_stream: false,
                       },
                     },
                   },
-                }
+                };
               }
+
               yield {
                 response: {
                   case: "responseBody",
                   value: {
                     response: {
                       status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
-                      bodyMutation: { body: Buffer.alloc(0) },
+                      bodyMutation: { mutation: { case: 'streamedResponse', value: { body: Buffer.alloc(0), endOfStream: true } } },
                       end_stream: true,
                     },
                   },
                 },
-              }
+              };
               continue;
             }
           }
-          yield {};
+          const empty = {};
+          yield { 
+            response: {
+              case: callout.request.case,
+              value: {
+                response: {
+                  status: CommonResponse_ResponseStatus.CONTINUE,
+                }
+              }
+            }
+          } as (typeof empty);
         }
       }
     }),
   });
 
+  await grpcServer.ready();
+
+  grpcServer.listen({ host: hostname, port: port+1 }, (err, address) => {
+    if (err) return console.error(err);
+    console.log(`RPC listening on ${address}`);
+  });
+
+}
+
+if (SERVE_H2C) {
 
   /**
    * Creates a mock http.IncomingMessage from an http2.Http2ServerRequest.
@@ -448,16 +507,15 @@ if (USING_CALLOUTS) {
     return mockRes;
   }
 
-
   httpServer.all("*", function(fastifyRequest, fastifyReply) {
+    // @ts-ignore
     const req = createMockIncomingMessage(fastifyRequest.raw);
+    // @ts-ignore
     const res = createMockServerResponse(fastifyRequest.raw, fastifyReply.raw);
     requestHandle(req, res);
   });
 
 } else {
-
-  httpServer = fastify({ ...commonFastifyOptions });
 
   httpServer.all("*", function(fastifyRequest, fastifyReply) {
     requestHandle(fastifyRequest.raw, fastifyReply.raw);
@@ -469,5 +527,5 @@ await httpServer.ready();
 
 httpServer.listen({ host: hostname, port, }, (err, address) => {
   if (err) return console.error(err);
-  console.log(`Server listening on ${address}`);
+  console.log(`NextJS listening on ${address}`);
 });
