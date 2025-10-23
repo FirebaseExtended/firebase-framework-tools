@@ -13,7 +13,7 @@ import { fileURLToPath } from "url";
 
 import { PHASE_PRODUCTION_BUILD, ROUTES_MANIFEST } from "./constants.js";
 import type { NextConfigComplete } from "next/dist/server/config-shared.js";
-import { execSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
@@ -114,11 +114,16 @@ export async function generateBuildOutput(
   opts: OutputBundleOptions,
   nextBuildDirectory: string,
 ): Promise<void> {
-  const staticDirectory = join(nextBuildDirectory, "static");
-  await Promise.all([
-    copy(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
-    //copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
-  ]);
+  const minimalMode = !!process.env.FAH_MINIMAL_MODE;
+  if (!minimalMode) {
+    const staticDirectory = join(nextBuildDirectory, "static");
+    const publicDirectory = join(appDir, "public");
+    await Promise.all([
+      copy(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
+      copy(publicDirectory, opts.outputPublicDirectoryPath, { overwrite: true }).catch(() => undefined),
+      //copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
+    ]);
+  }
   // generateBundleYaml creates the output directory (if it does not already exist).
   // We need to make sure it is gitignored.
   const normalizedBundleDir = normalize(relative(rootDir, opts.outputDirectoryBasePath));
@@ -172,10 +177,11 @@ export async function generateBundleYaml(
   adapterMetadata: AdapterMetadata,
 ): Promise<void> {
   await ensureDir(opts.outputDirectoryBasePath);
+  const path = normalize(relative(cwd, join(opts.outputDirectoryAppPath)));
   const outputBundle: OutputBundleConfig = {
     version: "v1",
     runConfig: {
-      runCommand: `cd ${normalize(relative(cwd, opts.outputDirectoryAppPath))} && node ./adapter/dist/bin/serve.js`,
+      runCommand: `node ${join(path, "adapter", "dist", "bin", "serve.js")} ${path}`,
     },
     metadata: {
       ...adapterMetadata,

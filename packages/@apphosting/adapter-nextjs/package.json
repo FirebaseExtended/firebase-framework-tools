@@ -46,8 +46,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@apphosting/common": "*",
-    "@connectrpc/connect": "^2.1.0",
-    "@grpc/grpc-js": "^1.14.0",
     "fastify": "^5.6.1",
     "fs-extra": "^11.1.1",
     "yaml": "^2.3.4"
@@ -61,6 +59,7 @@
     }
   },
   "devDependencies": {
+    "@connectrpc/connect": "^2.1.0",
     "@bufbuild/buf": "^1.58.0",
     "@bufbuild/protobuf": "^2.9.0",
     "@bufbuild/protoc-gen-es": "^2.9.0",
