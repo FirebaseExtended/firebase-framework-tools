@@ -13,35 +13,46 @@ import { HeaderValue } from "../protos/envoy/config/core/v3/base_pb.js";
 import { Socket } from "node:net";
 import { PassThrough } from "node:stream";
 
+// The standalone directory is the root of the Next.js application.
 const dir = join(process.cwd(), process.argv[2] || ".next/standalone");
 
+// Standard NodeJS HTTP server port and hostname.
 const port = parseInt(process.env.PORT!, 10) || 3000
 const hostname = process.env.HOSTNAME || '0.0.0.0'
 
+// Polyfill for the `self` global object, used by Next.js in minimal mode.
 // @ts-ignore
 globalThis.self = globalThis;
+// Polyfill for the `AsyncLocalStorage` global object, used by Next.js in minimal mode.
 globalThis.AsyncLocalStorage = AsyncLocalStorage;
 
+// Required by Next.js in minimal mode.
 // @ts-ignore
 process.env.NODE_ENV = "production";
 
+// Allow the keep-alive timeout to be configured.
 let keepAliveTimeout: number | undefined = parseInt(process.env.KEEP_ALIVE_TIMEOUT!, 10);
 
+// Load the Next.js configuration from the standalone directory.
 const conf = JSON.parse(readFileSync(join(dir, ".next", "required-server-files.json"), "utf-8")).config;
 
+// Pass the Next.js configuration to the Next.js server.
 process.env.__NEXT_PRIVATE_STANDALONE_CONFIG = JSON.stringify(conf);
 
+// Increase the max listeners to prevent warnings when many requests are in-flight.
 process.setMaxListeners(1_000);
 
+// Dynamically import the Next.js middleware.
 const resolveMiddleware = import(join(dir, ".next/server/middleware.js"));
 
-// TODO don't hardcode
+// TODO don't hardcode these matchers, they should be derived from the build output.
 const matchers = [
   '/about/:path*',
   '/((?!_next|firebase|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
   '/private/:path*',
 ].map(it => new RegExp(it));
 
+// If the keep-alive timeout is not a valid number, use the default.
 if (
   Number.isNaN(keepAliveTimeout) ||
   !Number.isFinite(keepAliveTimeout) ||
@@ -50,6 +61,7 @@ if (
   keepAliveTimeout = undefined
 }
 
+// Initialize the Next.js server in minimal mode.
 const resolveNextServer = import(join(dir, "node_modules/next/dist/server/next-server.js")).then(async ({ default: NextServer }) => {
   const server = new NextServer.default({
     conf,
@@ -63,6 +75,16 @@ const resolveNextServer = import(join(dir, "node_modules/next/dist/server/next-s
   return server;
 });
 
+/**
+ * Injects App Hosting specific headers into the response.
+ *
+ * This is used to communicate the postponed state of a page to the App Hosting backend.
+ * The backend will then use this information to resume the request when the page is
+ * ready.
+ *
+ * @param req The incoming request.
+ * @param res The server response.
+ */
 async function injectAppHostingHeaders(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== 'GET' && req.method !== 'HEAD') return;
   if (!res.getHeaderNames().includes('x-nextjs-postponed')) return;
@@ -75,9 +97,31 @@ async function injectAppHostingHeaders(req: IncomingMessage, res: ServerResponse
   res.appendHeader('x-fah-postponed', Buffer.from(cacheEntry.value.postponed).toString('base64url'));
 }
 
+/**
+ * Handles incoming HTTP requests.
+ *
+ * This function is the entry point for all HTTP requests. It is responsible for
+ * proxying requests to the Next.js server and for handling PPR (Partial Prerendering)
+ * requests.
+ *
+ * @param req The incoming request.
+ * @param res The server response.
+ */
 async function requestHandle(req: IncomingMessage, res: ServerResponse) {
+    // This is a temporary workaround to enable PPR for the home page.
     const isPPR = req.url === "/";
     if (isPPR) {
+      /**
+       * This is a critical interception. The Next.js server (`getRequestHandler`)
+       * takes full control of the `ServerResponse` object and doesn't provide
+       * a simple "beforeWrite" hook.
+       *
+       * To inject our `x-fah-postponed` header *before* Next.js sends the
+       * first body chunk, we must monkey-patch `res.write` and `res.end`.
+       * We wrap them in a promise (`resolveHeaders`) to ensure our
+       * `injectAppHostingHeaders` function runs exactly once before any
+       * data is sent to the client.
+       */
       const originalWrite = res.write.bind(res);
       let resolveHeaders: Promise<void> | undefined;
       // We need to append our headers before the body starts getting written
@@ -104,25 +148,60 @@ async function requestHandle(req: IncomingMessage, res: ServerResponse) {
     return nextServer.getRequestHandler()(req, res, parsedUrl);
 };
 
-
+/**
+ * The gRPC server that handles Envoy's external processing requests.
+ *
+ * This server is responsible for handling all gRPC requests from Envoy. It is
+ * used to implement middleware and to resume PPR requests.
+ */
 const grpcServer = fastify({ http2: true } as {});
 
 await grpcServer.register(fastifyConnectPlugin, {
   routes: (router) => router.service(ExternalProcessor, {
+    /**
+     * The `process` function is the entry point for all gRPC requests.
+     *
+     * It is a bidirectional streaming RPC that allows the data plane to send
+     * information about the HTTP request to the service and for the service to
+     * send back a `ProcessingResponse` message that directs the data plane on
+     * how to handle the request.
+     * 
+     * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto
+     *
+     * @param callouts The stream of `ProcessingRequest` messages from the data plane.
+     */
     process: async function *processCallouts(callouts) {
       let requestHeaders: HeaderValue[] = [];
       let resolveResumeBuffer: Promise<PassThrough>|undefined;
       let path: string|undefined = undefined;
+      // For whatever reason the header.value is always an empty string at least with
+      // my local version of envoy. I have to decode the rawValue every time
       const getRequestHeader = (key: string) => {
         const header = requestHeaders.find((it) => it.key === key);
         if (header) return header.value || new TextDecoder().decode(header.rawValue);
         return undefined;
       }
       for await (const callout of callouts) {
+        console.log(callout);
         switch (callout.request.case) {
           case "requestHeaders": {
             requestHeaders = callout.request.value.headers?.headers || [];
+            // TODO look at the callout attributes, can we send thing like path
+            //      so we don't have to parse from the pseudo headers
             path = getRequestHeader(":path");
+            /** 
+             * `requestHeaders` is the first callout we get. If `endOfStream` is
+             * true, it's a `GET` (or other body-less request), and we can run
+             * the middleware logic immediately. When there is no body
+             * `requestBody` would not otherwise be called.
+             *
+             * We do this by *intentionally falling through* to the `requestBody`
+             * case below, which contains our unified middleware logic.
+             *
+             * If `endOfStream` is false (e.g., a `POST`), we `break` and wait
+             * for the `requestBody` callout to arrive, which will then
+             * execute the *same* logic block.
+             */
             if (!callout.request.value.endOfStream) break;
           }
           case "requestBody": {
@@ -131,8 +210,14 @@ await grpcServer.register(fastifyConnectPlugin, {
             const scheme = getRequestHeader(":scheme")!;
             const referrer = getRequestHeader("referer");
             const authority = getRequestHeader(":authority")!;
+  
+            // If the path does not match any of the middleware matchers, we can
+            // skip the middleware execution.
             if (!matchers.some(it => path?.match(it))) break;
-            // middleware is intended for v8 isolates, with the fetch api
+
+            // Next.js middleware is intended for v8 isolates, with the fetch api.
+            // We construct a Fetch API compliant request object to pass to the
+            // middleware.
             const middlewareRequest = {
                 url: `${scheme}://${authority}${path}`,
                 method,
@@ -167,6 +252,9 @@ await grpcServer.register(fastifyConnectPlugin, {
               };
               continue;
             }
+            // If the middleware returns a response with the `x-middleware-next`
+            // header, it means we should continue processing the request as if
+            // the middleware was not there.
             if (middlewareResponse.headers.has("x-middleware-next")) break;
             const middlewareResponseHeaders = Object.fromEntries(middlewareResponse.headers);
             delete middlewareResponseHeaders["x-middleware-next"]; // Clean up middleware-specific header, TODO clean up other headers
@@ -176,6 +264,8 @@ await grpcServer.register(fastifyConnectPlugin, {
               header: { key, rawValue: Uint8Array.from(Buffer.from(value)) },
             }));
 
+            // If the middleware returns a response, we send it back to the client
+            // and stop processing the request.
             yield {
               response: {
                 case: "immediateResponse",
@@ -191,8 +281,14 @@ await grpcServer.register(fastifyConnectPlugin, {
             continue;
           }
           case "responseHeaders": {
+            // This is where we handle PPR resumption.
+            // If the response has a `x-fah-postponed` header, it means the page
+            // is in a postponed state and we need to resume it.
             const postponedToken = callout.request.value.headers?.headers.find((it) => it.key === "x-fah-postponed")?.rawValue;
             if (!postponedToken) break;
+            // We tell Envoy to continue processing the request, but we also
+            // modify the headers to indicate that the response is chunked and
+            // to remove the `x-fah-postponed` and `content-length` headers.
             yield {
               response: {
                 case: "responseHeaders",
@@ -210,11 +306,17 @@ await grpcServer.register(fastifyConnectPlugin, {
               },
             }
             
+            // We then kick off the resume request, so it's happening in parallel to the GET's
+            // body being sent to the client. Buffer it up.
             resolveResumeBuffer = new Promise<PassThrough>(async (resolve) => {
               const socket = new Socket();
               const resumeRequest = new IncomingMessage(socket);
               const postponed = Buffer.from(new TextDecoder().decode(postponedToken), "base64url").toString();
 
+              // We construct a new request to the Next.js server to resume the
+              // postponed page.
+              // This is the old way of doing PPR resumption, I'm having trouble with it in NextJS 16
+              // TODO investigate a stable API or why this is bugging out on me
               const resumePath = `/_next/postponed/resume${path === "/" ? "/index" : path}`;
               resumeRequest.url = resumePath;
               resumeRequest.method = "POST";
@@ -235,6 +337,23 @@ await grpcServer.register(fastifyConnectPlugin, {
               const resumeResponse = new ServerResponse(resumeRequest);
               const intermediaryStream = new PassThrough();
               
+              /**
+               * This is the core of the PPR streaming workaround. We cannot
+               * directly `await` the `resumeResponse` as it's a "push-style"
+               * classic Node.js stream, not a modern "pull-style" async iterable.
+               *
+               * To fix this, we create an `intermediaryStream` (a PassThrough)
+               * and manually override `resumeResponse.write` and `resumeResponse.end`.
+               *
+               * This effectively "pipes" the data from the Next.js handler (which
+               * *thinks* it's writing to a normal socket) into our intermediary
+               * stream, which we *can* await in the `responseBody` case.
+               * 
+               * There's probably a "better" way of doing but the old school pipes
+               * in NodeJS are rough. It might be better to start with the new
+               * fetch style request/response and convert to InboundMessage / 
+               * ServerResponse from those more modern APIs.
+               */
               resumeResponse.write = (data) => {
                 const result = intermediaryStream.push(data);
                 if (!result) intermediaryStream.on("drain", () => resumeResponse.emit("drain"));
@@ -261,11 +380,38 @@ await grpcServer.register(fastifyConnectPlugin, {
             continue;
           }
           case "responseBody": {
-            //if (!resolveResumeBuffer) break;
+            // Let the original GET request be fulfilled, since we're using NextJS minimal-mode
+            // that request will be served in a CDN friendly manner, hopefully we have a hit ;)
+
+            /**
+             * -------------------- Full-Duplex Mode  ----------------------
+             *
+             * Because we're using `streamedResponse` later (for PPR), we are
+             * we've configured Envoy for full-duplex streaming mode.
+             *
+             * In this mode, Envoy *always* expects us to send `streamedResponse`
+             * mutations. If we just `yield` a simple `CONTINUE` (our fallback)
+             * for a non-PPR request, Envoy's state machine gets confused
+             * and it will segfault.
+             *
+             * Therefore, for *all* requests, we must replace the response
+             * body with a stream, even if that stream is just the *original*
+             * response body.
+             *
+             * TODO: look into switching mode dynamically using `mode_override`
+             *       in `responseHeaders` to avoid this for non-PPR requests.
+             *
+             * This logic determines the "passthrough" end_stream state.
+             * `end_stream` should *only* be true if:
+             *   1. We are *not* doing a PPR resume (`!resolveResumeBuffer`)
+             *   2. AND the original upstream chunk was the last one.
+             * 
+             * TODO name resolveResumeBuffer better
+             */
             const end_stream = !resolveResumeBuffer && callout.request.value.endOfStream;
 
-            // OK now that we're duplex streaming, we need to replace everythign with a stream
-            // TODO look into switching mode for PPR
+            // Serve up the original response, only EOF if this is not a PPR request and the
+            // original chunk was EOF.
             const body = callout.request.value.body;
             yield {
               response: {
@@ -273,6 +419,7 @@ await grpcServer.register(fastifyConnectPlugin, {
                 value: {
                   response: {
                     status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
+                    // Note: We use 'streamedResponse' even for the pass-through.
                     bodyMutation: { mutation: { case: 'streamedResponse', value: { body, endOfStream: end_stream } } },
                     end_stream,
                   },
@@ -280,11 +427,16 @@ await grpcServer.register(fastifyConnectPlugin, {
               },
             };
 
+            // If the original response wasn't EOF yet, continue serving chunks (which will call this
+            // case again.
             if (!callout.request.value.endOfStream) continue;
 
             const resumeBuffer = await resolveResumeBuffer!;
-            resolveResumeBuffer = undefined;
+            resolveResumeBuffer = undefined; // TODO do I need to do this?
 
+            // Ok, let's start streaming in the PPR resume response
+            // full duplex mode is what allows us to yield multiple times, so we can stream, this
+            // is a marked improvement over the primitives available in proxy-Wasm at the moment.
             for await (const body of resumeBuffer) {
               yield {
                 response: {
@@ -300,6 +452,7 @@ await grpcServer.register(fastifyConnectPlugin, {
               };
             }
 
+            // Finally send EOF
             yield {
               response: {
                 case: "responseBody",
@@ -314,9 +467,12 @@ await grpcServer.register(fastifyConnectPlugin, {
             };
             continue;
           }
+          // TODO can we intercept trailers to handle waitFor functionality?
         }
+        // If we fall through the switch, it means we are not handling the
+        // request in any special way, so we just tell Envoy to continue.
         const empty = {};
-        yield { 
+        yield {
           response: {
             case: callout.request.case,
             value: {
@@ -331,7 +487,7 @@ await grpcServer.register(fastifyConnectPlugin, {
   }),
 });
 
-
+// Create the main HTTP server.
 createServer(requestHandle).listen(port, hostname, () => {
   console.log(`NextJS listening on http://${hostname}:${port}`);
 }).on("error", (err) => {
@@ -341,6 +497,7 @@ createServer(requestHandle).listen(port, hostname, () => {
 
 await grpcServer.ready();
 
+// Start the gRPC server.
 grpcServer.listen({ host: hostname, port: port+1 }, (err, address) => {
   if (err) return console.error(err);
   console.log(`RPC listening on ${address}`);
