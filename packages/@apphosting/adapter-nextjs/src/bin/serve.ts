@@ -15,6 +15,7 @@ import { PassThrough } from "node:stream";
 
 // The standalone directory is the root of the Next.js application.
 const dir = join(process.cwd(), process.argv[2] || ".next/standalone");
+process.chdir(dir);
 
 // Standard NodeJS HTTP server port and hostname.
 const port = parseInt(process.env.PORT!, 10) || 3000
@@ -112,9 +113,8 @@ async function requestHandle(req: IncomingMessage, res: ServerResponse) {
     const isPPR = req.url === "/";
     if (isPPR) {
       /**
-       * This is a critical interception. The Next.js server (`getRequestHandler`)
-       * takes full control of the `ServerResponse` object and doesn't provide
-       * a simple "beforeWrite" hook.
+       * Next.js uses a request handler (`getRequestHandler`) which takes full
+       * `ServerResponse` object and doesn't provide any lifecycle hook.
        *
        * To inject our `x-fah-postponed` header *before* Next.js sends the
        * first body chunk, we must monkey-patch `res.write` and `res.end`.
@@ -182,7 +182,6 @@ await grpcServer.register(fastifyConnectPlugin, {
         return undefined;
       }
       for await (const callout of callouts) {
-        console.log(callout);
         switch (callout.request.case) {
           case "requestHeaders": {
             requestHeaders = callout.request.value.headers?.headers || [];
@@ -386,8 +385,8 @@ await grpcServer.register(fastifyConnectPlugin, {
             /**
              * -------------------- Full-Duplex Mode  ----------------------
              *
-             * Because we're using `streamedResponse` later (for PPR), we are
-             * we've configured Envoy for full-duplex streaming mode.
+             * Because we're using `streamedResponse` later (for PPR), we've
+             * configured Envoy for full-duplex streaming mode.
              *
              * In this mode, Envoy *always* expects us to send `streamedResponse`
              * mutations. If we just `yield` a simple `CONTINUE` (our fallback)
