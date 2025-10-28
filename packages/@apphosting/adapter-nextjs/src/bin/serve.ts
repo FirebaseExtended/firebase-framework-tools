@@ -310,19 +310,21 @@ await grpcServer.register(fastifyConnectPlugin, {
             resolveResumeBuffer = new Promise<PassThrough>(async (resolve) => {
               const socket = new Socket();
               const resumeRequest = new IncomingMessage(socket);
-              const postponed = Buffer.from(new TextDecoder().decode(postponedToken), "base64url").toString();
+              const tokenString = new TextDecoder().decode(postponedToken);
+              const resumeData = Buffer.from(tokenString, "base64url");
 
               // We construct a new request to the Next.js server to resume the
               // postponed page.
               // This is the old way of doing PPR resumption, I'm having trouble with it in NextJS 16
               // TODO investigate a stable API or why this is bugging out on me
-              const resumePath = `/_next/postponed/resume${path === "/" ? "/index" : path}`;
+              const matchedPath = path === "/" ? "/index" : path;
+              const resumePath = `/_next/postponed/resume${matchedPath}`;
               resumeRequest.url = resumePath;
               resumeRequest.method = "POST";
               resumeRequest.httpVersion = "1.1";
               resumeRequest.httpVersionMajor = 1;
               resumeRequest.httpVersionMinor = 1;
-              resumeRequest.push(postponed.trim());
+              resumeRequest.push(resumeData);
               resumeRequest.push(null);
 
               for (const header of requestHeaders) {
@@ -330,8 +332,9 @@ await grpcServer.register(fastifyConnectPlugin, {
                 if (header.key.startsWith(":")) continue;
                 resumeRequest.headers[header.key] = getRequestHeader(header.key);
               }
-              resumeRequest.headers['x-matched-path'] = resumePath;
+              resumeRequest.headers['x-matched-path'] = matchedPath;
               resumeRequest.headers['next-resume'] = "1";
+              resumeRequest.headers['content-length'] = Buffer.byteLength(resumeData).toString();
               
               const resumeResponse = new ServerResponse(resumeRequest);
               const intermediaryStream = new PassThrough();
