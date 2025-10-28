@@ -152,9 +152,7 @@ export function parseOutputBundleOptions(buildOutput: string): OutputBundleOptio
   try {
     parsedManifest = JSON.parse(strippedManifest.replace(/[\r\n]+/g, "")) as string;
   } catch (error) {
-    throw new Error(
-      `Failed to parse build output manifest: ${error}`,
-    );
+    throw new Error(`Failed to parse build output manifest: ${error}`);
   }
   const manifest = buildManifestSchema.parse(parsedManifest);
   if (manifest["errors"].length > 0) {
