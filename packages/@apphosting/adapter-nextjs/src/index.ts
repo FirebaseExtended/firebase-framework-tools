@@ -2,6 +2,7 @@ import { generateBundleYaml, getAdapterMetadata, populateOutputBundleOptions } f
 import type { NextAdapter } from "next";
 import { addRouteOverrides } from "./overrides.js";
 import { PHASE_PRODUCTION_BUILD } from "./constants.js";
+import { writeFile } from "fs-extra";
 
 const adapter: NextAdapter = {
     name: '@apphosting/adapter-nextjs',
@@ -59,7 +60,7 @@ const adapter: NextAdapter = {
             nextBuildDirectory,
         );
 
-        console.log(JSON.stringify(context));
+        await writeFile(`${outputBundleOptions.outputDirectoryBasePath}/output.json`, JSON.stringify(context));
 
         const adapterMetadata = getAdapterMetadata();
 

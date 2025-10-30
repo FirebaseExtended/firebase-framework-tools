@@ -6,6 +6,8 @@ import { join } from "node:path";
 // Opt-out sending telemetry to Vercel
 process.env.NEXT_TELEMETRY_DISABLED = "1";
 
+process.env.NEXT_ADAPTER_PATH = join(import.meta.dirname, "..", "index.cjs");
+
 await runBuild();
 
 const opts = getBuildOptions();

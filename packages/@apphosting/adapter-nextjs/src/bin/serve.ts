@@ -12,6 +12,10 @@ import { fastifyConnectPlugin } from "@connectrpc/connect-fastify";
 import { HeaderValue } from "../protos/envoy/config/core/v3/base_pb.js";
 import { Socket } from "node:net";
 import { PassThrough } from "node:stream";
+import { ProcessingMode_BodySendMode, ProcessingMode_HeaderSendMode } from "../protos/envoy/extensions/filters/http/ext_proc/v3/processing_mode_pb.js";
+
+// TODO bundle this rather than write/read from file
+const buildContext = JSON.parse(readFileSync(join(process.cwd(), '.apphosting', 'output.json')).toString());
 
 // The standalone directory is the root of the Next.js application.
 const dir = join(process.cwd(), process.argv[2] || ".next/standalone");
@@ -30,12 +34,15 @@ globalThis.AsyncLocalStorage = AsyncLocalStorage;
 // Required by Next.js in minimal mode.
 // @ts-ignore
 process.env.NODE_ENV = "production";
+//process.env.MINIMAL_MODE = "1";
 
 // Allow the keep-alive timeout to be configured.
 let keepAliveTimeout: number | undefined = parseInt(process.env.KEEP_ALIVE_TIMEOUT!, 10);
 
 // Load the Next.js configuration from the standalone directory.
-const conf = JSON.parse(readFileSync(join(dir, ".next", "required-server-files.json"), "utf-8")).config;
+// TODO fix the types and jazz
+const conf = { ...buildContext.config } as any;
+conf.compress = false;
 
 // Pass the Next.js configuration to the Next.js server.
 process.env.__NEXT_PRIVATE_STANDALONE_CONFIG = JSON.stringify(conf);
@@ -47,11 +54,32 @@ process.setMaxListeners(1_000);
 const resolveMiddleware = import(join(dir, ".next/server/middleware.js"));
 
 // TODO don't hardcode these matchers, they should be derived from the build output.
-const matchers = [
-  '/about/:path*',
-  '/((?!_next|firebase|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-  '/private/:path*',
-].map(it => new RegExp(it));
+const middlewareMatchers: Array<RegExp> = buildContext.outputs.middleware.config.matchers.map((it: any) => new RegExp(it.sourceRegex));
+
+const isPPRPath = (path: string) => {
+  const dynamicPathMatch = buildContext.routes.dynamicRoutes.find((it: any) => path.match(new RegExp(it.sourceRegex)))?.source;
+  const matchingPrerender = buildContext.outputs.prerenders.find((it: any) => it.pathname === dynamicPathMatch || it.pathname === path);
+  return matchingPrerender?.config?.renderingMode === "PARTIALLY_STATIC";
+}
+
+const getAppPage = (path: string) => {
+  const dynamicPathMatch = buildContext.routes.dynamicRoutes.find((it: any) => path.match(new RegExp(it.sourceRegex)))?.source;
+  return buildContext.outputs.appPages.find((it: any) => it.id === (dynamicPathMatch || path));
+}
+
+const getPrerender = (path: string) => {
+  const dynamicPathMatch = buildContext.routes.dynamicRoutes.find((it: any) => path.match(new RegExp(it.sourceRegex)))?.source;
+  return buildContext.outputs.prerenders.find((it: any) => it.id === (dynamicPathMatch || path));
+}
+
+const getMatchedDestination = (path: string) => {
+  for (const dynamicRoute of buildContext.routes.dynamicRoutes) {
+    const match = path.match(new RegExp(dynamicRoute.sourceRegex));
+    if (match) {
+      return Object.entries(match.groups || {}).reduce((acc, [key, value]) => { return acc.replace(`\$${key}`, value) }, dynamicRoute.destination as string);
+    }
+  }
+}
 
 // If the keep-alive timeout is not a valid number, use the default.
 if (
@@ -93,7 +121,7 @@ async function injectAppHostingHeaders(req: IncomingMessage, res: ServerResponse
   // TODO import the type from NextJS
   const { NEXT_REQUEST_META } = await import(join(dir, "node_modules/next/dist/server/request-meta.js"));
   const metadata = (req as any)[NEXT_REQUEST_META];
-  // TODO use a stable API to get the reumption token
+  // TODO use a stable API to get the resumption token
   const cacheEntry = await metadata.incrementalCache.get(metadata.match.definition.pathname, { kind: metadata.match.definition.kind, isRoutePPREnabled: true });
   res.appendHeader('x-fah-postponed', Buffer.from(cacheEntry.value.postponed).toString('base64url'));
 }
@@ -109,43 +137,47 @@ async function injectAppHostingHeaders(req: IncomingMessage, res: ServerResponse
  * @param res The server response.
  */
 async function requestHandle(req: IncomingMessage, res: ServerResponse) {
-    // This is a temporary workaround to enable PPR for the home page.
-    const isPPR = req.url === "/";
-    if (isPPR) {
-      /**
-       * Next.js uses a request handler (`getRequestHandler`) which takes full
-       * `ServerResponse` object and doesn't provide any lifecycle hook.
-       *
-       * To inject our `x-fah-postponed` header *before* Next.js sends the
-       * first body chunk, we must monkey-patch `res.write` and `res.end`.
-       * We wrap them in a promise (`resolveHeaders`) to ensure our
-       * `injectAppHostingHeaders` function runs exactly once before any
-       * data is sent to the client.
-       */
-      const originalWrite = res.write.bind(res);
-      let resolveHeaders: Promise<void> | undefined;
-      // We need to append our headers before the body starts getting written
-      res.write = function () {
-        resolveHeaders ||= injectAppHostingHeaders(req, res);
-        resolveHeaders.then(() => {
-          // @ts-expect-error TODO fix the type
-          const written = originalWrite(...arguments);
-          if (written) res.emit("drain");
-        })
-        return false;
-      };
-      const originalEnd = res.end.bind(res);
-      res.end = function () {
-        resolveHeaders ||= injectAppHostingHeaders(req, res);
-        resolveHeaders.then(() => {
-          originalEnd(...arguments);
-        });
-        return res;
-      };
-    }
-    const parsedUrl = parse(req.url!, true);
-    const nextServer = await resolveNextServer;
-    return nextServer.getRequestHandler()(req, res, parsedUrl);
+  const path = parse(req.url || '/', true).path || "/";
+  const isPPR = ['GET', 'HEAD'].includes(req.method || 'GET') && isPPRPath(path);
+  const prerender = getPrerender(path);
+  const postponed = prerender?.fallback.postponedState;
+  // TODO this is a bug with the adapter spec, not seeing postponeData for "/"
+  if (isPPR && !postponed) {
+    console.error(`Unable to find postponed state for ${path} appending to response as x-fah-postponed`);
+    /**
+     * Next.js uses a request handler (`getRequestHandler`) which takes full
+     * `ServerResponse` object and doesn't provide any lifecycle hook.
+     *
+     * To inject our `x-fah-postponed` header *before* Next.js sends the
+     * first body chunk, we must monkey-patch `res.write` and `res.end`.
+     * We wrap them in a promise (`resolveHeaders`) to ensure our
+     * `injectAppHostingHeaders` function runs exactly once before any
+     * data is sent to the client.
+     */
+    const originalWrite = res.write.bind(res);
+    let resolveHeaders: Promise<void> | undefined;
+    // We need to append our headers before the body starts getting written
+    res.write = function () {
+      resolveHeaders ||= injectAppHostingHeaders(req, res);
+      resolveHeaders.then(() => {
+        // @ts-expect-error TODO fix the type
+        const written = originalWrite(...arguments);
+        if (written) res.emit("drain");
+      })
+      return false;
+    };
+    const originalEnd = res.end.bind(res);
+    res.end = function () {
+      resolveHeaders ||= injectAppHostingHeaders(req, res);
+      resolveHeaders.then(() => {
+        originalEnd(...arguments);
+      });
+      return res;
+    };
+  }
+  const parsedUrl = parse(req.url!, true);
+  const nextServer = await resolveNextServer;
+  return nextServer.getRequestHandler()(req, res, parsedUrl);
 };
 
 /**
@@ -174,6 +206,8 @@ await grpcServer.register(fastifyConnectPlugin, {
       let requestHeaders: HeaderValue[] = [];
       let resolveResumeBuffer: Promise<PassThrough>|undefined;
       let path: string|undefined = undefined;
+      let method: string|undefined = undefined;
+      let postponed: string|undefined = undefined;
       // For whatever reason the header.value is always an empty string at least with
       // my local version of envoy. I have to decode the rawValue every time
       const getRequestHeader = (key: string) => {
@@ -182,12 +216,33 @@ await grpcServer.register(fastifyConnectPlugin, {
         return undefined;
       }
       for await (const callout of callouts) {
+        let modeOverride: any = {}; // TODO fix types
+        if (path) console.log(method, callout.request.case, path);
         switch (callout.request.case) {
           case "requestHeaders": {
             requestHeaders = callout.request.value.headers?.headers || [];
             // TODO look at the callout attributes, can we send thing like path
             //      so we don't have to parse from the pseudo headers
-            path = getRequestHeader(":path");
+            path = parse(getRequestHeader(":path") || "/", true).path!;
+            method = getRequestHeader(":method") || "GET";
+            console.log(method, "requestHeaders", path);
+            const hasMiddleware = middlewareMatchers.some(it => path?.match(it));
+            const usesPPR = ['GET', 'HEAD'].includes(method) && isPPRPath(path);
+            const hasRequestBody = !callout.request.value.endOfStream;
+            
+            // TODO only response on PPR
+            if (hasMiddleware && hasRequestBody) {
+              modeOverride.requestBodyMode = ProcessingMode_BodySendMode.BUFFERED;
+            }
+
+            if (usesPPR) {
+              modeOverride.responseHeaderMode = ProcessingMode_HeaderSendMode.SEND;
+              modeOverride.responseBodyMode = ProcessingMode_BodySendMode.FULL_DUPLEX_STREAMED;
+              modeOverride.responseTrailerMode = ProcessingMode_HeaderSendMode.SEND;
+            };
+
+            if (!hasMiddleware) break;
+
             /** 
              * `requestHeaders` is the first callout we get. If `endOfStream` is
              * true, it's a `GET` (or other body-less request), and we can run
@@ -201,18 +256,17 @@ await grpcServer.register(fastifyConnectPlugin, {
              * for the `requestBody` callout to arrive, which will then
              * execute the *same* logic block.
              */
-            if (!callout.request.value.endOfStream) break;
+            if (hasRequestBody) break;
           }
           case "requestBody": {
             // TODO make a converter to a fetch request, make a helper to extract these headers
-            const method = getRequestHeader(":method")!;
             const scheme = getRequestHeader(":scheme")!;
             const referrer = getRequestHeader("referer");
             const authority = getRequestHeader(":authority")!;
   
             // If the path does not match any of the middleware matchers, we can
             // skip the middleware execution.
-            if (!matchers.some(it => path?.match(it))) break;
+            if (!middlewareMatchers.some(it => path?.match(it))) break;
 
             // Next.js middleware is intended for v8 isolates, with the fetch api.
             // We construct a Fetch API compliant request object to pass to the
@@ -283,8 +337,15 @@ await grpcServer.register(fastifyConnectPlugin, {
             // This is where we handle PPR resumption.
             // If the response has a `x-fah-postponed` header, it means the page
             // is in a postponed state and we need to resume it.
-            const postponedToken = callout.request.value.headers?.headers.find((it) => it.key === "x-fah-postponed")?.rawValue;
-            if (!postponedToken) break;
+            const isPPR = ['GET', 'HEAD'].includes(method!) && isPPRPath(path!);
+            if (!isPPR) break;
+
+            const postponedHeaderValue = callout.request.value.headers?.headers.find((it) => it.key === "x-fah-postponed")?.rawValue;
+            if (postponedHeaderValue) {
+              const tokenString = new TextDecoder().decode(postponedHeaderValue);
+              postponed = Buffer.from(tokenString, "base64url").toString();
+            }
+
             // We tell Envoy to continue processing the request, but we also
             // modify the headers to indicate that the response is chunked and
             // to remove the `x-fah-postponed` and `content-length` headers.
@@ -298,7 +359,7 @@ await grpcServer.register(fastifyConnectPlugin, {
                       setHeaders: [
                         { header: { key: "transfer-encoding", rawValue: Uint8Array.from(Buffer.from("chunked")) } },
                       ],
-                      removeHeaders: ["x-fah-postponed", "content-length"],
+                      removeHeaders: ["content-length"],
                     },
                   },
                 },
@@ -310,31 +371,32 @@ await grpcServer.register(fastifyConnectPlugin, {
             resolveResumeBuffer = new Promise<PassThrough>(async (resolve) => {
               const socket = new Socket();
               const resumeRequest = new IncomingMessage(socket);
-              const tokenString = new TextDecoder().decode(postponedToken);
-              const resumeData = Buffer.from(tokenString, "base64url");
+            
+              const prerender = getPrerender(path!);
+              postponed ||= prerender?.fallback.postponedState;
+
+              const appPage = getAppPage(path!);
+              if (!appPage) throw new Error('ahhhhhhhh!');
 
               // We construct a new request to the Next.js server to resume the
               // postponed page.
               // This is the old way of doing PPR resumption, I'm having trouble with it in NextJS 16
               // TODO investigate a stable API or why this is bugging out on me
-              const matchedPath = path === "/" ? "/index" : path;
-              const resumePath = `/_next/postponed/resume${matchedPath}`;
-              resumeRequest.url = resumePath;
-              resumeRequest.method = "POST";
+              resumeRequest.url = path;
+              resumeRequest.method = method;
               resumeRequest.httpVersion = "1.1";
               resumeRequest.httpVersionMajor = 1;
               resumeRequest.httpVersionMinor = 1;
-              resumeRequest.push(resumeData);
-              resumeRequest.push(null);
+
+              const { NEXT_REQUEST_META } = await import(join(dir, "node_modules/next/dist/server/request-meta.js"));
+              (resumeRequest as any)[NEXT_REQUEST_META] = { postponed };
 
               for (const header of requestHeaders) {
                 // drop HTTP2 pseudo headers
                 if (header.key.startsWith(":")) continue;
                 resumeRequest.headers[header.key] = getRequestHeader(header.key);
               }
-              resumeRequest.headers['x-matched-path'] = matchedPath;
               resumeRequest.headers['next-resume'] = "1";
-              resumeRequest.headers['content-length'] = Buffer.byteLength(resumeData).toString();
               
               const resumeResponse = new ServerResponse(resumeRequest);
               const intermediaryStream = new PassThrough();
@@ -368,9 +430,9 @@ await grpcServer.register(fastifyConnectPlugin, {
                 return resumeResponse;
               }
             
-              const nextServer = await resolveNextServer;
-              const parsedUrl = parse(resumePath, true);
-              nextServer.getRequestHandler()(resumeRequest, resumeResponse, parsedUrl);
+              const parsedUrl = parse(path!, true);
+              const appRouteFunction = await import(appPage.filePath);
+              appRouteFunction.default.handler(resumeRequest, resumeResponse, parsedUrl);
               resolve(intermediaryStream);
             }).catch((e) => {
               console.error(e);
@@ -415,19 +477,21 @@ await grpcServer.register(fastifyConnectPlugin, {
             // Serve up the original response, only EOF if this is not a PPR request and the
             // original chunk was EOF.
             const body = callout.request.value.body;
-            yield {
-              response: {
-                case: "responseBody",
-                value: {
-                  response: {
-                    status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
-                    // Note: We use 'streamedResponse' even for the pass-through.
-                    bodyMutation: { mutation: { case: 'streamedResponse', value: { body, endOfStream: end_stream } } },
-                    end_stream,
+            if (body.byteLength) {
+              yield {
+                response: {
+                  case: "responseBody",
+                  value: {
+                    response: {
+                      status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
+                      // Note: We use 'streamedResponse' even for the pass-through.
+                      bodyMutation: { mutation: { case: 'streamedResponse', value: { body, endOfStream: end_stream } } },
+                      end_stream,
+                    },
                   },
                 },
-              },
-            };
+              };
+            }
 
             // If the original response wasn't EOF yet, continue serving chunks (which will call this
             // case again.
@@ -446,7 +510,7 @@ await grpcServer.register(fastifyConnectPlugin, {
                   value: {
                     response: {
                       status: CommonResponse_ResponseStatus.CONTINUE_AND_REPLACE,
-                      bodyMutation: { mutation: { case: 'streamedResponse', value: { body, endOfStream: false } } },
+                      bodyMutation: { mutation: { case: 'streamedResponse', value: { body: Uint8Array.from(body), endOfStream: false } } },
                       end_stream: false,
                     },
                   },
@@ -481,8 +545,9 @@ await grpcServer.register(fastifyConnectPlugin, {
               response: {
                 status: CommonResponse_ResponseStatus.CONTINUE,
               }
-            }
-          }
+            },
+          },
+          modeOverride: modeOverride!,
         } as (typeof empty);
       }
     }
