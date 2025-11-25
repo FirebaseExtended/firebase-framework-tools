@@ -9,7 +9,7 @@ export default function Home() {
 
       <section className="features">
         <article className="card">
-          <h2>Scalable, serverless backends</h2>
+          <h2>Omni-Hub is Amazing</h2>
           <p>
             Dynamic content is served by{" "}
             <Link
