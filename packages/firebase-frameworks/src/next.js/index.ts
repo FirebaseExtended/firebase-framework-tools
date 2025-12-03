@@ -19,5 +19,19 @@ export const handle = async (req: Request, res: Response): Promise<void> => {
   await nextApp.prepare();
   const parsedUrl = parse(req.url, true);
   const incomingMessage = incomingMessageFromExpress(req);
+
+  // The following modifications are required to prevent an ECONNRESET error
+  // when proxying external requests in the Firebase environment.
+
+  // 1. Disable keep-alive connections. In a serverless environment,
+  //    connection reuse is unreliable and can lead to errors.
+  incomingMessage.headers.connection = "close";
+
+  // 2. Remove the original host header. `http-proxy` automatically forwards this
+  //    as `x-forwarded-host`, which can cause a security rejection when a
+  //    request from a Google IP contains a `localhost` host. This mirrors the
+  //    behavior of the working proxy in `firebase-tools`.
+  delete incomingMessage.headers["host"];
+
   await nextApp.getRequestHandler()(incomingMessage, res, parsedUrl);
 };
