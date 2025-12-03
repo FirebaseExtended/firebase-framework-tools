@@ -25,7 +25,7 @@ process.env.NEXT_PRIVATE_STANDALONE = "true";
 // Opt-out sending telemetry to Vercel
 process.env.NEXT_TELEMETRY_DISABLED = "1";
 
-checkNextJSVersion(process.env.FRAMEWORK_VERSION)
+checkNextJSVersion(process.env.FRAMEWORK_VERSION);
 const nextConfig = await loadConfig(root, opts.projectDirectory);
 
 /**
