@@ -7,11 +7,22 @@ import os from "os";
 import { RoutesManifest, MiddlewareManifest } from "../src/interfaces.js";
 
 describe("block vulnerable nextjs versions", () => {
-  const { checkNextJSVersion } = await importUtils;
-  let version;
-  checkNextJSVersion(version);
-  // TODO
-}
+  it("should allow for unspecified", async () => {
+    const { checkNextJSVersion } = await importUtils;
+
+    assert.throws(() => {
+      checkNextJSVersion("15.0.0");
+    });
+
+    assert.ok(() => {
+      checkNextJSVersion(undefined);
+    });
+
+    assert.ok(() => {
+      checkNextJSVersion("15.0.5");
+    });
+  });
+});
 
 describe("manifest utils", () => {
   let tmpDir: string;
