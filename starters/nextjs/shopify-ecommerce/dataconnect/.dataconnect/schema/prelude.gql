@@ -1,5 +1,5 @@
 "AccessLevel specifies coarse access policies for common situations."
-enum AccessLevel {
+enum AccessLevel @fdc_forbiddenAsVariableType @fdc_forbiddenAsFieldType {
   """
   This operation is accessible to anyone, with or without authentication.
   Equivalent to: `@auth(expr: "true")`
@@ -54,26 +54,111 @@ directive @auth(
   Exactly one of `level` and `expr` should be specified.
   """
   expr: Boolean_Expr @fdc_oneOf(required: true)
+  """
+  If the `@auth` on this operation is considered insecure, then developer
+  acknowledgement is required to deploy this operation, for new operations.
+  `@auth` is considered insecure if `level: PUBLIC`, or if
+  `level: USER/USER_ANON/USER_EMAIL_VERIFIED` and `auth.uid` is not referenced
+  in the operation.
+  If `insecureReason` is set, no further developer acknowledgement is needed.
+  """
+  insecureReason: String
 ) on QUERY | MUTATION
-
 
 """
 Require that this mutation always run in a DB transaction.
 
 Mutations with `@transaction` are guaranteed to either fully succeed or fully
-fail. If any of the fields within the transaction fails, the entire transaction
-is rolled back. From a client standpoint, any failure behaves as if the entire
-request had failed with a request error and execution had not begun.
+fail. Upon the first error in a transaction (either an execution error or failed
+`@check`), the transaction will be rolled back. In the GraphQL response, all
+fields within the transaction will be `null`, each with an error raised.
+
+- Fields that have been already evaluated will be nullified due to the rollback
+  and a "(rolled back)" error will be reported on each of them.
+- The execution error or failed `@check` will be reported on the current field.
+- Subsequent fields will not be executed. An `(aborted)` error will be reported
+  on each subsequent field.
 
 Mutations without `@transaction` would execute each root field one after
-another in sequence. It surfaces any errors as partial [field errors](https://spec.graphql.org/October2021/#sec-Errors.Field-errors),
-but not impacts the subsequent executions.
+another in sequence. They surface any errors as partial
+[field errors](https://spec.graphql.org/October2021/#sec-Errors.Field-errors),
+but does not impact the execution of subsequent fields. However, failed
+`@check`s still terminate the entire operation.
 
 The `@transaction` directive cannot be added to queries for now.
 Currently, queries cannot fail partially, the response data is not guaranteed
 to be a consistent snapshot.
 """
 directive @transaction on MUTATION
+
+"""
+Redact a part of the response from the client.
+
+Redacted fields are still evaluated for side effects (including data changes and
+`@check`) and the results are still available to later steps in CEL expressions
+(via `response.fieldName`).
+"""
+directive @redact on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"""
+Ensure this field is present and is not null or `[]`, or abort the request / transaction.
+
+A CEL expression, `expr` is used to test the field value. It defaults to
+rejecting null and `[]` but a custom expression can be provided instead.
+
+If the field occurs multiple times (i.e. directly or indirectly nested under a
+list), `expr` will be executed once for each occurrence and `@check` succeeds if
+all values succeed. `@check` fails when the field is not present at all (i.e.
+all ancestor paths contain `null` or `[]`), unless `optional` is true.
+
+If a `@check` fails in a mutation, the top-level field containing it will be
+replaced with a partial error, whose message can be customzied via the `message`
+argument. Each subsequent top-level fields will return an aborted error (i.e.
+not executed). To rollback previous steps, see `@transaction`.
+"""
+directive @check(
+  """
+  The CEL expression to test the field value (or values if nested under a list).
+
+  Within the CEL expression, a special value `this` evaluates to the field that
+  this directive is attached to. If this field occurs multiple times because
+  any ancestor is a list, each occurrence is tested with `this` bound to each
+  value. When the field itself is a list or object, `this` follows the same
+  structure (including all descendants selected in case of objects).
+
+  For any given path, if an ancestor is `null` or `[]`, the field will not be
+  reached and the CEL evaluation will be skipped for that path. In other words,
+  evaluation only takes place when `this` is `null` or non-null, but never
+  undefined. (See also the `optional` argument.)
+  """
+  expr: Boolean_Expr! = "!(this in [null, []])"
+  """
+  The error message to return to the client if the check fails.
+
+  Defaults to "permission denied" if not specified.
+  """
+  message: String! = "permission denied"
+  """
+  Whether the check should pass or fail (default) when the field is not present.
+
+  A field will not be reached at a given path if its parent or any ancestor is
+  `[]` or `null`. When this happens to all paths, the field will not be present
+  anywhere in the response tree. In other words, `expr` is evaluated 0 times.
+  By default, @check will automatically fail in this case. Set this argument to
+  `true` to make it pass even if no tests are run (a.k.a. "vacuously true").
+  """
+  optional: Boolean = false
+) repeatable on QUERY | MUTATION | FIELD | FRAGMENT_DEFINITION | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"""
+Marks an element of a GraphQL operation as no longer supported for client use.
+The Firebase Data Connect backend will continue supporting this element,
+but it will no longer be visible in the generated SDKs.
+"""
+directive @retired(
+  "Provides the reason for retirement."
+  reason: String
+) on QUERY | MUTATION | FIELD | VARIABLE_DEFINITION
 
 "Query filter criteria for `String` scalar fields."
 input String_Filter {
@@ -120,6 +205,25 @@ input String_Filter {
   `LIKE '%value'`
   """
   endsWith: String
+  """
+  Match based on the provided pattern.
+  """
+  pattern: String_Pattern
+}
+
+input String_Pattern {
+  """
+  Match using LIKE semantics (https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
+  """
+  like: String @fdc_oneOf
+  """
+  Match against a POSIX regular expression.
+  """
+  regex: String @fdc_oneOf
+  """
+  If true, match patterns case-insensitively.
+  """
+  ignoreCase: Boolean
 }
 
 "Query filter criteris for `[String!]` scalar fields."
@@ -139,9 +243,19 @@ input UUID_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: UUID
+  eq: UUID @fdc_oneOf(group: "eq")
+  """
+  Match if field is exactly equal to the result of the provided server value
+  expression.
+  """
+  eq_expr: UUID_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: UUID
+  ne: UUID @fdc_oneOf(group: "ne")
+  """
+  Match if field is not equal to the result of the provided server value
+  expression.
+  """
+  ne_expr: UUID_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [UUID!]
   "Match if field value is not among the provided list of values."
@@ -165,21 +279,51 @@ input Int_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: Int
+  eq: Int @fdc_oneOf(group: "eq")
+  """
+  Match if field is exactly equal to the result of the provided server value
+  expression.
+  """
+  eq_expr: Int_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: Int
+  ne: Int @fdc_oneOf(group: "ne")
+  """
+  Match if field is not equal to the result of the provided server value
+  expression.
+  """
+  ne_expr: Int_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [Int!]
   "Match if field value is not among the provided list of values."
   nin: [Int!]
   "Match if field value is greater than the provided value."
-  gt: Int
+  gt: Int @fdc_oneOf(group: "gt")
+  """
+  Match if field value is greater than the result of the provided server value
+  expression.
+  """
+  gt_expr: Int_Expr @fdc_oneOf(group: "gt")
   "Match if field value is greater than or equal to the provided value."
-  ge: Int
+  ge: Int @fdc_oneOf(group: "ge")
+  """
+  Match if field value is greater than or equal to the result of the provided
+  server value expression.
+  """
+  ge_expr: Int_Expr @fdc_oneOf(group: "ge")
   "Match if field value is less than the provided value."
-  lt: Int
+  lt: Int @fdc_oneOf(group: "lt")
+  """
+  Match if field value is less than the result of the provided server value
+  expression.
+  """
+  lt_expr: Int_Expr @fdc_oneOf(group: "lt")
   "Match if field value is less than or equal to the provided value."
-  le: Int
+  le: Int @fdc_oneOf(group: "le")
+  """
+  Match if field value is less than or equal to the result of the provided
+  server value expression.
+  """
+  le_expr: Int_Expr @fdc_oneOf(group: "le")
 }
 
 "Query filter criteris for `[Int!]` scalar fields."
@@ -199,21 +343,51 @@ input Int64_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: Int64
+  eq: Int64 @fdc_oneOf(group: "eq")
+  """
+  Match if field is exactly equal to the result of the provided server value
+  expression.
+  """
+  eq_expr: Int64_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: Int64
+  ne: Int64 @fdc_oneOf(group: "ne")
+  """
+  Match if field is not equal to the result of the provided server value
+  expression.
+  """
+  ne_expr: Int64_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [Int64!]
   "Match if field value is not among the provided list of values."
   nin: [Int64!]
   "Match if field value is greater than the provided value."
-  gt: Int64
+  gt: Int64 @fdc_oneOf(group: "gt")
+  """
+  Match if field value is greater than the result of the provided server value
+  expression.
+  """
+  gt_expr: Int64_Expr @fdc_oneOf(group: "gt")
   "Match if field value is greater than or equal to the provided value."
-  ge: Int64
+  ge: Int64 @fdc_oneOf(group: "ge")
+  """
+  Match if field value is greater than or equal to the result of the provided
+  server value expression.
+  """
+  ge_expr: Int64_Expr @fdc_oneOf(group: "ge")
   "Match if field value is less than the provided value."
-  lt: Int64
+  lt: Int64 @fdc_oneOf(group: "lt")
+  """
+  Match if field value is less than the result of the provided server value
+  expression.
+  """
+  lt_expr: Int64_Expr @fdc_oneOf(group: "lt")
   "Match if field value is less than or equal to the provided value."
-  le: Int64
+  le: Int64 @fdc_oneOf(group: "le")
+  """
+  Match if field value is less than or equal to the result of the provided
+  server value expression.
+  """
+  le_expr: Int64_Expr @fdc_oneOf(group: "le")
 }
 
 "Query filter criteria for `[Int64!]` scalar fields."
@@ -233,21 +407,51 @@ input Float_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: Float
+  eq: Float @fdc_oneOf(group: "eq")
+  """
+  Match if field is exactly equal to the result of the provided server value
+  expression.
+  """
+  eq_expr: Float_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: Float
+  ne: Float @fdc_oneOf(group: "ne")
+  """
+  Match if field is not equal to the result of the provided server value
+  expression.
+  """
+  ne_expr: Float_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [Float!]
   "Match if field value is not among the provided list of values."
   nin: [Float!]
   "Match if field value is greater than the provided value."
-  gt: Float
+  gt: Float @fdc_oneOf(group: "gt")
+  """
+  Match if field value is greater than the result of the provided server value
+  expression.
+  """
+  gt_expr: Float_Expr @fdc_oneOf(group: "gt")
   "Match if field value is greater than or equal to the provided value."
-  ge: Float
+  ge: Float @fdc_oneOf(group: "ge")
+  """
+  Match if field value is greater than or equal to the result of the provided
+  server value expression.
+  """
+  ge_expr: Float_Expr @fdc_oneOf(group: "ge")
   "Match if field value is less than the provided value."
-  lt: Float
+  lt: Float @fdc_oneOf(group: "lt")
+  """
+  Match if field value is less than the result of the provided server value
+  expression.
+  """
+  lt_expr: Float_Expr @fdc_oneOf(group: "lt")
   "Match if field value is less than or equal to the provided value."
-  le: Float
+  le: Float @fdc_oneOf(group: "le")
+  """
+  Match if field value is less than or equal to the result of the provided
+  server value expression.
+  """
+  le_expr: Float_Expr @fdc_oneOf(group: "le")
 }
 
 "Query filter criteria for `[Float!]` scalar fields."
@@ -267,9 +471,15 @@ input Boolean_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: Boolean
+  eq: Boolean @fdc_oneOf(group: "eq")
+  "Match if field is equal to the result of the provided expression."
+  eq_expr: Boolean_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: Boolean
+  ne: Boolean @fdc_oneOf(group: "ne")
+  """
+  Match if field does not match the result of the provided expression.
+  """
+  ne_expr: Boolean_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [Boolean!]
   "Match if field value is not among the provided list of values."
@@ -293,9 +503,19 @@ input Any_Filter {
   "When true, match if field `IS NULL`. When false, match if field is `NOT NULL`."
   isNull: Boolean
   "Match if field is exactly equal to provided value."
-  eq: Any
+  eq: Any @fdc_oneOf(group: "eq")
+  """
+  Match if field is exactly equal to the result of the provided server value
+  expression.
+  """
+  eq_expr: Any_Expr @fdc_oneOf(group: "eq")
   "Match if field is not equal to provided value."
-  ne: Any
+  ne: Any @fdc_oneOf(group: "ne")
+  """
+  Match if field is not equal to the result of the provided server value
+  expression.
+  """
+  ne_expr: Any_Expr @fdc_oneOf(group: "ne")
   "Match if field value is among the provided list of values."
   in: [Any!]
   "Match if field value is not among the provided list of values."
@@ -315,6 +535,50 @@ input Any_ListFilter {
 }
 
 """
+Mark a string field as searchable.
+When this directive is added, the field will be indexed for full-text search,
+and a <type>_search field will be generated at the query root.
+This directive accepts a `language` argument that defaults to `"english"` in
+case no value is specified.
+See:
+- go/fdc-full-text-search
+"""
+directive @searchable(
+  """
+   Language of the fields that you are searching over can be specified here
+   (e.g. "french", "spanish", etc.).
+   Defaults to "english" if not specified.
+  """
+  language: String = "english") on FIELD_DEFINITION
+
+extend type _Metadata {
+  # During full text search, the relevance of the query term to this row.
+  # In other cases, this field is not set.
+  relevance: Float
+}
+
+
+enum Search_QueryFormat @fdc_forbiddenAsFieldType {
+  """
+  Allows search engine style semantics (e.g. quoted strings, AND and OR).
+  """
+  QUERY,
+  """
+  Splits the query into words and does ANDs between them.
+  """
+  PLAIN,
+  """
+  Matches an exact phrase. Requires the words to be in the same order (i.e. "brown
+  dog" will not match "brown and red dog").
+  """
+  PHRASE,
+  """
+  Create complex queries using the full set of tsquery operators.
+  """
+  ADVANCED,
+}
+
+"""
 (Internal) A string that uniquely identifies a type, field, and so on.
 
 The most common usage in FDC is `SomeType` or `SomeType.someField`. See the
@@ -326,14 +590,27 @@ scalar SchemaCoordinate
   @fdc_forbiddenAsVariableType
 
 "(Internal) The purpose of a generated type or field."
-enum GeneratedPurpose {
+enum GeneratedPurpose @fdc_forbiddenAsVariableType @fdc_forbiddenAsFieldType {
   # Implicit fields added to the table types as columns.
   IMPLICIT_KEY_FIELD
   IMPLICIT_REF_FIELD
 
+  # Generated static fields extended to table types.
+  METADATA_FIELD
+
   # Relational non-column fields extended to table types.
   QUERY_MULTIPLE_ONE_TO_MANY
   QUERY_MULTIPLE_MANY_TO_MANY
+
+  # Generated fields for aggregates
+  QUERY_COUNT
+  QUERY_SUM
+  QUERY_AVG
+  QUERY_MIN
+  QUERY_MAX
+
+  # Generated field for full text search
+  QUERY_MULTIPLE_BY_FULL_TEXT_SEARCH
 
   # Top-level Query fields.
   QUERY_SINGLE
@@ -397,20 +674,6 @@ type _Doc {
   markdown: String!
 }
 
-"(Internal) Added to things that may be removed from FDC and will soon be no longer usable in schema or operations."
-directive @fdc_deprecated(reason: String = "No longer supported") on
-  | SCHEMA
-  | SCALAR
-  | OBJECT
-  | FIELD_DEFINITION
-  | ARGUMENT_DEFINITION
-  | INTERFACE
-  | UNION
-  | ENUM
-  | ENUM_VALUE
-  | INPUT_OBJECT
-  | INPUT_FIELD_DEFINITION
-
 "(Internal) Added to scalars representing quoted CEL expressions."
 directive @fdc_celExpression(
   "The expected CEL type that the expression should evaluate to."
@@ -444,6 +707,26 @@ directive @fdc_oneOf(
   "If true, exactly one field / argument in the group must be specified."
   required: Boolean! = false
 ) repeatable on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+"""
+The `_Metadata` type is used to return metadata about a field in a response.
+"""
+type _Metadata {
+  # During vector similarity search, the distance between the query vector and
+  # this row's vector. In other cases, this field is not set.
+  distance: Float
+}
+
+type Mutation {
+  """
+  Run a query during the mutation and add fields into the response.
+
+  Example: foo: query { users { id } } will add a field foo: {users: [{id: "..."}, …]} into the response JSON.
+
+  Note: Data fetched this way can be handy for permission checks. See @check.
+  """
+  query: Query
+}
 
 """
 `UUID` is a string of hexadecimal digits representing an RFC4122-compliant UUID.
@@ -554,7 +837,7 @@ scalar Any @specifiedBy(url: "https://www.json.org/json-en.html")
 The `Void` scalar type represents the absence of any value. It is typically used
 in operations where no value is expected in return.
 """
-scalar Void
+scalar Void @fdc_forbiddenAsVariableType @fdc_forbiddenAsFieldType
 
 """
 The `True` scalar type only accepts the boolean value `true`.
@@ -611,19 +894,50 @@ scalar UUID_Expr
   @fdc_example(value: "uuidV4()", description: "Generates a new random UUID (version 4) every time.")
 
 """
-A Common Expression Language (CEL) expression whose return type is unspecified.
+A Common Expression Language (CEL) expression that returns a Int at runtime.
+"""
+scalar Int_Expr
+  @specifiedBy(url: "https://github.com/google/cel-spec")
+  @fdc_celExpression(returnType: "int")
+  @fdc_forbiddenAsVariableType
+  @fdc_forbiddenAsFieldType
+  @fdc_example(value: "2 * 4", description: "Evaluates to 8.")
+  @fdc_example(value: "vars.foo.size()", description: "Assuming `vars.foo` is a string, it will evaluate to the length of the string.")
 
-**Limitation**: Only a limited set of expressions are currently supported for each
-type.
+
+"""
+A Common Expression Language (CEL) expression that returns a Int64 at runtime.
+"""
+scalar Int64_Expr
+  @specifiedBy(url: "https://github.com/google/cel-spec")
+  @fdc_celExpression(returnType: "int64")
+  @fdc_forbiddenAsVariableType
+  @fdc_forbiddenAsFieldType
+  @fdc_example(value: "5000*1000*1000", description: "Evaluates to 5e9.")
+
+"""
+A Common Expression Language (CEL) expression that returns a Float at runtime.
+"""
+scalar Float_Expr
+  @specifiedBy(url: "https://github.com/google/cel-spec")
+  @fdc_celExpression(returnType: "float")
+  @fdc_forbiddenAsVariableType
+  @fdc_forbiddenAsFieldType
+  @fdc_example(value: "2.0 * 4.0", description: "Evaluates to 8.0.")
+
+"""
+A Common Expression Language (CEL) expression whose return type is valid JSON.
+
+Examples:
+  - `{'A' : 'B'}` (Evaluates to a JSON object.)
+  - `['A', 'B']` (Evaluates to a JSON array.)
+  - `{'A' 1, 'B': [1, 2, {'foo': 'bar'}]}` (Nested JSON objects and arrays.)
 """
 scalar Any_Expr
   @specifiedBy(url: "https://github.com/google/cel-spec")
   @fdc_celExpression
   @fdc_forbiddenAsVariableType
   @fdc_forbiddenAsFieldType
-  @fdc_example(value: "auth.uid", description: "The ID of the currently logged in user in Firebase Auth. (Errors if not logged in.)")
-  @fdc_example(value: "uuidV4()", description: "Generates a new random UUID version 4 (formatted as 32 lower-case hex digits without delimiters if result type is String).")
-  @fdc_example(value: "request.time", description: "The timestamp when the request is received (with microseconds precision).")
 
 """
 A PostgreSQL value expression whose return type is unspecified.
@@ -983,7 +1297,7 @@ type OneTable @table {
 ```
 Data Connect generates the necessary foreign key constraint.
 
-```graphql
+```sql
 CREATE TABLE "public"."many_table" (
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "ref_field_id" uuid NOT NULL,
@@ -1162,7 +1476,7 @@ directive @ref(
 ) on FIELD_DEFINITION
 
 "Defines the orderBy direction in a query."
-enum OrderDirection {
+enum OrderDirection @fdc_forbiddenAsFieldType {
 "Results are ordered in ascending order."
   ASC
 "Results are ordered in descending order."
@@ -1263,7 +1577,7 @@ directive @index(
 ) repeatable on FIELD_DEFINITION | OBJECT
 
 "Specifies the sorting order for database indexes."
-enum IndexFieldOrder {
+enum IndexFieldOrder @fdc_forbiddenAsVariableType @fdc_forbiddenAsFieldType {
   "Sorts the field in ascending order (from lowest to highest)."
   ASC
   "Sorts the field in descending order (from highest to lowest)."
@@ -1271,7 +1585,7 @@ enum IndexFieldOrder {
 }
 
 "Defines the type of index to be used in the database."
-enum IndexType {
+enum IndexType @fdc_forbiddenAsVariableType @fdc_forbiddenAsFieldType {
   "A general-purpose index type commonly used for sorting and searching."
   BTREE
   "Generalized Inverted Index, optimized for indexing composite values such as arrays."
@@ -1516,58 +1830,45 @@ input Timestamp_ListFilter {
   excludesAll: [Timestamp!]
 }
 
-"Update input of a `Date` value."
+"Update input of a `Date` value. Only one of `inc` or `dec` may be specified."
 input Date_Update {
-  "Set the field to the provided date."
-  set: Date @fdc_oneOf(group: "set")
-  "Set the field to the provided date CEL expression."
-  set_expr: Date_Expr @fdc_oneOf(group: "set")
-  "Set the field to the provided relative date."
-  set_date: Date_Relative @fdc_oneOf(group: "set")
+  "Increment the field by a provided duration."
+  inc: Date_Duration @fdc_oneOf
+  "Decrement the field by a provided duration."
+  dec: Date_Duration @fdc_oneOf
 }
 
-"Update input of a `Date` list value."
+"Update input of a `Date` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input Date_ListUpdate {
-  "Replace the current list with the provided list of `Date` values."
-  set: [Date!]
   "Append the provided `Date` values to the existing list."
-  append: [Date!]
+  append: [Date!] @fdc_oneOf
   "Prepend the provided `Date` values to the existing list."
-  prepend: [Date!]
-  "Remove the date value at the specified index."
-  delete: Int
-  "The index of the list to perform updates."
-  i: Int
-  "Update the date value at the specified index."
-  update: Date
+  prepend: [Date!] @fdc_oneOf
+  "Append any `Date` values that do not already exist to the list."
+  add: [Date!] @fdc_oneOf
+  "Remove all occurrences of each `Date` from the list."
+  remove: [Date!] @fdc_oneOf
 }
 
-"Update input of a `Timestamp` value."
+"Update input of a `Timestamp` value. Only one of `inc` or `dec` may be specified."
 input Timestamp_Update {
-  "Set the field to the provided timestamp."
-  set: Timestamp @fdc_oneOf(group: "set")
-  "Set the field to the provided timestamp CEL expression."
-  set_expr: Timestamp_Expr @fdc_oneOf(group: "set")
-  "Set the field to the provided relative timestamp."
-  set_time: Timestamp_Relative @fdc_oneOf(group: "set")
+  "Increment the field by a provided duration."
+  inc: Timestamp_Duration @fdc_oneOf
+  "Decrement the field by a provided duration."
+  dec: Timestamp_Duration @fdc_oneOf
 }
 
-"Update input of an `Timestamp` list value."
+"Update input of an `Timestamp` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input Timestamp_ListUpdate {
-  "Replace the current list with the provided list of `Timestamp` values."
-  set: [Timestamp!]
   "Append the provided `Timestamp` values to the existing list."
-  append: [Timestamp!]
+  append: [Timestamp!] @fdc_oneOf
   "Prepend the provided `Timestamp` values to the existing list."
-  prepend: [Timestamp!]
-  "Remove the timestamp value at the specified index."
-  delete: Int
-  "The index of the list to perform updates."
-  i: Int
-  "Update the timestamp value at the specified index."
-  update: Timestamp
+  prepend: [Timestamp!] @fdc_oneOf
+  "Append any `Timestamp` values that do not already exist to the list."
+  add: [Timestamp!] @fdc_oneOf
+  "Remove all occurrences of each `Timestamp` from the list."
+  remove: [Timestamp!] @fdc_oneOf
 }
-
 
 "A runtime-calculated `Timestamp` value relative to `now` or `at`."
 input Timestamp_Relative @fdc_forbiddenAsVariableType @fdc_forbiddenAsFieldType {
@@ -1653,132 +1954,112 @@ enum Date_Interval @fdc_forbiddenAsFieldType {
   YEAR
 }
 
-"Update input of a `String` value."
-input String_Update {
-  "Set the field to a provided value."
-  set: String @fdc_oneOf(group: "set")
-  "Set the field to a provided server value expression."
-  set_expr: String_Expr @fdc_oneOf(group: "set")
-}
-
-"Update input of a `String` list value."
+"Update input of a `String` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input String_ListUpdate {
-  "Set the list with the provided values."
-  set: [String!]
   "Append the provided values to the existing list."
-  append: [String!]
+  append: [String!] @fdc_oneOf
   "Prepend the provided values to the existing list."
-  prepend: [String!]
+  prepend: [String!] @fdc_oneOf
+  "Append values that do not already exist to the list."
+  add: [String!] @fdc_oneOf
+  "Remove all occurrences of each value from the list."
+  remove: [String!] @fdc_oneOf
 }
 
-"Update input of a `UUID` value."
-input UUID_Update {
-  "Set the field to a provided UUID."
-  set: UUID @fdc_oneOf(group: "set")
-  "Set the field to a provided UUID expression."
-  set_expr: UUID_Expr @fdc_oneOf(group: "set")
-}
-
-"Update input of an `ID` list value."
+"Update input of an `ID` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input UUID_ListUpdate {
-  "Set the list with the provided list of UUIDs."
-  set: [UUID!]
   "Append the provided UUIDs to the existing list."
-  append: [UUID!]
+  append: [UUID!] @fdc_oneOf
   "Prepend the provided UUIDs to the existing list."
-  prepend: [UUID!]
+  prepend: [UUID!] @fdc_oneOf
+  "Append values that do not already exist to the list."
+  add: [UUID!] @fdc_oneOf
+  "Remove all occurrences of each value from the list."
+  remove: [UUID!] @fdc_oneOf
 }
 
-"Update input of an `Int` value."
+"Update input of an `Int` value. Only one of `inc` or `dec` may be specified."
 input Int_Update {
-  "Set the field to a provided value."
-  set: Int
   "Increment the field by a provided value."
-  inc: Int
+  inc: Int @fdc_oneOf
   "Decrement the field by a provided value."
-  dec: Int
+  dec: Int @fdc_oneOf
 }
 
-"Update input of an `Int` list value."
+"Update input of an `Int` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input Int_ListUpdate {
-  "Set the list with the provided values."
-  set: [Int!]
   "Append the provided list of values to the existing list."
-  append: [Int!]
+  append: [Int!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Int!]
+  prepend: [Int!] @fdc_oneOf
+  "Append values that do not already exist to the list."
+  add: [Int!] @fdc_oneOf
+  "Remove all occurrences of each value from the list."
+  remove: [Int!] @fdc_oneOf
 }
 
-"Update input of an `Int64` value."
+"Update input of an `Int64` value. Only one of `inc` or `dec` may be specified."
 input Int64_Update {
-  "Set the field to a provided value."
-  set: Int64
   "Increment the field by a provided value."
-  inc: Int64
+  inc: Int64 @fdc_oneOf
   "Decrement the field by a provided value."
-  dec: Int64
+  dec: Int64 @fdc_oneOf
 }
 
-"Update input of an `Int64` list value."
+"Update input of an `Int64` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input Int64_ListUpdate {
-  "Replace the list with the provided values."
-  set: [Int64!]
   "Append the provided list of values to the existing list."
-  append: [Int64!]
+  append: [Int64!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Int64!]
+  prepend: [Int64!] @fdc_oneOf
+  "Append values that do not already exist to the list."
+  add: [Int64!] @fdc_oneOf
+  "Remove all occurrences of each value from the list."
+  remove: [Int64!] @fdc_oneOf
 }
 
-"Update input of a `Float` value."
+"Update input of a `Float` value. Only one of `inc` or `dec` may be specified."
 input Float_Update {
-  "Set the field to a provided value."
-  set: Float
   "Increment the field by a provided value."
-  inc: Float
+  inc: Float @fdc_oneOf
   "Decrement the field by a provided value."
-  dec: Float
+  dec: Float @fdc_oneOf
 }
 
-"Update input of a `Float` list value."
+"Update input of a `Float` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input Float_ListUpdate {
-  "Set the list with the provided values."
-  set: [Float!]
   "Append the provided list of values to the existing list."
-  append: [Float!]
+  append: [Float!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Float!]
+  prepend: [Float!] @fdc_oneOf
+  "Append values that do not already exist to the list."
+  add: [Float!] @fdc_oneOf
+  "Remove all occurrences of each value from the list."
+  remove: [Float!] @fdc_oneOf
 }
 
-"Update input of a `Boolean` value."
-input Boolean_Update {
-  "Set the field to a provided value."
-  set: Boolean
-}
-
-"Update input of a `Boolean` list value."
+"Update input of a `Boolean` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input Boolean_ListUpdate {
-  "Set the list with the provided values."
-  set: [Boolean!]
   "Append the provided list of values to the existing list."
-  append: [Boolean!]
+  append: [Boolean!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Boolean!]
+  prepend: [Boolean!] @fdc_oneOf
+  "Append values that do not already exist to the list."
+  add: [Boolean!] @fdc_oneOf
+  "Remove all occurrences of each value from the list."
+  remove: [Boolean!] @fdc_oneOf
 }
 
-"Update input of an `Any` value."
-input Any_Update {
-  "Set the field to a provided value."
-  set: Any
-}
-
-"Update input of an `Any` list value."
+"Update input of an `Any` list value. Only one of `append`, `prepend`, `add`, or `remove` may be specified."
 input Any_ListUpdate {
-  "Set the list with the provided values."
-  set: [Any!]
   "Append the provided list of values to the existing list."
-  append: [Any!]
+  append: [Any!] @fdc_oneOf
   "Prepend the provided list of values to the existing list."
-  prepend: [Any!]
+  prepend: [Any!] @fdc_oneOf
+  "Append values that do not already exist to the list."
+  add: [Any!] @fdc_oneOf
+  "Remove all occurrences of each value from the list."
+  remove: [Any!] @fdc_oneOf
 }
 
 type Query {
@@ -1807,7 +2088,7 @@ Defaults to `INNER_PRODUCT`.
 
 View [all vector functions](https://github.com/pgvector/pgvector?tab=readme-ov-file#vector-functions).
 """
-enum VectorSimilarityMethod {
+enum VectorSimilarityMethod @fdc_forbiddenAsFieldType {
   "Measures the Euclidean (L2) distance between two vectors."
   L2
   "Measures the cosine similarity between two vectors."
@@ -1839,31 +2120,6 @@ input Vector_ListFilter {
   includesAll: [Vector!]
   "Match if the list contains none of the provided vectors."
   excludesAll: [Vector!]
-}
-
-"Update input of a Vector value."
-input Vector_Update {
-  "Set the field to the provided vector value."
-  set: Vector @fdc_oneOf(group: "set")
-  "Set the field to the vector embedding result from a text input."
-  set_embed: Vector_Embed @fdc_oneOf(group: "set")
-}
-
-
-"Update input of a Vector list value."
-input Vector_ListUpdate {
-  "Replace the current list with the provided list of Vector values."
-  set: [Vector]
-  "Append the provided Vector values to the existing list."
-  append: [Vector]
-  "Prepend the provided Vector values to the existing list."
-  prepend: [Vector]
-  "Delete the vector at the specified index."
-  delete: Int
-  "The index of the vector to be updated."
-  i: Int
-  "Update the vector at the specified index."
-  update: Vector
 }
 
 """
@@ -1934,73 +2190,5 @@ scalar Vector_Embed_Model
   @fdc_example(value: "textembedding-gecko@001", description: "An older version of the textembedding-gecko model")
   @fdc_example(value: "text-embedding-004", description: "Another text embedding model")
 
-"""
-Redact a part of the response from the client.
-
-Redacted fields are still evaluated for side effects (including data changes and
-`@check`) and the results are still available to later steps in CEL expressions
-(via `response.fieldName`).
-"""
-directive @redact on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-
-"""
-Ensure this field is present and is not null or `[]`, or abort the request / transaction.
-
-A CEL expression, `expr` is used to test the field value. It defaults to
-rejecting null and `[]` but a custom expression can be provided instead.
-
-If the field occurs multiple times (i.e. directly or indirectly nested under a
-list), `expr` will be executed once for each occurrence and `@check` succeeds if
-all values succeed. `@check` fails when the field is not present at all (i.e.
-all ancestor paths contain `null` or `[]`), unless `optional` is true.
-
-If a `@check` fails in a mutation, the top-level field containing it will be
-replaced with a partial error, whose message can be customzied via the `message`
-argument. Each subsequent top-level fields will return an aborted error (i.e.
-not executed). To rollback previous steps, see `@transaction`.
-"""
-directive @check(
-  """
-  The CEL expression to test the field value (or values if nested under a list).
-
-  Within the CEL expression, a special value `this` evaluates to the field that
-  this directive is attached to. If this field occurs multiple times because
-  any ancestor is a list, each occurrence is tested with `this` bound to each
-  value. When the field itself is a list or object, `this` follows the same
-  structure (including all decendants selected in case of objects).
-
-  For any given path, if an ancestor is `null` or `[]`, the field will not be
-  reached and the CEL evaluation will be skipped for that path. In other words,
-  evaluation only takes place when `this` is `null` or non-null, but never
-  undefined. (See also the `optional` argument.)
-  """
-  expr: Boolean_Expr! = "!(this in [null, []])"
-  """
-  The error message to return to the client if the check fails.
-
-  Defaults to "permission denied" if not specified.
-  """
-  message: String! = "permission denied"
-  """
-  Whether the check should pass or fail (default) when the field is not present.
-
-  A field will not be reached at a given path if its parent or any ancestor is
-  `[]` or `null`. When this happens to all paths, the field will not be present
-  anywhere in the response tree. In other words, `expr` is evaluated 0 times.
-  By default, @check will automatically fail in this case. Set this argument to
-  `true` to make it pass even if no tests are run (a.k.a. "vacuously true").
-  """
-  optional: Boolean = false
-) repeatable on QUERY | MUTATION | FIELD | FRAGMENT_DEFINITION | FRAGMENT_SPREAD | INLINE_FRAGMENT
-
-type Mutation {
-  """
-  Run a query during the mutation and add fields into the response.
-
-  Example: foo: query { users { id } } will add a field foo: {users: [{id: "..."}, …]} into the response JSON.
-
-  Note: Data fetched this way can be handy for permission checks. See @check.
-  """
-  query: Query
-}
+# Intentionally left blank.
 

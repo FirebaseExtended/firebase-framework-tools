@@ -59,6 +59,14 @@ input Product_Data {
   """
   price: Float
   """
+  ✨ `_expr` server value variant of `price` (✨ Generated from Field `Product`.`price` of type `Float!`)
+  """
+  price_expr: Float_Expr
+  """
+  ✨ `_update` server value variant of `price` (✨ Generated from Field `Product`.`price` of type `Float!`)
+  """
+  price_update: [Float_Update!]
+  """
   ✨ Generated from Field `Product`.`productID` of type `String!`
   """
   productID: String
@@ -138,6 +146,79 @@ input Product_FirstRow {
   where: Product_Filter
 }
 """
+✨ Generated having input type for table 'Product'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Product_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Product_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Product_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Product_Having!]
+  """
+  ✨ Generated from Field `Product`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`descriptionEmbedding_count` of type `Int!`
+  """
+  descriptionEmbedding_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`description_count` of type `Int!`
+  """
+  description_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`nameEmbedding_count` of type `Int!`
+  """
+  nameEmbedding_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`name_count` of type `Int!`
+  """
+  name_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`price_count` of type `Int!`
+  """
+  price_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`productID_count` of type `Int!`
+  """
+  productID_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`productSlug_count` of type `Int!`
+  """
+  productSlug_count: Int_Filter
+  """
+  ✨ Generated from Field `Product`.`price_sum` of type `Float`
+  """
+  price_sum: Float_Filter
+  """
+  ✨ Generated from Field `Product`.`price_avg` of type `Float`
+  """
+  price_avg: Float_Filter
+  """
+  ✨ Generated from Field `Product`.`price_min` of type `Float`
+  """
+  price_min: Float_Filter
+  """
+  ✨ Generated from Field `Product`.`price_max` of type `Float`
+  """
+  price_max: Float_Filter
+}
+"""
 ✨ Generated key input type for table 'Product'. It represents the primary key fields used to uniquely identify a row in the table.
 """
 input Product_Key {
@@ -199,6 +280,58 @@ input Product_Order {
   ✨ Generated from Field `Product`.`productSlug` of type `String!`
   """
   productSlug: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`descriptionEmbedding_count` of type `Int!`
+  """
+  descriptionEmbedding_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`description_count` of type `Int!`
+  """
+  description_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`nameEmbedding_count` of type `Int!`
+  """
+  nameEmbedding_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`name_count` of type `Int!`
+  """
+  name_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`price_count` of type `Int!`
+  """
+  price_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`productID_count` of type `Int!`
+  """
+  productID_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`productSlug_count` of type `Int!`
+  """
+  productSlug_count: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`price_sum` of type `Float`
+  """
+  price_sum: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`price_avg` of type `Float`
+  """
+  price_avg: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`price_min` of type `Float`
+  """
+  price_min: OrderDirection
+  """
+  ✨ Generated from Field `Product`.`price_max` of type `Float`
+  """
+  price_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Review'. It includes all necessary fields for creating or upserting rows into table.
@@ -241,6 +374,10 @@ input Review_Data {
   """
   createdAt_expr: Date_Expr
   """
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Review`.`createdAt` of type `Date!`)
+  """
+  createdAt_update: [Date_Update!]
+  """
   ✨ Generated from Field `Review`.`productID` of type `String!`
   """
   productID: String
@@ -268,6 +405,14 @@ input Review_Data {
   ✨ Generated from Field `Review`.`rating` of type `Float!`
   """
   rating: Float
+  """
+  ✨ `_expr` server value variant of `rating` (✨ Generated from Field `Review`.`rating` of type `Float!`)
+  """
+  rating_expr: Float_Expr
+  """
+  ✨ `_update` server value variant of `rating` (✨ Generated from Field `Review`.`rating` of type `Float!`)
+  """
+  rating_update: [Float_Update!]
   """
   ✨ Generated from Field `Review`.`userID` of type `String!`
   """
@@ -356,6 +501,95 @@ input Review_FirstRow {
   where: Review_Filter
 }
 """
+✨ Generated having input type for table 'Review'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Review_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Review_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Review_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Review_Having!]
+  """
+  ✨ Generated from Field `Review`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`contentEmbedding_count` of type `Int!`
+  """
+  contentEmbedding_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`content_count` of type `Int!`
+  """
+  content_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`productID_count` of type `Int!`
+  """
+  productID_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`productName_count` of type `Int!`
+  """
+  productName_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`productSlug_count` of type `Int!`
+  """
+  productSlug_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`rating_count` of type `Int!`
+  """
+  rating_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`userID_count` of type `Int!`
+  """
+  userID_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`userName_count` of type `Int!`
+  """
+  userName_count: Int_Filter
+  """
+  ✨ Generated from Field `Review`.`rating_sum` of type `Float`
+  """
+  rating_sum: Float_Filter
+  """
+  ✨ Generated from Field `Review`.`rating_avg` of type `Float`
+  """
+  rating_avg: Float_Filter
+  """
+  ✨ Generated from Field `Review`.`createdAt_min` of type `Date`
+  """
+  createdAt_min: Date_Filter
+  """
+  ✨ Generated from Field `Review`.`rating_min` of type `Float`
+  """
+  rating_min: Float_Filter
+  """
+  ✨ Generated from Field `Review`.`createdAt_max` of type `Date`
+  """
+  createdAt_max: Date_Filter
+  """
+  ✨ Generated from Field `Review`.`rating_max` of type `Float`
+  """
+  rating_max: Float_Filter
+}
+"""
 ✨ Generated key input type for table 'Review'. It represents the primary key fields used to uniquely identify a row in the table.
 """
 input Review_Key {
@@ -425,4 +659,72 @@ input Review_Order {
   ✨ Generated from Field `Review`.`userName` of type `String!`
   """
   userName: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`contentEmbedding_count` of type `Int!`
+  """
+  contentEmbedding_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`content_count` of type `Int!`
+  """
+  content_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`productID_count` of type `Int!`
+  """
+  productID_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`productName_count` of type `Int!`
+  """
+  productName_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`productSlug_count` of type `Int!`
+  """
+  productSlug_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`rating_count` of type `Int!`
+  """
+  rating_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`userID_count` of type `Int!`
+  """
+  userID_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`userName_count` of type `Int!`
+  """
+  userName_count: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`rating_sum` of type `Float`
+  """
+  rating_sum: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`rating_avg` of type `Float`
+  """
+  rating_avg: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`createdAt_min` of type `Date`
+  """
+  createdAt_min: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`rating_min` of type `Float`
+  """
+  rating_min: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`createdAt_max` of type `Date`
+  """
+  createdAt_max: OrderDirection
+  """
+  ✨ Generated from Field `Review`.`rating_max` of type `Float`
+  """
+  rating_max: OrderDirection
 }
