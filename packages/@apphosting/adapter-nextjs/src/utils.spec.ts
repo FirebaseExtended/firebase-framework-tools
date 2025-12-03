@@ -6,6 +6,13 @@ import path from "path";
 import os from "os";
 import { RoutesManifest, MiddlewareManifest } from "../src/interfaces.js";
 
+describe("block vulnerable nextjs versions", () => {
+  const { checkNextJSVersion } = await importUtils;
+  let version;
+  checkNextJSVersion(version);
+  // TODO
+}
+
 describe("manifest utils", () => {
   let tmpDir: string;
   let distDir: string;

@@ -1,4 +1,5 @@
 import fsExtra from "fs-extra";
+import semVer from "semver";
 import { createRequire } from "node:module";
 import { join, dirname, relative, normalize } from "path";
 import { fileURLToPath } from "url";
@@ -16,7 +17,18 @@ import { OutputBundleConfig, updateOrCreateGitignore } from "@apphosting/common"
 
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
-  fsExtra;
+	     fsExtra;
+export const {satisfies} = semVer;
+
+export function checkNextJSVersion(version: string | undefined) {
+  if (version == undefined) {
+    return
+  }
+  if (!satisfies(version, '>=16.1.0 || ^16.0.7 || ^v15.5.7 || ^v15.4.8 || ^v15.3.6 || ^v15.2.6 || ^v15.1.9 || ^v15.0.5 || <14.3.0-canary.77')) {
+    throw new Error(
+    `CVE-2025-55182: Vulnerable Next version ${version} detected. Build blocked`);
+  }
+}
 
 // Loads the user's next.config.js file.
 export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
