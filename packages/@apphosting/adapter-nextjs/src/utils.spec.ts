@@ -14,12 +14,40 @@ describe("block vulnerable nextjs versions", () => {
       checkNextJSVersion("15.0.0");
     });
 
-    assert.ok(() => {
+    assert.doesNotThrow(() => {
       checkNextJSVersion(undefined);
     });
 
-    assert.ok(() => {
+    assert.doesNotThrow(() => {
       checkNextJSVersion("15.0.5");
+    });
+
+    assert.doesNotThrow(() => {
+      checkNextJSVersion("14.0.12");
+    });
+
+    assert.throws(() => {
+      checkNextJSVersion("14.3.0-canary.77");
+    });
+
+    assert.throws(() => {
+      checkNextJSVersion("14.3.0-canary.78");
+    });
+
+    assert.doesNotThrow(() => {
+      checkNextJSVersion("14.3.0-canary.76");
+    });
+
+    assert.throws(() => {
+      checkNextJSVersion("15.0.0-canary.2");
+    });
+
+    assert.throws(() => {
+      checkNextJSVersion("16.0.6");
+    });
+
+    assert.doesNotThrow(() => {
+      checkNextJSVersion("16.0.7");
     });
   });
 });
