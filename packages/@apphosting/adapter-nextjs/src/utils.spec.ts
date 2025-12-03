@@ -22,6 +22,14 @@ describe("block vulnerable nextjs versions", () => {
       checkNextJSVersion("15.0.5");
     });
 
+    assert.throws(() => {
+      checkNextJSVersion("15.4.7");
+    });
+
+    assert.doesNotThrow(() => {
+      checkNextJSVersion("15.4.8");
+    });
+
     assert.doesNotThrow(() => {
       checkNextJSVersion("14.0.12");
     });
