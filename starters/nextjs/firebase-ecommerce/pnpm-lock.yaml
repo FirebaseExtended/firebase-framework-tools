@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@firebasegen/default-connector':
+        specifier: file:dataconnect-generated/js/default-connector
+        version: file:dataconnect-generated/js/default-connector(firebase@11.1.0)
       '@google/generative-ai':
         specifier: ^0.21.0
         version: 0.21.0
@@ -2832,6 +2835,10 @@ snapshots:
       tslib: 2.8.1
 
   '@firebase/webchannel-wrapper@1.0.3': {}
+
+  '@firebasegen/default-connector@file:dataconnect-generated/js/default-connector(firebase@11.1.0)':
+    dependencies:
+      firebase: 11.1.0
 
   '@floating-ui/core@1.6.8':
     dependencies:
