@@ -21,7 +21,7 @@ export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsS
 export const { satisfies } = semVer;
 
 const SAFE_NEXTJS_VERSIONS =
-  ">=16.1.0 || ~16.0.7 || ~v15.5.7 || ~v15.4.8 || ~v15.3.6 || ~v15.2.6 || ~v15.1.9 || ~v15.0.5 || <14.3.0-canary.77";
+  ">=16.1.0 || ^16.0.7 || ^v15.5.7 || ^v15.4.8 || ^v15.3.6 || ^v15.2.6 || ^v15.1.9 || ^v15.0.5 || <14.3.0-canary.77";
 
 export function checkNextJSVersion(version: string | undefined) {
   if (!version) {
@@ -29,7 +29,7 @@ export function checkNextJSVersion(version: string | undefined) {
   }
   if (!satisfies(version, SAFE_NEXTJS_VERSIONS)) {
     throw new Error(
-      `CVE-2025-55182: Vulnerable Next version ${version} detected. Deployment blocked. Update your app's dependencies to a patched Next.js version and redeploy: https://nextjs.org/blog/CVE-2025-66478#fixed-versions`,
+      `CVE-2025-55182: Vulnerable Next version ${version} detected. Deployment blocked. Update your app's dependencies to a patched Next.js version and redeploy:https://nextjs.org/blog/CVE-2025-66478#fixed-versions`,
     );
   }
 }
