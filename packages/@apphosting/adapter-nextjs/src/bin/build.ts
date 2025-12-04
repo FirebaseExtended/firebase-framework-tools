@@ -6,7 +6,6 @@ import {
   validateOutputDirectory,
   getAdapterMetadata,
   exists,
-  checkNextJSVersion,
 } from "../utils.js";
 import { join } from "path";
 import { getBuildOptions, runBuild } from "@apphosting/common";
