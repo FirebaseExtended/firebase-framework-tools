@@ -1,5 +1,4 @@
 import fsExtra from "fs-extra";
-import semVer from "semver";
 import { createRequire } from "node:module";
 import { join, dirname, relative, normalize } from "path";
 import { fileURLToPath } from "url";
@@ -18,7 +17,6 @@ import { OutputBundleConfig, updateOrCreateGitignore } from "@apphosting/common"
 // fs-extra is CJS, readJson can't be imported using shorthand
 export const { copy, exists, writeFile, readJson, readdir, readFileSync, existsSync, ensureDir } =
   fsExtra;
-export const { satisfies } = semVer;
 
 // Loads the user's next.config.js file.
 export async function loadConfig(root: string, projectRoot: string): Promise<NextConfigComplete> {
