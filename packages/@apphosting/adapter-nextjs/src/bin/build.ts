@@ -1,80 +1,80 @@
-#! /usr/bin/env node
-import {
-  loadConfig,
-  populateOutputBundleOptions,
-  generateBuildOutput,
-  validateOutputDirectory,
-  getAdapterMetadata,
-  exists,
-  checkNextJSVersion,
-} from "../utils.js";
-import { join } from "path";
-import { getBuildOptions, runBuild } from "@apphosting/common";
-import {
-  addRouteOverrides,
-  overrideNextConfig,
-  restoreNextConfig,
-  validateNextConfigOverride,
-} from "../overrides.js";
+import { build } from "esbuild";
+import { spawn } from "child_process";
+import { join, dirname } from "path"; // Ensure dirname is imported
+import fs from "fs-extra";
+import { fileURLToPath } from "url";  // Import this
 
-const root = process.cwd();
-const opts = getBuildOptions();
+// 1. SHIM __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+export async function main() {
+  const root = process.cwd();
+  console.log(`🏗️  Starting Adapter Build in ${root}...`);
 
-// Set standalone mode
-process.env.NEXT_PRIVATE_STANDALONE = "true";
-// Opt-out sending telemetry to Vercel
-process.env.NEXT_TELEMETRY_DISABLED = "1";
+  // 1. Run Next.js Build
+  const nextBuild = spawn("npx", ["next", "build"], { 
+    stdio: "inherit", 
+    cwd: root,
+    shell: true,
+    env: { ...process.env, NODE_ENV: "production" }
+  });
 
-checkNextJSVersion(process.env.FRAMEWORK_VERSION);
-const nextConfig = await loadConfig(root, opts.projectDirectory);
+  await new Promise<void>((resolve, reject) => {
+    nextBuild.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`Next.js build failed with code ${code}`));
+    });
+  });
 
-/**
- * Override user's Next Config to optimize the app for Firebase App Hosting
- * and validate that the override resulted in a valid config that Next.js can
- * load.
- *
- * We restore the user's Next Config at the end of the build, after the config file has been
- * copied over to the output directory, so that the user's original code is not modified.
- *
- * If the app does not have a next.config.[js|mjs|ts] file in the first place,
- * then can skip config override.
- *
- * Note: loadConfig always returns a fileName (default: next.config.js) even if
- * one does not exist in the app's root: https://github.com/vercel/next.js/blob/23681508ca34b66a6ef55965c5eac57de20eb67f/packages/next/src/server/config.ts#L1115
- */
-const nextConfigPath = join(root, nextConfig.configFileName);
-if (await exists(nextConfigPath)) {
-  await overrideNextConfig(root, nextConfig.configFileName);
-  await validateNextConfigOverride(root, opts.projectDirectory, nextConfig.configFileName);
+  // 2. Move Standalone Output to .apphosting
+  // The standalone build creates a folder structure that mirrors your hard drive
+  // e.g., .next/standalone/Users/name/project/...
+  // We need to find the actual project root inside standalone.
+  const standaloneDir = join(root, ".next", "standalone");
+  const outputDir = join(root, ".apphosting");
+  
+  // Clean previous build
+  await fs.remove(outputDir);
+  await fs.ensureDir(outputDir);
+
+  console.log("📦 Copying standalone server to .apphosting...");
+  
+  // Copy the standalone directory content to .apphosting
+  // Note: This includes a 'server.js' and 'node_modules'
+  await fs.copy(standaloneDir, outputDir);
+
+  // Copy the 'public' folder and '.next/static' (Standalone doesn't include these by default!)
+  await fs.copy(join(root, "public"), join(outputDir, "public"), { dereference: true }).catch(() => {});
+  await fs.copy(join(root, ".next", "static"), join(outputDir, ".next", "static"), { dereference: true });
+  const configSource = join(root, ".next", "firebase-next-config.json");
+  const configDest = join(outputDir, "firebase-next-config.json");
+  
+  if (await fs.pathExists(configSource)) {
+    console.log("📦 Copying serialized config...");
+    await fs.copy(configSource, configDest);
+  } else {
+    console.warn("⚠️ Could not find firebase-next-config.json. Server may fail to start.");
+  }
+  // 3. Bundle OUR Runtime Server
+  // We put our serve.js *next to* the Next.js server.js
+  console.log("📦 Bundling runtime server...");
+  await build({
+    entryPoints: [join(__dirname, "../../src/bin/serve.ts")], 
+    bundle: true,
+    platform: "node",
+    format: "cjs", 
+    outfile: join(outputDir, "adapter-server.js"),
+    external: ["next", "react", "react-dom"], 
+  });
+
+  console.log("✅ Build complete. Artifacts in .apphosting/");
+  
 }
 
-try {
-  await runBuild();
 
-  const adapterMetadata = getAdapterMetadata();
-  const nextBuildDirectory = join(opts.projectDirectory, nextConfig.distDir);
-  const outputBundleOptions = populateOutputBundleOptions(
-    root,
-    opts.projectDirectory,
-    nextBuildDirectory,
-  );
-
-  await addRouteOverrides(
-    outputBundleOptions.outputDirectoryAppPath,
-    nextConfig.distDir,
-    adapterMetadata,
-  );
-
-  const nextjsVersion = process.env.FRAMEWORK_VERSION || "unspecified";
-  await generateBuildOutput(
-    root,
-    opts.projectDirectory,
-    outputBundleOptions,
-    nextBuildDirectory,
-    nextjsVersion,
-    adapterMetadata,
-  );
-  await validateOutputDirectory(outputBundleOptions, nextBuildDirectory);
-} finally {
-  await restoreNextConfig(root, nextConfig.configFileName);
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
 }
