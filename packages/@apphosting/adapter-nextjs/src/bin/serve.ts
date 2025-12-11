@@ -2,6 +2,11 @@ import { createServer } from "http";
 import { parse } from "url";
 import path from "path";
 import fs from "fs";
+// DELETE: import { fileURLToPath } from "url"; 
+
+// DELETE these lines. They crash in CJS.
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // 1. SET ENV VARS
 // @ts-ignore
@@ -11,26 +16,29 @@ process.env['NEXT_PRIVATE_MINIMAL_MODE'] = "1";
 console.log("🚀 Starting Native Adapter...");
 
 async function start() {
-  const currentDir = process.cwd();
+  // CRITICAL FIX: Use the native __dirname directly.
+  // We use @ts-ignore because TypeScript might complain if it thinks this is ESM.
+  // @ts-ignore
+  const serverDir = __dirname;
 
   try {
-    // 2. Load the Serialized Config
-    // This file was created by adapter.ts and copied by build.ts
-    const configPath = path.join(currentDir, "firebase-next-config.json");
+    // 2. Load the Serialized Config relative to THIS script
+    const configPath = path.join(serverDir, "firebase-next-config.json");
     
     console.log(`📥 Loading config from ${configPath}`);
     const rawConfig = fs.readFileSync(configPath, 'utf-8');
     const buildContext = JSON.parse(rawConfig);
 
-    // 3. Resolve Next.js Server
-    const nextPath = require.resolve("next/dist/server/next-server", { paths: [currentDir] });
+    // 3. Resolve Next.js Server relative to THIS script
+    const nextPath = require.resolve("next/dist/server/next-server", { paths: [serverDir] });
     const NextServer = require(nextPath).default;
+
     // 4. Initialize Server with the loaded config
     const server = new NextServer({
-      dir: currentDir,
+      dir: serverDir, 
       hostname: '0.0.0.0',
       port: parseInt(process.env.PORT || "8080"),
-      conf: buildContext.config // <--- Pass the simple JSON object
+      conf: buildContext.config 
     });
 
     console.log("⏳ Preparing server...");
@@ -42,7 +50,6 @@ async function start() {
       try {
         const parsedUrl = parse(req.url, true);
 
-        // FAKE PROXY HEADER (For local testing only)
         if (!req.headers['x-matched-path']) {
           req.headers['x-matched-path'] = parsedUrl.pathname;
         }

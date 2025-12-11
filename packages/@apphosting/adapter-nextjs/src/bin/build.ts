@@ -1,4 +1,6 @@
+#! /usr/bin/env node
 import { build } from "esbuild";
+import { stringify } from "yaml"; // Add this import
 import { spawn } from "child_process";
 import { join, dirname } from "path"; // Ensure dirname is imported
 import fs from "fs-extra";
@@ -59,7 +61,7 @@ export async function main() {
   // We put our serve.js *next to* the Next.js server.js
   console.log("📦 Bundling runtime server...");
   await build({
-    entryPoints: [join(__dirname, "../../src/bin/serve.ts")], 
+    entryPoints: [join(__dirname, "serve.js")],
     bundle: true,
     platform: "node",
     format: "cjs", 
@@ -67,14 +69,42 @@ export async function main() {
     external: ["next", "react", "react-dom"], 
   });
 
-  console.log("✅ Build complete. Artifacts in .apphosting/");
+  console.log("📦 Generating bundle.yaml...");
   
+  const bundle = {
+    version: "v1",
+    runConfig: {
+      // This runs the file we just bundled in step 3
+      runCommand: "node .apphosting/adapter-server.js",
+      
+      // Basic defaults - you can expose these as flags later if needed
+      concurrency: 80,
+      cpu: 1,
+      memoryMiB: 512,
+      minInstances: 0,
+      maxInstances: 100
+    },
+    metadata: {
+      adapterPackageName: "wei-nextjs-adapter-test",
+      adapterVersion: "15.0.3", // You might want to import this from package.json
+      framework: "nextjs",
+    },
+    outputFiles: {
+      serverApp: {
+        // We tell App Hosting to only upload/keep the .apphosting folder
+        // since we moved everything important into it during Step 2.
+        include: [".apphosting"]
+      }
+    }
+  };
+
+  await fs.writeFile(join(outputDir, "bundle.yaml"), stringify(bundle));
+
+  console.log("✅ Build complete. Artifacts in .apphosting/");
 }
 
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
-}
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

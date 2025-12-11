@@ -34,4 +34,4 @@ async onBuildComplete(data) {
 };
 
 // Next.js expects a CommonJS export for the adapter
-module.exports = adapter;
+export default adapter;
