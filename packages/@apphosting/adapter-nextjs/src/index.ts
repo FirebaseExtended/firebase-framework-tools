@@ -5,7 +5,6 @@ import path from 'path';
 const adapter: NextAdapter = {
   name: 'firebase-apphosting-adapter',
 
-  // Hook 1: Modify Config (Optional)
   async modifyConfig(config, context) {
     console.log(`🔌 [Adapter] Modifying config for phase: ${context.phase}`);
     // You can force settings here, e.g., enforcing standalone output
@@ -14,13 +13,11 @@ const adapter: NextAdapter = {
       output: 'standalone', 
       experimental: {
         ...config.experimental,
-        // Helper to ensure ISR works correctly in some environments
         isrMemoryCacheSize: 0, 
       }
     };
   },
 
-  // Hook 2: Build Complete (The specific feature you wanted)
 async onBuildComplete(data) {
     console.log('🔌 [Adapter] Build Complete. Serializing config...');
 
@@ -33,5 +30,4 @@ async onBuildComplete(data) {
   }
 };
 
-// Next.js expects a CommonJS export for the adapter
 export default adapter;

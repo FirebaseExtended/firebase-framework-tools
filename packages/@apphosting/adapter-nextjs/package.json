@@ -1,6 +1,6 @@
 {
   "name": "wei-nextjs-adapter-test",
-  "version": "15.0.10",
+  "version": "15.0.13",
   "main": "dist/index.js",
   "description": "Experimental addon to the Firebase CLI to add web framework support",
   "repository": {

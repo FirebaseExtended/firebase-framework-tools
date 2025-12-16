@@ -2,72 +2,83 @@ import { createServer } from "http";
 import { parse } from "url";
 import path from "path";
 import fs from "fs";
-// DELETE: import { fileURLToPath } from "url"; 
-
-// DELETE these lines. They crash in CJS.
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 // 1. SET ENV VARS
 // @ts-ignore
 process.env['NODE_ENV'] = "production";
 process.env['NEXT_PRIVATE_MINIMAL_MODE'] = "1";
 
-console.log("🚀 Starting Native Adapter...");
-
 async function start() {
-  // CRITICAL FIX: Use the native __dirname directly.
-  // We use @ts-ignore because TypeScript might complain if it thinks this is ESM.
   // @ts-ignore
   const serverDir = __dirname;
 
-  try {
-    // 2. Load the Serialized Config relative to THIS script
-    const configPath = path.join(serverDir, "firebase-next-config.json");
+  // 2. IMPORT NEXT.JS INTERNALS (REQUIRED FOR PPR)
+  // We need this symbol to attach the postponed state
+  const nextMetaPath = require.resolve("next/dist/server/request-meta", { paths: [serverDir] });
+  const { NEXT_REQUEST_META } = require(nextMetaPath);
+
+  // 3. LOAD CONFIG
+  const configPath = path.join(serverDir, "firebase-next-config.json");
+  const rawConfig = fs.readFileSync(configPath, 'utf-8');
+  const buildContext = JSON.parse(rawConfig);
+
+  // Helper to find the postponed state for a path
+  const getPostponedState = (path: string) => {
+    // 1. Try exact match
+    let prerender = buildContext.outputs.prerenders.find((it: any) => it.pathname === path);
     
-    console.log(`📥 Loading config from ${configPath}`);
-    const rawConfig = fs.readFileSync(configPath, 'utf-8');
-    const buildContext = JSON.parse(rawConfig);
+    // 2. Try dynamic match
+    if (!prerender) {
+      const dynamicMatch = buildContext.routes.dynamicRoutes.find((it: any) => 
+        path.match(new RegExp(it.sourceRegex))
+      )?.source;
+      prerender = buildContext.outputs.prerenders.find((it: any) => it.pathname === dynamicMatch);
+    }
 
-    // 3. Resolve Next.js Server relative to THIS script
-    const nextPath = require.resolve("next/dist/server/next-server", { paths: [serverDir] });
-    const NextServer = require(nextPath).default;
+    return prerender?.fallback?.postponedState;
+  };
 
-    // 4. Initialize Server with the loaded config
-    const server = new NextServer({
-      dir: serverDir, 
-      hostname: '0.0.0.0',
-      port: parseInt(process.env.PORT || "8080"),
-      conf: buildContext.config 
-    });
+  // 4. SETUP SERVER
+  const nextPath = require.resolve("next/dist/server/next-server", { paths: [serverDir] });
+  const NextServer = require(nextPath).default;
+  
+  const server = new NextServer({
+    dir: serverDir,
+    hostname: '0.0.0.0',
+    port: parseInt(process.env.PORT || "8080"),
+    conf: buildContext.config,
+  });
 
-    console.log("⏳ Preparing server...");
-    const requestHandler = server.getRequestHandler();
-    await server.prepare();
+  await server.prepare();
+  const requestHandler = server.getRequestHandler();
 
-    // 5. Start HTTP Listener
-    createServer(async (req: any, res: any) => {
-      try {
-        const parsedUrl = parse(req.url, true);
+  createServer(async (req: any, res: any) => {
+    try {
+      const parsedUrl = parse(req.url, true);
+      const { pathname } = parsedUrl;
 
-        if (!req.headers['x-matched-path']) {
-          req.headers['x-matched-path'] = parsedUrl.pathname;
+      if (req.headers['next-resume'] === '1' && pathname) {
+        const postponed = getPostponedState(pathname);
+        if (postponed) {
+          console.log(`⚡️ Injecting Postponed State for ${pathname}`);
+          
+          req[NEXT_REQUEST_META] = { 
+            postponed: postponed 
+          };
         }
-
-        await requestHandler(req, res, parsedUrl);
-      } catch (err) {
-        console.error("Request Error:", err);
-        res.statusCode = 500;
-        res.end("Internal Error");
       }
-    }).listen(parseInt(process.env.PORT || "8080"), () => {
-      console.log(`> Ready on http://localhost:${process.env.PORT || 8080}`);
-    });
 
-  } catch (e) {
-    console.error("❌ Critical Error:", e);
-    process.exit(1);
-  }
+      if (!req.headers['x-matched-path']) {
+        req.headers['x-matched-path'] = pathname;
+      }
+
+      await requestHandler(req, res, parsedUrl);
+    } catch (err) {
+      console.error(err);
+      res.statusCode = 500;
+      res.end("Internal Error");
+    }
+  }).listen(parseInt(process.env.PORT || "8080"));
 }
 
 start();

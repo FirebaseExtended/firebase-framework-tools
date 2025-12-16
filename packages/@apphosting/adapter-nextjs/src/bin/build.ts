@@ -1,12 +1,11 @@
 #! /usr/bin/env node
 import { build } from "esbuild";
-import { stringify } from "yaml"; // Add this import
+import { stringify } from "yaml";
 import { spawn } from "child_process";
-import { join, dirname } from "path"; // Ensure dirname is imported
+import { join, dirname } from "path";
 import fs from "fs-extra";
-import { fileURLToPath } from "url";  // Import this
+import { fileURLToPath } from "url";
 
-// 1. SHIM __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export async function main() {
@@ -29,9 +28,6 @@ export async function main() {
   });
 
   // 2. Move Standalone Output to .apphosting
-  // The standalone build creates a folder structure that mirrors your hard drive
-  // e.g., .next/standalone/Users/name/project/...
-  // We need to find the actual project root inside standalone.
   const standaloneDir = join(root, ".next", "standalone");
   const outputDir = join(root, ".apphosting");
   
@@ -77,7 +73,6 @@ export async function main() {
       // This runs the file we just bundled in step 3
       runCommand: "node .apphosting/adapter-server.js",
       
-      // Basic defaults - you can expose these as flags later if needed
       concurrency: 80,
       cpu: 1,
       memoryMiB: 512,
@@ -86,13 +81,12 @@ export async function main() {
     },
     metadata: {
       adapterPackageName: "wei-nextjs-adapter-test",
-      adapterVersion: "15.0.3", // You might want to import this from package.json
+      adapterVersion: "15.0.3",
+      frameworkVersion: "16.0.1",
       framework: "nextjs",
     },
     outputFiles: {
       serverApp: {
-        // We tell App Hosting to only upload/keep the .apphosting folder
-        // since we moved everything important into it during Step 2.
         include: [".apphosting"]
       }
     }
