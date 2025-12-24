@@ -1,12 +1,4 @@
-interface RunConfig {
-  runCommand: string;
-  environmentVariables?: EnvVarConfig[];
-  concurrency?: number;
-  cpu?: number;
-  memoryMiB?: number;
-  minInstances?: number;
-  maxInstances?: number;
-}# App Hosting adapters
+# App Hosting adapters
 
 ## Overview
 
