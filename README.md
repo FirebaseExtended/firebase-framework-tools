@@ -1,4 +1,4 @@
-output bundle speck# App Hosting adapters
+#output bundle spec App Hosting adapters
 
 ## Overview
 
