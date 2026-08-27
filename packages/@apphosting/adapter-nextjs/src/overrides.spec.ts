@@ -319,6 +319,36 @@ describe("next config overrides", () => {
     );
   });
 
+  it("should set images.unoptimized to true - TypeScript ESM", async () => {
+    const { overrideNextConfig } = await importOverrides;
+    const originalConfig = `
+    import type { NextConfig } from 'next'
+
+    const nextConfig: NextConfig = {
+      /* config options here */
+    }
+
+    export default nextConfig
+    `;
+
+    fs.writeFileSync(path.join(tmpDir, "next.config.mts"), originalConfig);
+    await overrideNextConfig(tmpDir, "next.config.mts");
+
+    const updatedConfig = fs.readFileSync(path.join(tmpDir, "next.config.mts"), "utf-8");
+
+    assert.equal(
+      normalizeWhitespace(updatedConfig),
+      normalizeWhitespace(`
+      // @ts-nocheck
+      import originalConfig from './next.config.original.mts';
+
+      ${nextConfigOverrideBody}
+
+      export default config;
+      `),
+    );
+  });
+
   it("should not do anything if no next.config.* file exists", async () => {
     const { overrideNextConfig } = await importOverrides;
     await overrideNextConfig(tmpDir, "next.config.js");

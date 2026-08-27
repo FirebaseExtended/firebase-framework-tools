@@ -36,7 +36,7 @@ const nextConfig = await loadConfig(root, opts.projectDirectory);
  * We restore the user's Next Config at the end of the build, after the config file has been
  * copied over to the output directory, so that the user's original code is not modified.
  *
- * If the app does not have a next.config.[js|mjs|ts] file in the first place,
+ * If the app does not have a next.config.[js|mjs|ts|mts] file in the first place,
  * then can skip config override.
  *
  * Note: loadConfig always returns a fileName (default: next.config.js) even if
