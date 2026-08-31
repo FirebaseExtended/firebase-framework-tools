@@ -112,6 +112,14 @@ describe("app", () => {
     assert.notEqual(initialUUID, newUUID, "UUID should change after revalidation");
   });
 
+  it("serves public assets", async () => {
+    for (const asset of ["between-links.svg", "between-cards.svg"]) {
+      const response = await fetch(posix.join(host, asset));
+      assert.ok(response.ok, `${asset} should be served from public/`);
+      assert.ok((await response.text()).includes("<svg"), `${asset} should be an SVG`);
+    }
+  });
+
   it(`404`, async () => {
     const response = await fetch(posix.join(host, Math.random().toString()));
     assert.equal(response.status, 404);

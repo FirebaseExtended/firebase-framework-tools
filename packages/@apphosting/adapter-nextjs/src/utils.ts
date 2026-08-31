@@ -156,6 +156,7 @@ export async function generateBuildOutput(
   const staticDirectory = join(nextBuildDirectory, "static");
   await Promise.all([
     copy(staticDirectory, opts.outputStaticDirectoryPath, { overwrite: true }),
+    copyPublicDirectory(appDir, opts.outputPublicDirectoryPath),
     copyResources(appDir, opts.outputDirectoryAppPath, opts.bundleYamlPath),
     generateBundleYaml(opts, rootDir, nextVersion, adapterMetadata),
   ]);
@@ -164,6 +165,16 @@ export async function generateBuildOutput(
   const normalizedBundleDir = normalize(relative(rootDir, opts.outputDirectoryBasePath));
   updateOrCreateGitignore(rootDir, [`/${normalizedBundleDir}/`]);
   return;
+}
+
+// Copy the app's public directory into the standalone output. Next.js' standalone output does not
+// reliably include it: the webpack builder omits it entirely, and file tracing can pre-create it
+// holding only the assets a server component reads. Merging per file completes either case.
+// https://nextjs.org/docs/app/api-reference/config/next-config-js/output#automatically-copying-traced-files
+async function copyPublicDirectory(appDir: string, outputPublicDir: string): Promise<void> {
+  const publicDirectory = join(appDir, "public");
+  if (!(await exists(publicDirectory))) return;
+  await copy(publicDirectory, outputPublicDir, { overwrite: true });
 }
 
 // Copy all files and directories to apphosting output directory.
@@ -181,7 +192,9 @@ async function copyResources(
     const existsInOutputBundle = await exists(join(outputBundleAppDir, path));
     // Keep apphosting.yaml files in the root directory still, as later steps expect them to be there
     const isApphostingYaml = path === "apphosting_preprocessed" || path === "apphosting.yaml";
-    if (!isbundleYamlDir && !existsInOutputBundle && !isApphostingYaml) {
+    // The public directory is handled by copyPublicDirectory.
+    const isPublicDir = path === "public";
+    if (!isbundleYamlDir && !existsInOutputBundle && !isApphostingYaml && !isPublicDir) {
       await copy(join(appDir, path), join(outputBundleAppDir, path));
     }
   }
