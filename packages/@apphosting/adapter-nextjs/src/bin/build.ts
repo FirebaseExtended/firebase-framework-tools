@@ -35,6 +35,8 @@ const nextConfig = await loadConfig(root, opts.projectDirectory);
  *
  * We restore the user's Next Config at the end of the build, after the config file has been
  * copied over to the output directory, so that the user's original code is not modified.
+ * The override and its validation run inside the try block so that the restore in the
+ * finally block also covers a failure in either of them.
  *
  * If the app does not have a next.config.[js|mjs|ts|mts] file in the first place,
  * then can skip config override.
@@ -43,12 +45,13 @@ const nextConfig = await loadConfig(root, opts.projectDirectory);
  * one does not exist in the app's root: https://github.com/vercel/next.js/blob/23681508ca34b66a6ef55965c5eac57de20eb67f/packages/next/src/server/config.ts#L1115
  */
 const nextConfigPath = join(root, nextConfig.configFileName);
-if (await exists(nextConfigPath)) {
-  await overrideNextConfig(root, nextConfig.configFileName);
-  await validateNextConfigOverride(root, opts.projectDirectory, nextConfig.configFileName);
-}
 
 try {
+  if (await exists(nextConfigPath)) {
+    await overrideNextConfig(root, nextConfig.configFileName);
+    await validateNextConfigOverride(root, opts.projectDirectory, nextConfig.configFileName);
+  }
+
   await runBuild();
 
   const adapterMetadata = getAdapterMetadata();
